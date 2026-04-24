@@ -1,122 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App: React.FC = () => {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="font-sans text-gray-800">
+
+      {/* Navbar */}
+      <nav className="flex justify-between items-center px-8 py-4 shadow-md">
+        <h1 className="text-xl font-bold">TravelX</h1>
+        <div className="space-x-6">
+          <a href="#" className="hover:text-blue-500">Home</a>
+          <a href="#" className="hover:text-blue-500">Destinations</a>
+          <a href="#" className="hover:text-blue-500">About</a>
+          <a href="#" className="hover:text-blue-500">Contact</a>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+      </nav>
+
+      {/* Hero Section */}
+      <section className="h-[80vh] flex flex-col justify-center items-center bg-gradient-to-r from-blue-400 to-blue-600 text-white text-center">
+        <h2 className="text-4xl font-bold mb-4">
+          Explore the World with Us
+        </h2>
+        <p className="mb-6 text-lg">
+          Discover amazing places at exclusive deals
+        </p>
+        <button className="bg-white text-blue-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-200">
+          Get Started
         </button>
       </section>
 
-      <div className="ticks"></div>
+      {/* Featured Destinations */}
+      <section className="px-8 py-12">
+        <h3 className="text-2xl font-bold text-center mb-8">
+          Popular Destinations
+        </h3>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+        <div className="grid md:grid-cols-3 gap-6">
+          {["Bali", "Paris", "Maldives"].map((place) => (
+            <div
+              key={place}
+              className="p-6 rounded-lg shadow-md hover:shadow-lg transition"
+            >
+              <div className="h-40 bg-gray-300 rounded mb-4" />
+              <h4 className="text-lg font-semibold">{place}</h4>
+              <p className="text-sm text-gray-500">
+                Beautiful destination to explore
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
+      {/* CTA Section */}
+      <section className="bg-blue-600 text-white text-center py-12">
+        <h3 className="text-2xl font-bold mb-4">
+          Ready for your next adventure?
+        </h3>
+        <button className="bg-white text-blue-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-200">
+          Book Now
+        </button>
+      </section>
 
-export default App
+      {/* Footer */}
+      <footer className="text-center py-6 bg-gray-100 text-sm">
+        © 2026 TravelX. All rights reserved.
+      </footer>
+
+    </div>
+  );
+};
+
+export default App;
