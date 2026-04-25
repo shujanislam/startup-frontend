@@ -1,83 +1,82 @@
+import type { Trip } from '../types/trip'
 import '../styles/trip-card.css'
 
-interface TripPlan {
-  id: string
-  name: string
-  budget: number
-  destination: string
-  duration: number
-  startDate: string
-  rating: number
-  imageUrl?: string
-  tags?: string[]
-}
-
 interface TripCardProps {
-  trip: TripPlan
+  trip: Trip
   onClick?: () => void
 }
 
 const TripCard = ({ trip, onClick }: TripCardProps) => {
-  const formatBudget = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount)
+  const formatPrice = (price: number) => {
+    return `₹${price.toLocaleString()}`
   }
+
+  const getSeasonEmoji = (season: string) => {
+    const seasonMap: Record<string, string> = {
+      summer: '☀️',
+      winter: '❄️',
+      monsoon: '🌧️',
+      autumn: '🍂',
+      all: '🌍',
+    }
+    return seasonMap[season] || '🌍'
+  }
+
+  const displayTags = trip.tags.slice(0, 3)
 
   return (
     <div className="trip-card" onClick={onClick}>
-      {trip.imageUrl && (
-        <div className="trip-card-image">
-          <img src={trip.imageUrl} alt={trip.name} />
-          <div className="trip-rating">
-            <span className="rating-value">{trip.rating}</span>
-            <span className="rating-label">★</span>
-          </div>
-        </div>
-      )}
+      {/* Image Section with Badges */}
+      <div className="trip-card-image">
+        <img src={trip.imageUrl} alt={trip.name} className="trip-image" />
 
+        {/* Top Right: Budget Badge */}
+        <div className="badge badge-budget">
+          {formatPrice(trip.price)}
+        </div>
+
+        {/* Top Left: Season Badge */}
+        <div className="badge badge-season">
+          <span className="season-emoji">{getSeasonEmoji(trip.season)}</span>
+          <span className="season-text">
+            {trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}
+          </span>
+        </div>
+      </div>
+
+      {/* Content Section */}
       <div className="trip-card-content">
         <h3 className="trip-name">{trip.name}</h3>
+        <p className="trip-description">{trip.description}</p>
 
-        <p className="trip-destination">
-          <svg className="trip-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-13c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" />
-          </svg>
-          {trip.destination}
-        </p>
-
-        <div className="trip-details">
-          <div className="detail-item">
-            <span className="detail-label">Duration</span>
-            <span className="detail-value">{trip.duration} days</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">Start Date</span>
-            <span className="detail-value">{trip.startDate}</span>
-          </div>
+        {/* Info Row */}
+        <div className="trip-info-row">
+          <span className="trip-info-item">
+            📍 {trip.destination}
+          </span>
+          <span className="trip-info-item">
+            ⏱ {trip.duration}d
+          </span>
+          <span className="trip-info-item">
+            ⭐ {trip.rating}
+          </span>
         </div>
 
-        <div className="trip-footer">
-          <div className="trip-budget">
-            <span className="budget-label">Budget</span>
-            <span className="budget-value">{formatBudget(trip.budget)}</span>
-          </div>
-          <button type="button" className="view-btn">
-            View Details
-          </button>
-        </div>
-
-        {trip.tags && trip.tags.length > 0 && (
+        {/* Tags Row */}
+        {displayTags.length > 0 && (
           <div className="trip-tags">
-            {trip.tags.map((tag) => (
-              <span key={tag} className="tag">
+            {displayTags.map((tag) => (
+              <span key={tag} className="trip-tag">
                 {tag}
               </span>
             ))}
           </div>
         )}
+
+        {/* Button */}
+        <button type="button" className="view-full-plan-btn">
+          View Full Plan
+        </button>
       </div>
     </div>
   )
