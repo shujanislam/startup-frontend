@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { AuthForm } from '../components/AuthForm.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { loginWithGoogle, signupWithEmailPassword } from '../services/authService.ts'
+import { registerBackendUser, syncBackendUser } from '../services/backendAuthService.ts'
 import '../auth.css'
 
 const toErrorMessage = (error: unknown): string => {
@@ -28,6 +29,12 @@ const SignupPage = () => {
 
     try {
       await signupWithEmailPassword(email, password)
+      await registerBackendUser({
+        name: email.split('@')[0] || 'user',
+        email,
+        password,
+        gender: 'prefer_not_to_say',
+      })
     } catch (error) {
       setErrorMessage(toErrorMessage(error))
     } finally {
@@ -41,6 +48,7 @@ const SignupPage = () => {
 
     try {
       await loginWithGoogle()
+      await syncBackendUser()
     } catch (error) {
       setErrorMessage(toErrorMessage(error))
     } finally {
