@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { SortType, SeasonType } from '../types/trip'
-import '../styles/sidebar.css'
 
 interface SidebarProps {
   onSortChange?: (sortType: SortType) => void
@@ -46,64 +45,82 @@ const Sidebar = ({ onSortChange, onSeasonChange, onBudgetChange }: SidebarProps)
   }
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-container">
+    <aside className="hidden lg:block w-64 bg-white border-r border-gray-200 h-[calc(100vh-64px)] sticky top-16 overflow-y-auto">
+      <div className="p-6">
         {/* Group 1: Sort By */}
-        <div className="sidebar-section">
-          <h3 className="sidebar-title">Sort By</h3>
-          <div className="filter-buttons">
+        <div className="mb-6">
+          <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-3">
+            Sort By
+          </h3>
+          <div className="flex flex-col gap-2">
             {sortOptions.map((option) => (
               <button
                 key={option.id}
                 type="button"
-                className={`filter-btn ${activeSort === option.id ? 'active' : ''}`}
+                className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-md transition-all font-medium text-sm ${
+                  activeSort === option.id
+                    ? 'bg-blue-50 text-blue-600 border border-blue-600'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                }`}
                 onClick={() => handleSortClick(option.id as SortType)}
               >
-                <span className="filter-emoji">{option.emoji}</span>
-                <span className="filter-label">{option.label}</span>
+                <span className="text-base w-4.5 text-center flex-shrink-0">
+                  {option.emoji}
+                </span>
+                <span className="truncate">{option.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="sidebar-divider" />
+        <div className="h-px bg-gray-200 my-4" />
 
         {/* Group 2: Season */}
-        <div className="sidebar-section">
-          <h3 className="sidebar-title">Season</h3>
-          <div className="filter-buttons">
+        <div className="mb-6">
+          <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-3">
+            Season
+          </h3>
+          <div className="flex flex-col gap-2">
             {seasonOptions.map((option) => (
               <button
                 key={option.id}
                 type="button"
-                className={`filter-btn ${activeSeason === option.id ? 'active' : ''}`}
+                className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-md transition-all font-medium text-sm ${
+                  activeSeason === option.id
+                    ? 'bg-blue-50 text-blue-600 border border-blue-600'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                }`}
                 onClick={() => handleSeasonClick(option.id as SeasonType)}
               >
-                <span className="filter-emoji">{option.emoji}</span>
-                <span className="filter-label">{option.label}</span>
+                <span className="text-base w-4.5 text-center flex-shrink-0">
+                  {option.emoji}
+                </span>
+                <span className="truncate">{option.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="sidebar-divider" />
+        <div className="h-px bg-gray-200 my-4" />
 
         {/* Group 3: Max Budget */}
-        <div className="sidebar-section">
-          <h3 className="sidebar-title">Max Budget</h3>
+        <div>
+          <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wide mb-3">
+            Max Budget
+          </h3>
           <input
             type="range"
-            className="budget-slider"
+            className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-blue-600 mb-3"
             min="500"
             max="10000"
             step="500"
             value={maxBudget}
             onChange={handleBudgetChange}
           />
-          <div className="budget-labels">
-            <span className="budget-min">₹500</span>
-            <span className="budget-current">₹{maxBudget.toLocaleString()}</span>
-            <span className="budget-max">₹10,000</span>
+          <div className="flex justify-between items-center gap-2 text-xs">
+            <span className="text-gray-500 font-medium">₹500</span>
+            <span className="text-blue-600 font-bold text-center">₹{maxBudget.toLocaleString()}</span>
+            <span className="text-gray-500 font-medium">₹10,000</span>
           </div>
         </div>
       </div>

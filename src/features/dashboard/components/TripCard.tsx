@@ -1,5 +1,4 @@
 import type { Trip } from '../types/trip'
-import '../styles/trip-card.css'
 
 interface TripCardProps {
   trip: Trip
@@ -25,48 +24,63 @@ const TripCard = ({ trip, onClick }: TripCardProps) => {
   const displayTags = trip.tags.slice(0, 3)
 
   return (
-    <div className="trip-card" onClick={onClick}>
+    <div
+      className="flex flex-col bg-white border border-gray-100 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer h-full shadow-sm hover:shadow-lg hover:border-gray-300 group"
+      onClick={onClick}
+    >
       {/* Image Section with Badges */}
-      <div className="trip-card-image">
-        <img src={trip.imageUrl} alt={trip.name} className="trip-image" />
+      <div className="relative w-full h-44 overflow-hidden bg-gray-100">
+        <img
+          src={trip.imageUrl}
+          alt={trip.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
+        />
 
         {/* Top Right: Budget Badge */}
-        <div className="badge badge-budget">
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-xs font-semibold text-green-600 border border-white/50 z-10">
           {formatPrice(trip.price)}
         </div>
 
         {/* Top Left: Season Badge */}
-        <div className="badge badge-season">
-          <span className="season-emoji">{getSeasonEmoji(trip.season)}</span>
-          <span className="season-text">
+        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-white border border-white/20 z-10">
+          <span className="text-sm">{getSeasonEmoji(trip.season)}</span>
+          <span className="text-xs font-semibold">
             {trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}
           </span>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="trip-card-content">
-        <h3 className="trip-name">{trip.name}</h3>
-        <p className="trip-description">{trip.description}</p>
+      <div className="p-4 flex flex-col flex-1 gap-3">
+        <h3 className="text-base font-semibold text-gray-900 leading-snug">
+          {trip.name}
+        </h3>
+
+        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+          {trip.description}
+        </p>
 
         {/* Info Row */}
-        <div className="trip-info-row">
-          <span className="trip-info-item">
+        <div className="flex gap-2 flex-wrap text-xs text-gray-600">
+          <span className="flex items-center gap-1 whitespace-nowrap">
             📍 {trip.destination}
           </span>
-          <span className="trip-info-item">
+          <span className="flex items-center gap-1 whitespace-nowrap">
             ⏱ {trip.duration}d
           </span>
-          <span className="trip-info-item">
+          <span className="flex items-center gap-1 whitespace-nowrap">
             ⭐ {trip.rating}
           </span>
         </div>
 
         {/* Tags Row */}
         {displayTags.length > 0 && (
-          <div className="trip-tags">
+          <div className="flex gap-1.5 flex-wrap">
             {displayTags.map((tag) => (
-              <span key={tag} className="trip-tag">
+              <span
+                key={tag}
+                className="inline-block px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-medium whitespace-nowrap"
+              >
                 {tag}
               </span>
             ))}
@@ -74,7 +88,10 @@ const TripCard = ({ trip, onClick }: TripCardProps) => {
         )}
 
         {/* Button */}
-        <button type="button" className="view-full-plan-btn">
+        <button
+          type="button"
+          className="mt-auto px-3 py-2.5 bg-blue-600 text-white rounded-md text-xs font-semibold transition-all duration-200 w-full hover:bg-blue-700 hover:shadow-md active:scale-98"
+        >
           View Full Plan
         </button>
       </div>
