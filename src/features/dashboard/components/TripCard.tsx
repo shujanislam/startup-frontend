@@ -1,83 +1,99 @@
-import '../styles/trip-card.css'
-
-interface TripPlan {
-  id: string
-  name: string
-  budget: number
-  destination: string
-  duration: number
-  startDate: string
-  rating: number
-  imageUrl?: string
-  tags?: string[]
-}
+import type { Trip } from '../types/trip'
 
 interface TripCardProps {
-  trip: TripPlan
+  trip: Trip
   onClick?: () => void
 }
 
 const TripCard = ({ trip, onClick }: TripCardProps) => {
-  const formatBudget = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount)
+  const formatPrice = (price: number) => {
+    return `₹${price.toLocaleString()}`
   }
 
+  const getSeasonEmoji = (season: string) => {
+    const seasonMap: Record<string, string> = {
+      summer: '☀️',
+      winter: '❄️',
+      monsoon: '🌧️',
+      autumn: '🍂',
+      all: '🌍',
+    }
+    return seasonMap[season] || '🌍'
+  }
+
+  const displayTags = trip.tags.slice(0, 3)
+
   return (
-    <div className="trip-card" onClick={onClick}>
-      {trip.imageUrl && (
-        <div className="trip-card-image">
-          <img src={trip.imageUrl} alt={trip.name} />
-          <div className="trip-rating">
-            <span className="rating-value">{trip.rating}</span>
-            <span className="rating-label">★</span>
-          </div>
+    <div
+      className="flex flex-col bg-white border border-gray-100 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer h-full shadow-sm hover:shadow-lg hover:border-gray-300 group"
+      onClick={onClick}
+    >
+      {/* Image Section with Badges */}
+      <div className="relative w-full h-44 overflow-hidden bg-gray-100">
+        <img
+          src={trip.imageUrl}
+          alt={trip.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
+        />
+
+        {/* Top Right: Budget Badge */}
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-xs font-semibold text-green-600 border border-white/50 z-10">
+          {formatPrice(trip.price)}
         </div>
-      )}
 
-      <div className="trip-card-content">
-        <h3 className="trip-name">{trip.name}</h3>
+        {/* Top Left: Season Badge */}
+        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-white border border-white/20 z-10">
+          <span className="text-sm">{getSeasonEmoji(trip.season)}</span>
+          <span className="text-xs font-semibold">
+            {trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}
+          </span>
+        </div>
+      </div>
 
-        <p className="trip-destination">
-          <svg className="trip-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-13c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" />
-          </svg>
-          {trip.destination}
+      {/* Content Section */}
+      <div className="p-4 flex flex-col flex-1 gap-3">
+        <h3 className="text-base font-semibold text-gray-900 leading-snug">
+          {trip.name}
+        </h3>
+
+        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+          {trip.description}
         </p>
 
-        <div className="trip-details">
-          <div className="detail-item">
-            <span className="detail-label">Duration</span>
-            <span className="detail-value">{trip.duration} days</span>
-          </div>
-          <div className="detail-item">
-            <span className="detail-label">Start Date</span>
-            <span className="detail-value">{trip.startDate}</span>
-          </div>
+        {/* Info Row */}
+        <div className="flex gap-2 flex-wrap text-xs text-gray-600">
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            📍 {trip.destination}
+          </span>
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            ⏱ {trip.duration}d
+          </span>
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            ⭐ {trip.rating}
+          </span>
         </div>
 
-        <div className="trip-footer">
-          <div className="trip-budget">
-            <span className="budget-label">Budget</span>
-            <span className="budget-value">{formatBudget(trip.budget)}</span>
-          </div>
-          <button type="button" className="view-btn">
-            View Details
-          </button>
-        </div>
-
-        {trip.tags && trip.tags.length > 0 && (
-          <div className="trip-tags">
-            {trip.tags.map((tag) => (
-              <span key={tag} className="tag">
+        {/* Tags Row */}
+        {displayTags.length > 0 && (
+          <div className="flex gap-1.5 flex-wrap">
+            {displayTags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-block px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-medium whitespace-nowrap"
+              >
                 {tag}
               </span>
             ))}
           </div>
         )}
+
+        {/* Button */}
+        <button
+          type="button"
+          className="mt-auto px-3 py-2.5 bg-blue-600 text-white rounded-md text-xs font-semibold transition-all duration-200 w-full hover:bg-blue-700 hover:shadow-md active:scale-98"
+        >
+          View Full Plan
+        </button>
       </div>
     </div>
   )

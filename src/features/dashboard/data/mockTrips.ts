@@ -1,0 +1,105 @@
+import type { Trip, FeaturedTrip } from '../types/trip'
+
+export const featuredTrip: FeaturedTrip = {
+  id: 'featured-1',
+  name: 'Tawang Monastery Trek',
+  description: 'Experience the serene beauty of the highest Buddhist monastery in India.',
+  destination: 'Tawang, Arunachal Pradesh',
+  duration: 5,
+  startDate: '2026-06-15',
+  price: 3800,
+  season: 'summer',
+  tags: ['Adventure', 'Culture', 'Nature'],
+  rating: 4.8,
+  imageUrl:
+    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=300&fit=crop',
+  isFeatured: true,
+  badge: '🔥 Most Popular This Season',
+}
+
+export const allTrips: Trip[] = [
+  {
+    id: '1',
+    name: 'Manali-Leh Highway',
+    description: 'Epic motorcycle journey through the highest motorable pass in the world.',
+    destination: 'Manali to Leh, Ladakh',
+    duration: 8,
+    startDate: '2026-07-01',
+    price: 2500,
+    season: 'summer',
+    tags: ['Adventure', 'Scenic Route', 'Thrill'],
+    rating: 4.9,
+    imageUrl:
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+  },
+  {
+    id: '2',
+    name: 'Kasol Backpacking',
+    description: 'Peaceful mountain village perfect for relaxation and trekking.',
+    destination: 'Kasol, Himachal Pradesh',
+    duration: 3,
+    startDate: '2026-06-20',
+    price: 1200,
+    season: 'summer',
+    tags: ['Budget-friendly', 'Relaxation', 'Hiking'],
+    rating: 4.6,
+    imageUrl:
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+  },
+  {
+    id: '3',
+    name: 'Goa Beach Paradise',
+    description: 'Sun, sand, and sea with vibrant nightlife and water sports.',
+    destination: 'Goa',
+    duration: 4,
+    startDate: '2026-07-15',
+    price: 1500,
+    season: 'winter',
+    tags: ['Beach', 'Nightlife', 'Water Sports'],
+    rating: 4.5,
+    imageUrl:
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop',
+  },
+  {
+    id: '4',
+    name: 'Darjeeling Tea Gardens',
+    description: 'Explore the misty mountains and world-famous tea plantations.',
+    destination: 'Darjeeling, West Bengal',
+    duration: 6,
+    startDate: '2026-08-10',
+    price: 2200,
+    season: 'autumn',
+    tags: ['Culture', 'Nature', 'Food'],
+    rating: 4.7,
+    imageUrl:
+      'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&h=300&fit=crop',
+  },
+  {
+    id: '5',
+    name: 'Kerala Backwaters',
+    description: 'Serene houseboats through palm-fringed backwaters and rice fields.',
+    destination: 'Kerala',
+    duration: 5,
+    startDate: '2026-08-20',
+    price: 3200,
+    season: 'monsoon',
+    tags: ['Relaxation', 'Scenic', 'Unique Experience'],
+    rating: 4.8,
+    imageUrl:
+      'https://images.unsplash.com/photo-1506315996181-152e573f1707?w=400&h=300&fit=crop',
+  },
+  {
+    id: '6',
+    name: 'Jaisalmer Desert Safari',
+    description: 'Experience the golden dunes with camel rides and desert camps.',
+    destination: 'Jaisalmer, Rajasthan',
+    duration: 3,
+    startDate: '2026-09-05',
+    price: 1800,
+    season: 'winter',
+    tags: ['Adventure', 'Desert', 'Cultural'],
+    rating: 4.4,
+    imageUrl:
+      'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=300&fit=crop',
+  },
+]
