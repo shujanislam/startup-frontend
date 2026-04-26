@@ -3,6 +3,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithCustomToken,
   signOut,
   type User,
 } from 'firebase/auth'
@@ -29,6 +30,11 @@ const signupWithEmailPassword = async (
   return result.user
 }
 
+const signInWithToken = async (customToken: string): Promise<User> => {
+  const result = await signInWithCustomToken(auth, customToken)
+  return result.user
+}
+
 const logoutUser = async (): Promise<void> => {
   await signOut(auth)
 }
@@ -44,5 +50,6 @@ export {
   loginWithEmailPassword,
   logoutUser,
   observeAuthState,
+  signInWithToken,
   signupWithEmailPassword,
 }

@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import { AuthForm } from '../components/AuthForm.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
-import { loginWithGoogle, signupWithEmailPassword } from '../services/authService.ts'
+import { loginWithGoogle, signInWithToken } from '../services/authService.ts'
 import { registerBackendUser, syncBackendUser } from '../services/backendAuthService.ts'
 import '../auth.css'
 
@@ -28,13 +28,13 @@ const SignupPage = () => {
     setIsLoading(true)
 
     try {
-      await signupWithEmailPassword(email, password)
-      await registerBackendUser({
+      const { customToken } = await registerBackendUser({
         name: email.split('@')[0] || 'user',
         email,
         password,
         gender: 'prefer_not_to_say',
       })
+      await signInWithToken(customToken)
     } catch (error) {
       setErrorMessage(toErrorMessage(error))
     } finally {
