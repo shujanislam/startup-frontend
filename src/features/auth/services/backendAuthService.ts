@@ -12,8 +12,15 @@ interface LoginPayload {
   password: string
 }
 
-const registerBackendUser = async (payload: RegisterPayload): Promise<void> => {
-  await apiClient.post('/auth/register', payload)
+interface RegisterResponse {
+  message: string
+  user: Record<string, unknown>
+  customToken: string
+}
+
+const registerBackendUser = async (payload: RegisterPayload): Promise<RegisterResponse> => {
+  const { data } = await apiClient.post<RegisterResponse>('/auth/register', payload)
+  return data
 }
 
 const loginBackendUser = async (payload: LoginPayload): Promise<void> => {
