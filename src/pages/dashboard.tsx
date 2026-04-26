@@ -1,11 +1,11 @@
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute.tsx'
 
-import { HomePage } from '../features/dashboard/pages/HomePage.tsx'
+import { DashboardPage } from '../features/dashboard/pages/DashboardPage.tsx'
 
 const DashboardRoute = () => {
   return (
     <ProtectedRoute>
-      <HomePage/>
+      <DashboardPage />
     </ProtectedRoute>
   )
 }

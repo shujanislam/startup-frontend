@@ -25,8 +25,8 @@ const TripDetailVehicles = ({ trip }: TripDetailVehiclesProps) => {
                 <p className="font-semibold text-gray-900 text-sm">
                   🚗 {vehicle.name} ({vehicle.carNumber})
                 </p>
-                <p className="text-gray-600 text-xs mt-1">Driver: {vehicle.driverName}</p>
-                <p className="text-gray-600 text-xs">{vehicle.driverPhone}</p>
+                <p className="text-gray-600 text-xs mt-1">Driver: {vehicle.driverName || 'Not assigned'}</p>
+                <p className="text-gray-600 text-xs">{vehicle.driverPhone || 'Phone not available'}</p>
               </div>
               <p className="text-green-600 font-bold text-sm ml-4 whitespace-nowrap">
                 {formatPrice(vehicle.budget)}

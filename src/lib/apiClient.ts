@@ -7,6 +7,7 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    await auth.authStateReady()
     const currentUser = auth.currentUser
 
     if (!currentUser) {
