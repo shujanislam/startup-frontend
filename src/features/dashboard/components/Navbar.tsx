@@ -4,9 +4,11 @@ import { useAuth } from '../../auth/hooks/useAuth'
 interface NavbarProps {
   onSearch?: (query: string) => void
   onSubmitTrip?: () => void
+  onLogout?: () => void
+  isLoggingOut?: boolean
 }
 
-const Navbar = ({ onSearch, onSubmitTrip }: NavbarProps) => {
+const Navbar = ({ onSearch, onSubmitTrip, onLogout, isLoggingOut = false }: NavbarProps) => {
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -46,7 +48,7 @@ const Navbar = ({ onSearch, onSubmitTrip }: NavbarProps) => {
           </div>
         </div>
 
-        {/* RIGHT: Submit Button + Avatar */}
+        {/* RIGHT: Submit Button + Avatar + Logout */}
         <div className="flex items-center gap-4 flex-shrink-0">
           <button
             type="button"
@@ -61,6 +63,15 @@ const Navbar = ({ onSearch, onSubmitTrip }: NavbarProps) => {
               {getInitials(user?.email)}
             </span>
           </div>
+
+          <button
+            type="button"
+            className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-medium transition-all hover:bg-black hover:shadow-md active:scale-98 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={onLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? 'Logging out...' : 'Logout'}
+          </button>
         </div>
       </div>
     </nav>
