@@ -4,7 +4,6 @@ import { Navbar } from '../components/Navbar'
 import { Sidebar } from '../components/Sidebar'
 import { TripCard } from '../components/TripCard'
 import { FeaturedTripCard } from '../components/FeaturedTripCard'
-import { logoutUser } from '../../auth/services/authService.ts'
 import type { SortType, SeasonType } from '../types/trip'
 import { featuredTrip, allTrips } from '../data/mockTrips'
 
@@ -14,7 +13,6 @@ const HomePage = () => {
   const [season, setSeason] = useState<SeasonType>('all')
   const [maxBudget, setMaxBudget] = useState(10000)
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   // Filter and sort trips
   const filteredAndSortedTrips = useMemo(() => {
@@ -78,20 +76,9 @@ const HomePage = () => {
     setMaxBudget(budget)
   }
 
-  const handleSignOut = async () => {
-    setIsLoggingOut(true)
-
-    try {
-      await logoutUser()
-      navigate('/login', { replace: true })
-    } finally {
-      setIsLoggingOut(false)
-    }
-  }
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Navbar onSearch={handleSearch} onLogout={handleSignOut} isLoggingOut={isLoggingOut} />
+      <Navbar onSearch={handleSearch} />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -106,7 +93,7 @@ const HomePage = () => {
             <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">
               ⭐ Featured This Season
             </p>
-            <FeaturedTripCard trip={featuredTrip} />
+            <FeaturedTripCard trip={featuredTrip} onClick={() => navigate(`/trip/${featuredTrip.id}`)} />
           </section>
 
           {/* All Trips Section */}
@@ -121,7 +108,7 @@ const HomePage = () => {
             {filteredAndSortedTrips.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredAndSortedTrips.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} />
+                  <TripCard key={trip.id} trip={trip} onClick={() => navigate(`/trip/${trip.id}`)} />
                 ))}
               </div>
             ) : (
