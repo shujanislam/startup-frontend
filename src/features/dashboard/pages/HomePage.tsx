@@ -1,16 +1,20 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Navbar } from '../components/Navbar'
 import { Sidebar } from '../components/Sidebar'
 import { TripCard } from '../components/TripCard'
 import { FeaturedTripCard } from '../components/FeaturedTripCard'
+import { logoutUser } from '../../auth/services/authService.ts'
 import type { SortType, SeasonType } from '../types/trip'
 import { featuredTrip, allTrips } from '../data/mockTrips'
 
 const HomePage = () => {
+  const navigate = useNavigate()
   const [sortBy, setSortBy] = useState<SortType>('all')
   const [season, setSeason] = useState<SeasonType>('all')
   const [maxBudget, setMaxBudget] = useState(10000)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   // Filter and sort trips
   const filteredAndSortedTrips = useMemo(() => {
@@ -74,9 +78,20 @@ const HomePage = () => {
     setMaxBudget(budget)
   }
 
+  const handleSignOut = async () => {
+    setIsLoggingOut(true)
+
+    try {
+      await logoutUser()
+      navigate('/login', { replace: true })
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Navbar onSearch={handleSearch} />
+      <Navbar onSearch={handleSearch} onLogout={handleSignOut} isLoggingOut={isLoggingOut} />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
