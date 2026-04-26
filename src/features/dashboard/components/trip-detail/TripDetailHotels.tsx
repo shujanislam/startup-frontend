@@ -23,7 +23,7 @@ const TripDetailHotels = ({ trip }: TripDetailHotelsProps) => {
             >
               <div className="flex-1">
                 <p className="font-semibold text-gray-900 text-sm">🏨 {hotel.name}</p>
-                <p className="text-gray-600 text-xs mt-1">{hotel.address}</p>
+                <p className="text-gray-600 text-xs mt-1">{hotel.address || 'Address not provided'}</p>
               </div>
               <p className="text-green-600 font-bold text-sm ml-4 whitespace-nowrap">
                 {formatPrice(hotel.budget)}

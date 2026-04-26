@@ -1,4 +1,5 @@
 import type { TripDetail } from '../../types/trip'
+import { useMemo, useState } from 'react'
 
 interface TripDetailHeroProps {
   trip: TripDetail
@@ -17,21 +18,44 @@ const getSeasonEmoji = (season: string) => {
 }
 
 const TripDetailHero = ({ trip, onBack }: TripDetailHeroProps) => {
+  const [imageFailed, setImageFailed] = useState(false)
+
   const formatPrice = (price: number) => {
     return `₹${price.toLocaleString()}`
   }
 
+  const fallbackBackground = useMemo(() => {
+    const palettes = [
+      'from-blue-600 via-cyan-500 to-teal-400',
+      'from-rose-500 via-orange-400 to-amber-300',
+      'from-indigo-600 via-violet-500 to-purple-400',
+      'from-emerald-600 via-green-500 to-lime-400',
+    ]
+
+    const hash = trip.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return palettes[hash % palettes.length]
+  }, [trip.name])
+
+  const hasUsableImage = trip.imageUrl.trim().length > 0 && !imageFailed
+
   return (
     <div className="relative w-full h-48 md:h-72 lg:h-96 overflow-hidden">
       {/* Background Image */}
-      <img
-        src={trip.imageUrl}
-        alt={trip.name}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {hasUsableImage ? (
+        <img
+          src={trip.imageUrl}
+          alt={trip.name}
+          onError={() => setImageFailed(true)}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      ) : (
+        <div className={`absolute inset-0 bg-linear-to-br ${fallbackBackground} flex items-center justify-center`}>
+          <span className="text-white/90 text-base md:text-lg font-semibold px-4 text-center">{trip.destination}</span>
+        </div>
+      )}
 
       {/* Dark Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-black/70" />
 
       {/* Back Button (Top Left) */}
       <button

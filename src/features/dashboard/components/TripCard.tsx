@@ -1,4 +1,5 @@
 import type { Trip } from '../types/trip'
+import { useMemo, useState } from 'react'
 
 interface TripCardProps {
   trip: Trip
@@ -6,9 +7,26 @@ interface TripCardProps {
 }
 
 const TripCard = ({ trip, onClick }: TripCardProps) => {
+  const [imageFailed, setImageFailed] = useState(false)
+
   const formatPrice = (price: number) => {
     return `₹${price.toLocaleString()}`
   }
+
+  const fallbackBackground = useMemo(() => {
+    const palettes = [
+      'from-rose-400 via-orange-300 to-amber-300',
+      'from-cyan-500 via-sky-400 to-indigo-400',
+      'from-emerald-500 via-teal-400 to-cyan-300',
+      'from-fuchsia-500 via-pink-400 to-rose-300',
+      'from-violet-500 via-purple-400 to-indigo-300',
+    ]
+
+    const hash = trip.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return palettes[hash % palettes.length]
+  }, [trip.name])
+
+  const hasUsableImage = trip.imageUrl.trim().length > 0 && !imageFailed
 
   const getSeasonEmoji = (season: string) => {
     const seasonMap: Record<string, string> = {
@@ -30,11 +48,18 @@ const TripCard = ({ trip, onClick }: TripCardProps) => {
     >
       {/* Image Section with Badges */}
       <div className="relative w-full h-44 overflow-hidden bg-gray-100">
-        <img
-          src={trip.imageUrl}
-          alt={trip.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
-        />
+        {hasUsableImage ? (
+          <img
+            src={trip.imageUrl}
+            alt={trip.name}
+            onError={() => setImageFailed(true)}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className={`w-full h-full bg-linear-to-br ${fallbackBackground} flex items-center justify-center`}>
+            <span className="text-white/90 text-sm font-semibold px-3 text-center">{trip.destination}</span>
+          </div>
+        )}
 
         {/* Top Right: Budget Badge */}
         <div className="absolute top-2 right-2 flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-xs font-semibold text-green-600 border border-white/50 z-10">

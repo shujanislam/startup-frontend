@@ -20,7 +20,7 @@ const SignupPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   if (!loading && user) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/home" replace />
   }
 
   const handleSignup = async (email: string, password: string) => {
