@@ -11,8 +11,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (loading) {
     return (
-      <main className="route-gate">
-        <p>Checking session...</p>
+      <main className="grid min-h-screen place-items-center bg-gray-50 px-4">
+        <div className="text-center">
+          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+          <p className="text-sm text-gray-500">Checking session...</p>
+        </div>
       </main>
     )
   }

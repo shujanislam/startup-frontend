@@ -4,7 +4,6 @@ import { AuthForm } from '../components/AuthForm.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { loginWithGoogle, signInWithToken } from '../services/authService.ts'
 import { registerBackendUser, syncBackendUser } from '../services/backendAuthService.ts'
-import '../auth.css'
 
 const toErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {

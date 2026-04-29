@@ -291,8 +291,9 @@ const HomePage = () => {
           />
 
           <main className="flex-1 overflow-y-auto bg-gray-50 pb-24">
-            <div className="mx-auto w-full max-w-5xl px-4 pt-6 md:px-6 lg:px-8 md:pt-8">
-              {isAdmin && (
+            {(isAdmin || banner) && (
+              <div className="mx-auto w-full max-w-5xl px-4 pt-6 md:px-6 lg:px-8 md:pt-8">
+                {isAdmin && (
                 <div className="mb-6 rounded-[24px] border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 px-5 py-4 shadow-sm">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
                     Admin User Active
@@ -301,9 +302,9 @@ const HomePage = () => {
                     You are signed in with admin access. Pending package reviews will appear below when unapproved trips exist.
                   </p>
                 </div>
-              )}
+                )}
 
-              {banner && (
+                {banner && (
                 <div
                   className={`mb-6 rounded-[24px] border px-5 py-4 shadow-sm ${
                     banner.tone === 'success'
@@ -316,8 +317,9 @@ const HomePage = () => {
                   </p>
                   <p className="mt-2 text-sm leading-6">{banner.message}</p>
                 </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {isAdmin && (
               <section className="mx-auto w-full max-w-5xl px-4 pb-2 md:px-6 lg:px-8">
