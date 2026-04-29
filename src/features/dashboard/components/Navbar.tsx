@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 
 interface NavbarProps {
@@ -14,12 +15,10 @@ const Navbar = ({
   onSubmitTrip,
   onLogout,
   isLoggingOut = false,
-  isAdmin = false,
 }: NavbarProps) => {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value
@@ -33,150 +32,95 @@ const Navbar = ({
   }
 
   return (
-    <nav className="sticky top-0 w-full h-16 bg-white border-b border-gray-200 shadow-sm z-50">
-      <div className="flex items-center justify-between h-full px-4 md:px-6 gap-4 max-w-6xl mx-auto">
-        {/* LEFT: Logo + Hamburger */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <button
-            type="button"
-            className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl">🗺️</span>
-            <span className="text-lg md:text-xl font-bold text-gray-900 tracking-tight">BudgetYatra</span>
-          </div>
-        </div>
-
-        {/* CENTER: Search Bar - Desktop */}
-        <div className="hidden md:flex flex-1 max-w-xs mx-4">
-          <div className="relative w-full flex items-center bg-gray-100 rounded-full px-4 py-2 border border-gray-200 transition-all focus-within:bg-white focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-100">
-            <span className="text-base mr-2 text-gray-600 flex-shrink-0">🔍</span>
-            <input
-              type="text"
-              className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900"
-              placeholder="Search destinations..."
-              value={searchQuery}
-              onChange={handleSearch}
-            />
-          </div>
-        </div>
-
-        {/* Mobile Search Toggle */}
+    <nav className="sticky top-0 z-50 h-16 w-full border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+      <div className="flex h-full w-full items-center justify-between px-6 md:px-10">
         <button
           type="button"
-          className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-          onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-          aria-label="Toggle search"
+          onClick={() => navigate('/home')}
+          className="flex shrink-0 items-center gap-2 rounded-full pr-2 ml-5 transition hover:opacity-80"
+          aria-label="Go to home"
         >
-          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <span className="grid h-9 w-9 place-items-center rounded-2xl bg-slate-950 text-white shadow-sm">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10.5h.01" />
+            </svg>
+          </span>
+          <span className="hidden text-lg font-bold text-slate-950 sm:inline">BudgetYatra</span>
         </button>
 
-        {/* RIGHT: Desktop Actions */}
-        <div className="hidden md:flex items-center gap-4 flex-shrink-0">
-          {isAdmin && (
-            <div className="px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold border border-amber-200 whitespace-nowrap">
-              Admin User
-            </div>
-          )}
-
-          <button
-            type="button"
-            className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium transition-all hover:bg-blue-700 hover:shadow-md active:scale-98 whitespace-nowrap"
-            onClick={onSubmitTrip}
-          >
-            + Submit Trip
-          </button>
-
-          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 cursor-pointer transition-all hover:bg-gray-300 hover:border-2 hover:border-gray-400 border-2 border-transparent">
-            <span className="text-xs font-semibold text-gray-700">
-              {getInitials(user?.email)}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-medium transition-all hover:bg-black hover:shadow-md active:scale-98 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
-            onClick={onLogout}
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? 'Logging out...' : 'Logout'}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Search Bar */}
-      {mobileSearchOpen && (
-        <div className="md:hidden px-4 pb-3 border-t border-gray-100">
-          <div className="relative w-full flex items-center bg-gray-100 rounded-full px-4 py-2 border border-gray-200 mt-3">
-            <span className="text-base mr-2 text-gray-600 flex-shrink-0">🔍</span>
+        <div className="flex min-w-0 items-center justify-end gap-6 sm:gap-3 mr-3">
+          <label className="group/search relative mr-3 flex h-10 w-10 cursor-text items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 text-slate-600 shadow-sm transition-all duration-300 ease-out hover:w-56 hover:border-blue-200 hover:bg-white hover:shadow-md focus-within:w-56 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100 sm:hover:w-72 sm:focus-within:w-72">
+            <svg className="ml-3 h-4 w-4 shrink-0 transition-colors group-hover/search:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+            </svg>
             <input
-              type="text"
-              className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900"
-              placeholder="Search destinations..."
+              type="search"
+              className="min-w-0 flex-1 bg-transparent px-3 text-sm text-slate-900 opacity-0 outline-none transition-opacity duration-200 placeholder:text-slate-400 group-hover/search:opacity-100 group-focus-within/search:opacity-100"
+              placeholder="Search destinations"
               value={searchQuery}
               onChange={handleSearch}
-              autoFocus
+              aria-label="Search destinations"
             />
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Menu Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50 px-4 py-4 space-y-3">
-          <button
-            type="button"
-            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium transition-all hover:bg-blue-700 active:scale-98"
-            onClick={() => {
-              setMobileMenuOpen(false)
-              onSubmitTrip?.()
-            }}
-          >
-            + Submit Trip
-          </button>
-
-          <div className="flex items-center gap-3 py-2 px-1">
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 border-2 border-transparent">
-              <span className="text-xs font-semibold text-gray-700">
-                {getInitials(user?.email)}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.email || 'User'}</p>
-            </div>
-          </div>
-
-          {isAdmin && (
-            <div className="w-full px-4 py-3 rounded-lg bg-amber-50 border border-amber-200 text-sm font-semibold text-amber-800">
-              Admin User Active
-            </div>
-          )}
+          </label>
 
           <button
             type="button"
-            className="w-full px-4 py-3 bg-gray-900 text-white rounded-lg text-sm font-medium transition-all hover:bg-black active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
-            onClick={() => {
-              setMobileMenuOpen(false)
-              onLogout?.()
-            }}
-            disabled={isLoggingOut}
+            className="grid h-10 w-10 mr-3 shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md active:scale-[0.98]"
+            onClick={onSubmitTrip}
+            aria-label="Add new package"
+            title="Add new package"
           >
-            {isLoggingOut ? 'Logging out...' : 'Logout'}
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14m-7-7h14" />
+            </svg>
           </button>
+
+          <div className="group/profile relative">
+            <button
+              type="button"
+              className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-transparent bg-slate-200 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-300 focus:border-blue-500 focus:outline-none"
+              aria-label="Open profile menu"
+            >
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span>{getInitials(user?.email)}</span>
+              )}
+            </button>
+
+            <div className="invisible absolute right-0 top-11 w-52 translate-y-2 rounded-2xl border border-slate-200 bg-white p-2 opacity-0 shadow-xl transition-all duration-200 group-hover/profile:visible group-hover/profile:translate-y-0 group-hover/profile:opacity-100 group-focus-within/profile:visible group-focus-within/profile:translate-y-0 group-focus-within/profile:opacity-100">
+              <div className="border-b border-slate-100 px-3 py-2">
+                <p className="truncate text-sm font-semibold text-slate-900">{user?.email || 'User'}</p>
+                <p className="mt-0.5 text-xs text-slate-500">Account menu</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate('/profile')}
+                className="mt-2 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                <svg className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0" />
+                </svg>
+                Go to profile
+              </button>
+
+              <button
+                type="button"
+                onClick={onLogout}
+                disabled={isLoggingOut}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m-3-3h8.25m0 0-3-3m3 3-3 3" />
+                </svg>
+                {isLoggingOut ? 'Logging out...' : 'Logout'}
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
     </nav>
   )
 }
