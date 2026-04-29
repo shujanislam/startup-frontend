@@ -6,9 +6,16 @@ interface NavbarProps {
   onSubmitTrip?: () => void
   onLogout?: () => void
   isLoggingOut?: boolean
+  isAdmin?: boolean
 }
 
-const Navbar = ({ onSearch, onSubmitTrip, onLogout, isLoggingOut = false }: NavbarProps) => {
+const Navbar = ({
+  onSearch,
+  onSubmitTrip,
+  onLogout,
+  isLoggingOut = false,
+  isAdmin = false,
+}: NavbarProps) => {
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -78,6 +85,12 @@ const Navbar = ({ onSearch, onSubmitTrip, onLogout, isLoggingOut = false }: Navb
 
         {/* RIGHT: Desktop Actions */}
         <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+          {isAdmin && (
+            <div className="px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold border border-amber-200 whitespace-nowrap">
+              Admin User
+            </div>
+          )}
+
           <button
             type="button"
             className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium transition-all hover:bg-blue-700 hover:shadow-md active:scale-98 whitespace-nowrap"
@@ -144,6 +157,12 @@ const Navbar = ({ onSearch, onSubmitTrip, onLogout, isLoggingOut = false }: Navb
               <p className="text-sm font-medium text-gray-900 truncate">{user?.email || 'User'}</p>
             </div>
           </div>
+
+          {isAdmin && (
+            <div className="w-full px-4 py-3 rounded-lg bg-amber-50 border border-amber-200 text-sm font-semibold text-amber-800">
+              Admin User Active
+            </div>
+          )}
 
           <button
             type="button"
