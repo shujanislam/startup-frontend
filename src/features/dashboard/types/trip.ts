@@ -50,6 +50,13 @@ export interface TripDetail extends Trip {
   createdAt: string
 }
 
+export interface PackageSummary extends Trip {
+  approved: boolean
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface FeaturedTrip extends Trip {
   badge: string
 }
