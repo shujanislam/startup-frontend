@@ -1,5 +1,14 @@
 import apiClient from '../../../lib/apiClient.ts'
-import type { Hotel, Vehicle, Link, Trip, TripDetail, SeasonType, SortType } from '../types/trip.ts'
+import type {
+  Hotel,
+  Vehicle,
+  Link,
+  PackageSummary,
+  Trip,
+  TripDetail,
+  SeasonType,
+  SortType,
+} from '../types/trip.ts'
 
 // ─────────────────────────────────────────────
 // Query & Response Contracts
@@ -70,6 +79,7 @@ export interface ApiPackage {
   affiliateLinks?: string[]
   additional?: string
   createdBy: string
+  approved: boolean
   createdAt: string
   updatedAt: string
   hotels?: ApiHotel[] | string[]
@@ -82,7 +92,7 @@ export interface ApiPackage {
 // Omit server-generated fields the client should never send.
 export type CreatePackagePayload = Omit<
   ApiPackage,
-  '_id' | 'createdBy' | 'createdAt' | 'updatedAt'
+  '_id' | 'createdBy' | 'approved' | 'createdAt' | 'updatedAt'
 >
 
 export type UpdatePackagePayload = Partial<CreatePackagePayload>
@@ -165,12 +175,22 @@ function mapApiPackageBase(pkg: ApiPackage) {
     isFeatured:  false,
     // Rating is hardcoded until the API returns a real aggregate.
     // TODO: replace with `pkg.rating` once available.
-    rating:      null as number | null,
+    rating:      0,
   }
 }
 
 export function mapApiPackageToTrip(pkg: ApiPackage): Trip {
   return mapApiPackageBase(pkg)
+}
+
+export function mapApiPackageToPackageSummary(pkg: ApiPackage): PackageSummary {
+  return {
+    ...mapApiPackageBase(pkg),
+    approved: pkg.approved,
+    createdBy: pkg.createdBy,
+    createdAt: pkg.createdAt,
+    updatedAt: pkg.updatedAt,
+  }
 }
 
 export function mapApiPackageToTripDetail(pkg: ApiPackage): TripDetail {
@@ -245,6 +265,11 @@ export const fetchAllPackages = async (): Promise<Trip[]> => {
   return data.map(mapApiPackageToTrip)
 }
 
+export const fetchPendingPackages = async (): Promise<PackageSummary[]> => {
+  const { data } = await apiClient.get<ApiPackage[]>('/packages/pending-packages')
+  return data.map(mapApiPackageToPackageSummary)
+}
+
 export const createPackage = async (payload: CreatePackagePayload): Promise<TripDetail> => {
   const { data } = await apiClient.post<{ message: string; data: ApiPackage }>(
     '/packages/post-package',
@@ -266,6 +291,22 @@ export const updatePackage = async (
 
 export const deletePackage = async (id: string): Promise<void> => {
   await apiClient.delete(`/packages/delete-package/${id}`)
+}
+
+export const approvePackage = async (id: string): Promise<PackageSummary> => {
+  const { data } = await apiClient.patch<{ message: string; data: ApiPackage }>(
+    `/packages/approve-package/${id}`,
+    {}
+  )
+  return mapApiPackageToPackageSummary(data.data)
+}
+
+export const unapprovePackage = async (id: string): Promise<PackageSummary> => {
+  const { data } = await apiClient.patch<{ message: string; data: ApiPackage }>(
+    `/packages/unapprove-package/${id}`,
+    {}
+  )
+  return mapApiPackageToPackageSummary(data.data)
 }
 
 // ─────────────────────────────────────────────

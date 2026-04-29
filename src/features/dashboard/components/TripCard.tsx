@@ -4,9 +4,18 @@ import { useMemo, useState } from 'react'
 interface TripCardProps {
   trip: Trip
   onClick?: () => void
+  secondaryActionLabel?: string
+  onSecondaryAction?: () => void
+  isSecondaryActionLoading?: boolean
 }
 
-const TripCard = ({ trip, onClick }: TripCardProps) => {
+const TripCard = ({
+  trip,
+  onClick,
+  secondaryActionLabel,
+  onSecondaryAction,
+  isSecondaryActionLoading = false,
+}: TripCardProps) => {
   const [imageFailed, setImageFailed] = useState(false)
 
   const formatPrice = (price: number) => {
@@ -40,6 +49,17 @@ const TripCard = ({ trip, onClick }: TripCardProps) => {
   }
 
   const displayTags = trip.tags.slice(0, 3)
+  const showSecondaryAction = Boolean(secondaryActionLabel && onSecondaryAction)
+
+  const handleViewClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    onClick?.()
+  }
+
+  const handleSecondaryActionClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    onSecondaryAction?.()
+  }
 
   return (
     <div
@@ -113,12 +133,26 @@ const TripCard = ({ trip, onClick }: TripCardProps) => {
         )}
 
         {/* Button */}
-        <button
-          type="button"
-          className="mt-auto px-3 py-2.5 bg-blue-600 text-white rounded-md text-xs font-semibold transition-all duration-200 w-full hover:bg-blue-700 hover:shadow-md active:scale-98"
-        >
-          View Full Plan
-        </button>
+        <div className={`mt-auto grid gap-2 ${showSecondaryAction ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <button
+            type="button"
+            onClick={handleViewClick}
+            className="px-3 py-2.5 bg-blue-600 text-white rounded-md text-xs font-semibold transition-all duration-200 w-full hover:bg-blue-700 hover:shadow-md active:scale-98"
+          >
+            View Full Plan
+          </button>
+
+          {showSecondaryAction && (
+            <button
+              type="button"
+              onClick={handleSecondaryActionClick}
+              disabled={isSecondaryActionLoading}
+              className="px-3 py-2.5 bg-amber-100 text-amber-800 rounded-md text-xs font-semibold transition-all duration-200 w-full hover:bg-amber-200 hover:shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSecondaryActionLoading ? 'Updating...' : secondaryActionLabel}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
