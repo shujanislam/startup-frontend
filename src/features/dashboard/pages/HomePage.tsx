@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Navbar } from '../components/Navbar'
 import { Sidebar } from '../components/Sidebar'
+import { HomeHeader } from '../components/HomeHeader'
 import { TripCard } from '../components/TripCard'
 import { FeaturedTripCard } from '../components/FeaturedTripCard'
 import { CreateTripModal } from '../components/CreateTripModal'
@@ -274,16 +274,8 @@ const HomePage = () => {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col bg-gray-50">
-        <Navbar
-          onSearch={handleSearch}
-          onSubmitTrip={handleSubmitTrip}
-          onLogout={handleLogout}
-          isLoggingOut={isLoggingOut}
-          isAdmin={isAdmin}
-        />
-
-        <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-screen bg-gray-50">
+        <div className="flex w-full overflow-hidden">
           <Sidebar
             onSortChange={handleSortChange}
             onSeasonChange={handleSeasonChange}
@@ -291,8 +283,21 @@ const HomePage = () => {
           />
 
           <main className="flex-1 overflow-y-auto bg-gray-50 pb-24">
+            <HomeHeader
+              userName={currentUser?.email?.split('@')[0] || 'User'}
+              userEmail={user?.email}
+              userPhotoURL={user?.photoURL}
+              searchQuery={searchQuery}
+              onSearch={handleSearch}
+              onSubmitTrip={handleSubmitTrip}
+              onLogout={handleLogout}
+              onProfileClick={() => navigate('/profile')}
+              isLoggingOut={isLoggingOut}
+              isAdmin={isAdmin}
+            />
+
             {(isAdmin || banner) && (
-              <div className="mx-auto w-full max-w-5xl px-4 pt-6 md:px-6 lg:px-8 md:pt-8">
+              <div className="mx-auto w-full max-w-5xl px-4 pt-6 md:px-6 lg:px-8">
                 {isAdmin && (
                 <div className="mb-6 rounded-[24px] border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 px-5 py-4 shadow-sm">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">

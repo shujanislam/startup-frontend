@@ -205,7 +205,11 @@ const FilterContent = ({
   </>
 )
 
-const Sidebar = ({ onSortChange, onSeasonChange, onBudgetChange }: SidebarProps) => {
+const Sidebar = ({
+  onSortChange,
+  onSeasonChange,
+  onBudgetChange,
+}: SidebarProps) => {
   const [activeSort, setActiveSort] = useState<SortType>('all')
   const [activeSeason, setActiveSeason] = useState<SeasonType>('all')
   const [maxBudget, setMaxBudget] = useState(10000)
@@ -230,8 +234,18 @@ const Sidebar = ({ onSortChange, onSeasonChange, onBudgetChange }: SidebarProps)
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden h-[calc(100vh-4rem)] w-64 shrink-0 overflow-hidden border-r border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:block">
-        <div className="border-b border-slate-200 px-5 py-3">
+      <aside className="hidden h-screen w-72 shrink-0 overflow-hidden border-r border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:block">
+        <div className="border-b border-slate-200 px-5 py-4">
+          <div className="mb-4 flex items-center gap-2 rounded-full pr-2">
+            <span className="grid h-9 w-9 place-items-center rounded-2xl bg-slate-950 text-white shadow-sm">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10.5h.01" />
+              </svg>
+            </span>
+            <span className="text-lg font-bold text-slate-950">BudgetYatra</span>
+          </div>
+
           <p className="text-sm font-bold text-slate-950">Filters</p>
           <p className="mt-1 text-xs text-slate-500">Refine your trip catalog</p>
         </div>
@@ -270,7 +284,7 @@ const Sidebar = ({ onSortChange, onSeasonChange, onBudgetChange }: SidebarProps)
           {/* Drawer panel */}
           <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[76vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl lg:hidden">
             <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <div>
+              <div className="w-full">
                 <h2 className="text-sm font-bold text-slate-950">Filters</h2>
                 <p className="mt-1 text-xs text-slate-500">Refine your trip catalog</p>
               </div>

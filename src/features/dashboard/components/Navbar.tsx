@@ -32,24 +32,8 @@ const Navbar = ({
   }
 
   return (
-    <nav className="sticky top-0 z-50 h-16 w-full border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
-      <div className="flex h-full w-full items-center justify-between px-6 md:px-10">
-        <button
-          type="button"
-          onClick={() => navigate('/home')}
-          className="flex shrink-0 items-center gap-2 rounded-full pr-2 ml-5 transition hover:opacity-80"
-          aria-label="Go to home"
-        >
-          <span className="grid h-9 w-9 place-items-center rounded-2xl bg-slate-950 text-white shadow-sm">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10.5h.01" />
-            </svg>
-          </span>
-          <span className="hidden text-lg font-bold text-slate-950 sm:inline">BudgetYatra</span>
-        </button>
-
-        <div className="flex min-w-0 items-center justify-end gap-6 sm:gap-3 mr-3">
+    <nav className="z-50 px-0 py-0">
+      <div className="flex min-w-0 items-center justify-end gap-6 sm:gap-3">
           <label className="group/search relative mr-3 flex h-10 w-10 cursor-text items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 text-slate-600 shadow-sm transition-all duration-300 ease-out hover:w-56 hover:border-blue-200 hover:bg-white hover:shadow-md focus-within:w-56 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100 sm:hover:w-72 sm:focus-within:w-72">
             <svg className="ml-3 h-4 w-4 shrink-0 transition-colors group-hover/search:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
@@ -119,7 +103,6 @@ const Navbar = ({
               </button>
             </div>
           </div>
-        </div>
       </div>
     </nav>
   )
