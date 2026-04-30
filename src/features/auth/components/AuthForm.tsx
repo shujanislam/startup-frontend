@@ -46,8 +46,8 @@ const AuthForm = ({
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-blue-600">
           
           </p>
-          <h1 className="mb-2 text-5xl font-serif leading-tight text-slate-900">
-            {isLogin ? <>Hey, <br />Login now !</> : <>Hey, <br />Create account !</>}
+          <h1 className="mb-2 text-5xl font-semibold font-display leading-tight text-slate-900">
+            {isLogin ? <>Hey, <br />Login now!</> : <>Hey, <br />Create your account!</>}
           </h1>
           {/* <p className="mb-6 text-sm leading-6 text-slate-600">
             {isLogin
@@ -56,9 +56,6 @@ const AuthForm = ({
           </p> */}
 
           <form className="grid gap-3" onSubmit={handleSubmit}>
-            <label className="text-sm font-semibold text-slate-600" htmlFor="email">
-            
-            </label>
             <input
               id="email"
               type="email"
@@ -69,10 +66,6 @@ const AuthForm = ({
               required
               className={inputClassName}
             />
-
-            <label className="text-sm font-semibold text-slate-600" htmlFor="password">
-              
-            </label>
             <input
               id="password"
               type="password"
