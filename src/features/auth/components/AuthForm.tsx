@@ -22,7 +22,7 @@ const AuthForm = ({
 
   const isLogin = mode === 'login'
   const inputClassName =
-    'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-900 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100'
+    'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 mt-2 mb-2 text-sm text-slate-900 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100'
   const buttonClassName =
     'w-full rounded-2xl px-4 py-3.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60'
 
@@ -46,15 +46,9 @@ const AuthForm = ({
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-blue-600">
           
           </p>
-          <h1 className="mb-2 text-5xl font-semibold font-display leading-tight text-slate-900">
+          <h1 className="mb-4 text-5xl font-semibold font-display leading-tight text-slate-900">
             {isLogin ? <>Hey, <br />Login now!</> : <>Hey, <br />Create your account!</>}
           </h1>
-          {/* <p className="mb-6 text-sm leading-6 text-slate-600">
-            {isLogin
-              ? 'Log in to continue to your dashboard.'
-              : 'Sign up to access the secured app area.'}
-          </p> */}
-
           <form className="grid gap-3" onSubmit={handleSubmit}>
             <input
               id="email"
@@ -81,6 +75,10 @@ const AuthForm = ({
             {errorMessage ? (
               <p className="mt-0.5 text-sm text-red-700">{errorMessage}</p>
             ) : null}
+
+            <div className="mt-2 mb-2 justify-center items-center">
+              <a href="#" className="text-sm text-gray-500">Forgot Password? /  Reset</a>
+            </div>
 
             <button
               type="submit"
