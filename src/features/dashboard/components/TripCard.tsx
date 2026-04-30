@@ -51,11 +51,6 @@ const TripCard = ({
   const displayTags = trip.tags.slice(0, 3)
   const showSecondaryAction = Boolean(secondaryActionLabel && onSecondaryAction)
 
-  const handleViewClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation()
-    onClick?.()
-  }
-
   const handleSecondaryActionClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
     onSecondaryAction?.()
@@ -63,68 +58,55 @@ const TripCard = ({
 
   return (
     <div
-      className="flex flex-col bg-white border border-gray-100 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer h-full shadow-sm hover:shadow-lg hover:border-gray-300 group"
+      className="group relative h-72 cursor-pointer overflow-hidden rounded-xl border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-lg"
       onClick={onClick}
     >
-      {/* Image Section with Badges */}
-      <div className="relative w-full h-44 overflow-hidden bg-gray-100">
-        {hasUsableImage ? (
-          <img
-            src={trip.imageUrl}
-            alt={trip.name}
-            onError={() => setImageFailed(true)}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className={`w-full h-full bg-linear-to-br ${fallbackBackground} flex items-center justify-center`}>
-            <span className="text-white/90 text-sm font-semibold px-3 text-center">{trip.destination}</span>
-          </div>
-        )}
-
-        {/* Top Right: Budget Badge */}
-        <div className="absolute top-2 right-2 flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-xs font-semibold text-green-600 border border-white/50 z-10">
-          {formatPrice(trip.price)}
+      {hasUsableImage ? (
+        <img
+          src={trip.imageUrl}
+          alt={trip.name}
+          onError={() => setImageFailed(true)}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      ) : (
+        <div className={`h-full w-full bg-linear-to-br ${fallbackBackground} flex items-center justify-center`}>
+          <span className="px-3 text-center text-sm font-semibold text-white/90">{trip.destination}</span>
         </div>
+      )}
 
-        {/* Top Left: Season Badge */}
-        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm px-2.5 py-1.5 rounded-lg text-white border border-white/20 z-10">
-          <span className="text-sm">{getSeasonEmoji(trip.season)}</span>
-          <span className="text-xs font-semibold">
-            {trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}
-          </span>
-        </div>
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/5 via-black/10 to-black/75" />
+
+      <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-lg border border-white/20 bg-black/50 px-2.5 py-1 text-white backdrop-blur-sm">
+        <span className="text-sm">{getSeasonEmoji(trip.season)}</span>
+        <span className="text-xs font-semibold">
+          {trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}
+        </span>
       </div>
 
-      {/* Content Section */}
-      <div className="p-4 flex flex-col flex-1 gap-3">
-        <h3 className="text-base font-semibold text-gray-900 leading-snug">
-          {trip.name}
-        </h3>
+      {showSecondaryAction && (
+        <button
+          type="button"
+          onClick={handleSecondaryActionClick}
+          disabled={isSecondaryActionLoading}
+          className="absolute right-3 top-3 z-10 rounded-lg border border-amber-200 bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSecondaryActionLoading ? 'Updating...' : secondaryActionLabel}
+        </button>
+      )}
 
-        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-          {trip.description}
-        </p>
-
-        {/* Info Row */}
-        <div className="flex gap-2 flex-wrap text-xs text-gray-600">
-          <span className="flex items-center gap-1 whitespace-nowrap">
-            📍 {trip.destination}
-          </span>
-          <span className="flex items-center gap-1 whitespace-nowrap">
-            ⏱ {trip.duration}d
-          </span>
-          <span className="flex items-center gap-1 whitespace-nowrap">
-            ⭐ {trip.rating}
-          </span>
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-3 text-white">
+        <h3 className="line-clamp-1 text-base font-semibold leading-snug">{trip.name}</h3>
+        <div className="mt-1 flex items-center justify-between text-sm">
+          <span className="font-semibold text-emerald-300">{formatPrice(trip.price)}</span>
+          <span className="font-medium">⭐ {trip.rating}</span>
         </div>
 
-        {/* Tags Row */}
         {displayTags.length > 0 && (
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {displayTags.map((tag) => (
               <span
                 key={tag}
-                className="inline-block px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-medium whitespace-nowrap"
+                className="rounded-full border border-white/25 bg-white/15 px-2 py-0.5 text-[11px] font-medium text-white"
               >
                 {tag}
               </span>
@@ -132,27 +114,6 @@ const TripCard = ({
           </div>
         )}
 
-        {/* Button */}
-        <div className={`mt-auto grid gap-2 ${showSecondaryAction ? 'grid-cols-2' : 'grid-cols-1'}`}>
-          <button
-            type="button"
-            onClick={handleViewClick}
-            className="px-3 py-2.5 bg-blue-600 text-white rounded-md text-xs font-semibold transition-all duration-200 w-full hover:bg-blue-700 hover:shadow-md active:scale-98"
-          >
-            View Full Plan
-          </button>
-
-          {showSecondaryAction && (
-            <button
-              type="button"
-              onClick={handleSecondaryActionClick}
-              disabled={isSecondaryActionLoading}
-              className="px-3 py-2.5 bg-amber-100 text-amber-800 rounded-md text-xs font-semibold transition-all duration-200 w-full hover:bg-amber-200 hover:shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isSecondaryActionLoading ? 'Updating...' : secondaryActionLabel}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   )
