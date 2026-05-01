@@ -6,17 +6,6 @@ interface TripDetailHeroProps {
   onBack: () => void
 }
 
-const getSeasonEmoji = (season: string) => {
-  const seasonMap: Record<string, string> = {
-    summer: '☀️',
-    winter: '❄️',
-    monsoon: '🌧️',
-    autumn: '🍂',
-    all: '🌍',
-  }
-  return seasonMap[season] || '🌍'
-}
-
 const TripDetailHero = ({ trip, onBack }: TripDetailHeroProps) => {
   const [imageFailed, setImageFailed] = useState(false)
 
@@ -39,7 +28,7 @@ const TripDetailHero = ({ trip, onBack }: TripDetailHeroProps) => {
   const hasUsableImage = trip.imageUrl.trim().length > 0 && !imageFailed
 
   return (
-    <div className="relative w-full h-48 md:h-72 lg:h-96 overflow-hidden">
+    <div className="relative h-[40vh] min-h-[280px] w-full overflow-hidden md:h-80 lg:h-[28rem]">
       {/* Background Image */}
       {hasUsableImage ? (
         <img
@@ -67,13 +56,13 @@ const TripDetailHero = ({ trip, onBack }: TripDetailHeroProps) => {
       </button>
 
       {/* Season Badge (Bottom Left) */}
-      <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5 z-20">
-        <span>{getSeasonEmoji(trip.season)}</span>
+      <div className="absolute bottom-10 left-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5 z-20 md:bottom-6">
+        {/* <span>{getSeasonEmoji(trip.season)}</span> */}
         <span>{trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}</span>
       </div>
 
       {/* Budget Badge (Bottom Right) */}
-      <div className="absolute bottom-4 right-4 bg-white text-green-600 px-3 py-1.5 rounded-full text-sm font-bold z-20">
+      <div className="absolute bottom-10 right-4 bg-white text-green-600 px-3 py-1.5 rounded-full text-sm font-bold z-20 md:bottom-6">
         {formatPrice(trip.price)}
       </div>
     </div>

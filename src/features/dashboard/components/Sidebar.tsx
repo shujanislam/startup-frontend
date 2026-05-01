@@ -121,7 +121,7 @@ const FilterContent = ({
           Sort By
         </h3>
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 my-3">
         {sortOptions.map((option) => (
           <button
             key={option.id}
@@ -146,13 +146,11 @@ const FilterContent = ({
       </div>
     </div>
 
-    <div className="my-3 h-px bg-slate-200" />
-
-    <div>
+    <div className="mt-6">
       <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
         Season
       </h3>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 my-3">
         {seasonOptions.map((option) => (
           <button
             key={option.id}
@@ -177,9 +175,7 @@ const FilterContent = ({
       </div>
     </div>
 
-    <div className="my-3 h-px bg-slate-200" />
-
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 mt-6">
       <div className="mb-2 flex items-center justify-between gap-3">
         <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
           Max Budget
@@ -235,7 +231,7 @@ const Sidebar = ({
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden h-screen w-72 shrink-0 overflow-hidden border-r border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:block">
-        <div className="border-b border-slate-200 px-5 py-4">
+        <div className="border-slate-200 px-5 py-4">
           <div className="mb-4 flex items-center gap-2 rounded-full pr-2">
             <span className="grid h-9 w-9 place-items-center rounded-2xl bg-slate-950 text-white shadow-sm">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -245,9 +241,6 @@ const Sidebar = ({
             </span>
             <span className="text-lg font-bold text-slate-950">BudgetYatra</span>
           </div>
-
-          <p className="text-sm font-bold text-slate-950">Filters</p>
-          <p className="mt-1 text-xs text-slate-500">Refine your trip catalog</p>
         </div>
         <div className="px-3 py-3">
           <FilterContent
@@ -265,7 +258,7 @@ const Sidebar = ({
       <button
         type="button"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-slate-950 text-white shadow-lg transition hover:bg-slate-800 active:scale-95 lg:hidden"
+        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-slate-800 active:scale-95 lg:hidden"
         aria-label="Toggle filters"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,11 +276,7 @@ const Sidebar = ({
           />
           {/* Drawer panel */}
           <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[76vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl lg:hidden">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <div className="w-full">
-                <h2 className="text-sm font-bold text-slate-950">Filters</h2>
-                <p className="mt-1 text-xs text-slate-500">Refine your trip catalog</p>
-              </div>
+            <div className="flex items-center justify-between  border-slate-200 px-5 py-4">
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}

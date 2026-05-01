@@ -49,6 +49,7 @@ export interface ApiHotel {
   _id: string
   name: string
   address: string
+  phoneNumber?: string
   budget: number
 }
 
@@ -123,12 +124,13 @@ function mapSortTypeToBackend(sortBy: SortType): BackendSort {
 function mapApiHotel(h: ApiHotel | string): Hotel {
   if (typeof h === 'string') {
     // Backend returned an unpopulated reference — surface a safe placeholder.
-    return { id: h, name: 'Unknown Hotel', address: '', budget: 0 }
+    return { id: h, name: 'Unknown Hotel', address: '', phone: '', budget: 0 }
   }
   return {
     id:      h._id,
     name:    h.name,
     address: h.address,
+    phone:   h.phoneNumber ?? '',
     budget:  h.budget,
   }
 }
@@ -307,6 +309,15 @@ export const unapprovePackage = async (id: string): Promise<PackageSummary> => {
     {}
   )
   return mapApiPackageToPackageSummary(data.data)
+}
+
+export const revealPackage = async (id: string): Promise<void> => {
+  await apiClient.patch(`/packages/reveal-package/${id}`, {})
+}
+
+export const fetchRevealedPackageIds = async (): Promise<string[]> => {
+  const { data } = await apiClient.get<{ data: Array<{ _id: string }> }>('/profile/get-revealed-packages')
+  return (data.data ?? []).map((pkg) => pkg._id)
 }
 
 // ─────────────────────────────────────────────

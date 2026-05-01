@@ -15,61 +15,54 @@ const TripDetailOverview = ({ trip }: TripDetailOverviewProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-      {/* Card 1: Trip Overview */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">📋 Trip Overview</h2>
+    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-gray-300 bg-white text-gray-500">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 6.75h8M8 12h8m-8 5.25h5M5.25 3h13.5A2.25 2.25 0 0 1 21 5.25v13.5A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18.75V5.25A2.25 2.25 0 0 1 5.25 3Z" />
+            </svg>
+          </span>
+          <h2 className="text-base font-semibold text-gray-900">Trip Overview</h2>
+        </div>
+
         <div className="space-y-2">
-          <div className="flex justify-between py-2 px-0 border-b border-gray-200">
-            <span className="text-gray-600 text-sm">Destination</span>
-            <span className="text-gray-900 font-semibold text-sm">{trip.destination}</span>
-          </div>
-          <div className="flex justify-between py-2 px-0 border-b border-gray-200">
-            <span className="text-gray-600 text-sm">Duration</span>
-            <span className="text-gray-900 font-semibold text-sm">{trip.duration} days</span>
-          </div>
-          <div className="flex justify-between py-2 px-0 border-b border-gray-200">
-            <span className="text-gray-600 text-sm">Budget</span>
-            <span className="text-gray-900 font-semibold text-sm">{formatPrice(trip.price)}</span>
-          </div>
-          <div className="flex justify-between py-2 px-0 border-b border-gray-200">
-            <span className="text-gray-600 text-sm">Season</span>
-            <span className="text-gray-900 font-semibold text-sm">
-              {trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}
-            </span>
-          </div>
-          <div className="flex justify-between py-2 px-0 border-b border-gray-200">
-            <span className="text-gray-600 text-sm">Start Date</span>
-            <span className="text-gray-900 font-semibold text-sm">{formatDate(trip.startDate)}</span>
-          </div>
-          <div className="flex justify-between py-2 px-0">
-            <span className="text-gray-600 text-sm">End Date</span>
-            <span className="text-gray-900 font-semibold text-sm">
-              {formatDate(trip.endDate || trip.startDate)}
-            </span>
-          </div>
+          {[
+            ['Destination', trip.destination],
+            ['Duration', `${trip.duration} days`],
+            ['Budget', formatPrice(trip.price)],
+            ['Season', trip.season.charAt(0).toUpperCase() + trip.season.slice(1)],
+            ['Start Date', formatDate(trip.startDate)],
+            ['End Date', formatDate(trip.endDate || trip.startDate)],
+          ].map(([label, value]) => (
+            <div key={label} className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+              <span className="text-xs font-medium text-gray-500 md:text-sm">{label}</span>
+              <span className="text-xs font-semibold text-gray-800 md:text-sm">{value}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Card 2: Requirements */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">📌 Requirements</h2>
-        <div className="space-y-4">
-          <div>
-            <p className="text-sm text-gray-600 mb-2">Identification</p>
-            <p className="text-sm font-semibold text-gray-900">
-              {trip.identification ? '✅ Yes, carry ID proof' : '❌ No ID required'}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <span className="grid h-8 w-8 place-items-center rounded-full border border-gray-300 bg-white text-gray-500">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          </span>
+          <h2 className="text-base font-semibold text-gray-900">Requirements</h2>
+        </div>
+
+        <div className="space-y-3">
+          <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+            <p className="text-xs font-medium text-gray-500">Identification</p>
+            <p className="mt-1 text-sm font-semibold text-gray-800">
+              {trip.identification ? 'Carry ID proof' : 'No ID required'}
             </p>
           </div>
-          <div>
-            <p className="text-sm text-gray-600 mb-2">Permit</p>
-            <p
-              className={`text-sm font-semibold ${
-                trip.permit === 'None' ? 'text-gray-500' : 'text-gray-900'
-              }`}
-            >
-              {trip.permit}
-            </p>
+          <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+            <p className="text-xs font-medium text-gray-500">Permit</p>
+            <p className="mt-1 text-sm font-semibold text-gray-800">{trip.permit}</p>
           </div>
         </div>
       </div>

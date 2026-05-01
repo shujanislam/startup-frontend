@@ -398,10 +398,10 @@ const HomePage = () => {
 
             <section className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6 lg:px-8 md:py-8">
               <div className="mb-6 flex items-baseline gap-3">
-                <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Approved Trips</h2>
-                {meta && (
-                  <span className="text-sm font-medium text-gray-500">({meta.total} found)</span>
-                )}
+                <h2 className="text-sm uppercase font-bold text-gray-900 md:text-xl">Explore Trips</h2>
+                {/* {meta && ( */}
+                {/*   <span className="text-sm font-medium text-gray-500">({meta.total} found)</span> */}
+                {/* )} */}
               </div>
 
               {isAdmin && (
