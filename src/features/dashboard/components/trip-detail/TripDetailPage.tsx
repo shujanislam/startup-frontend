@@ -83,7 +83,8 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-24">
       <TripDetailHero trip={trip} onBack={handleBack} />
-      <div className="max-w-3xl mx-auto w-full px-4 md:px-6 lg:px-8">
+      <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0">
+        <div className="max-w-3xl mx-auto w-full px-4 md:px-6 lg:px-8">
         <TripDetailTitle trip={trip} />
         <TripDetailOverview trip={trip} />
         <TripDetailSpots trip={trip} />
@@ -92,6 +93,7 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
         <TripDetailLinks trip={trip} />
         <TripDetailAdditional trip={trip} />
         <TripDetailCreator trip={trip} />
+        </div>
       </div>
       <TripDetailBottomBar trip={trip} />
     </div>

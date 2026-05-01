@@ -11,18 +11,16 @@ const TripDetailCreator = ({ trip }: TripDetailCreatorProps) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
-        {/* Submitted By */}
-        <div>
-          <p className="text-xs text-gray-600 uppercase font-semibold">✍️ Submitted by</p>
-          <p className="text-gray-900 font-semibold text-sm mt-2">{trip.createdBy}</p>
+    <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Submitted by</p>
+          <p className="mt-1 text-sm font-semibold text-gray-900">{trip.createdBy}</p>
         </div>
 
-        {/* Added On */}
-        <div>
-          <p className="text-xs text-gray-600 uppercase font-semibold">📅 Added on</p>
-          <p className="text-gray-900 font-semibold text-sm mt-2">{formatDate(trip.createdAt)}</p>
+        <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Added on</p>
+          <p className="mt-1 text-sm font-semibold text-gray-900">{formatDate(trip.createdAt)}</p>
         </div>
       </div>
     </div>

@@ -34,7 +34,7 @@ const HomeHeader = ({
     <section className="mx-auto w-full max-w-5xl px-4 pt-6 md:px-6 lg:px-8 md:pt-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
+          <h1 className="mt-2 text-lg font-semibold tracking-tight text-slate-900 md:text-3xl">
             <span className="font-light">Hi</span> {userName},
           </h1>
           <h1 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
@@ -54,7 +54,6 @@ const HomeHeader = ({
             <span>{getInitials(userEmail)}</span>
           )}
         </button>
-
         <div className="hidden md:block">
           <Navbar
             onSearch={onSearch}

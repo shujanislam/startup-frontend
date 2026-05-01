@@ -258,7 +258,7 @@ const Sidebar = ({
       <button
         type="button"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-slate-950 text-white shadow-lg transition hover:bg-slate-800 active:scale-95 lg:hidden"
+        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-transparent text-white shadow-lg transition hover:bg-slate-800 active:scale-95 lg:hidden"
         aria-label="Toggle filters"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,10 +277,6 @@ const Sidebar = ({
           {/* Drawer panel */}
           <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[76vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl lg:hidden">
             <div className="flex items-center justify-between  border-slate-200 px-5 py-4">
-              <div className="w-full">
-                <h2 className="text-sm font-bold text-slate-950">Filters</h2>
-                <p className="mt-1 text-xs text-slate-500">Refine your trip catalog</p>
-              </div>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
