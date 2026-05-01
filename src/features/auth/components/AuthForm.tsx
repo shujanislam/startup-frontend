@@ -21,71 +21,103 @@ const AuthForm = ({
   const [password, setPassword] = useState('')
 
   const isLogin = mode === 'login'
+
   const inputClassName =
-    'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 mt-2 mb-2 text-sm text-slate-900 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100'
+    'w-full rounded-md border border-slate-200 bg-white px-4 py-3.5 mt-2 mb-2 text-md text-slate-900 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100'
+
   const buttonClassName =
-    'w-full rounded-2xl px-4 py-3.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60'
+    'w-full rounded-md px-4 py-4 text-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-60'
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await onSubmit(email, password)
+    await onSubmit(email.trim(), password.trim())
   }
 
   return (
-    <section className="grid min-h-screen place-items-center bg-linear-to-b from-slate-50 to-blue-50 px-3 py-4 sm:px-5 sm:py-7">
-      <div className="grid w-full max-w-6xl overflow-hidden rounded-[22px] border border-slate-200/70 bg-white/85 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:rounded-[30px]">
+    <section className="relative grid min-h-screen place-items-center px-3 py-4 sm:px-5 sm:py-7">
+
+      {/* 🔥 MOBILE BACKGROUND IMAGE ONLY */}
+      <div
+        className="fixed inset-0 -z-10 lg:hidden"
+        style={{
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+
+      <div className="grid w-full max-w-6xl overflow-hidden rounded-[22px] border border-slate-200/70 shadow-[0_30px_80px_rgba(15,23,42,0.12)] lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:rounded-[30px]">
+
+        {/* 🔥 LEFT IMAGE (DESKTOP ONLY) */}
         <aside className="relative hidden min-h-[620px] overflow-hidden bg-slate-900 lg:block">
           <img
             className="absolute inset-0 h-full w-full object-cover"
             src={heroImage}
-            alt="Collaboration and product planning illustration"
+            alt="Illustration"
           />
         </aside>
 
-        <div className="grid content-center bg-white/95 p-6 sm:p-8 lg:p-14">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-blue-600">
-          
-          </p>
-          <h1 className="mb-4 text-5xl font-semibold font-display leading-tight text-slate-900">
-            {isLogin ? <>Hey, <br />Login now!</> : <>Hey, <br />Create your account!</>}
+        {/* 🔥 FORM */}
+        <div
+          className="
+            grid content-center p-6 sm:p-8 lg:p-14
+            bg-white/60 backdrop-blur-md border border-white/50 shadow-lg
+            lg:bg-white/95 lg:backdrop-blur-none lg:border-none lg:shadow-none
+          "
+        >
+          <h1 className="mb-4 text-6xl font-semibold font-display leading-tight text-slate-900">
+            {isLogin ? (
+              <>
+                Hey, <br /> Login now!
+              </>
+            ) : (
+              <>
+                Hey, <br /> Create your account!
+              </>
+            )}
           </h1>
+
           <form className="grid gap-3" onSubmit={handleSubmit}>
             <input
-              id="email"
               type="email"
               autoComplete="email"
               placeholder="Email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className={inputClassName}
             />
+
             <input
-              id="password"
               type="password"
               autoComplete={isLogin ? 'current-password' : 'new-password'}
               placeholder="Password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
               className={inputClassName}
             />
 
-            {errorMessage ? (
-              <p className="mt-0.5 text-sm text-red-700">{errorMessage}</p>
-            ) : null}
+            {errorMessage && (
+              <p className="text-sm text-red-600">{errorMessage}</p>
+            )}
 
-            <div className="mt-2 mb-2 justify-center items-center">
-              <a href="#" className="text-sm text-gray-500">Forgot Password? /  Reset</a>
+            <div className="text-sm text-gray-500">
+              Forgot Password? /{' '}
+              <span className="underline cursor-pointer">Reset</span>
             </div>
 
             <button
               type="submit"
-              className={`${buttonClassName} bg-linear-to-br from-blue-600 to-blue-500 text-white shadow-[0_12px_24px_rgba(37,99,235,0.28)] hover:-translate-y-px disabled:hover:translate-y-0`}
               disabled={isLoading}
+              className={`${buttonClassName} bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg hover:scale-[1.01]`}
             >
-              {isLogin ? 'Sign In' : 'Sign Up'}
+              {isLoading
+                ? 'Please wait...'
+                : isLogin
+                ? 'Sign In'
+                : 'Sign Up'}
             </button>
           </form>
 
@@ -97,9 +129,9 @@ const AuthForm = ({
 
           <button
             type="button"
-            className={`${buttonClassName} border border-slate-200 bg-white text-slate-900 hover:-translate-y-px hover:bg-slate-50 disabled:hover:translate-y-0`}
-            onClick={() => void onGoogleSignIn()}
+            onClick={onGoogleSignIn}
             disabled={isLoading}
+            className={`${buttonClassName} border border-slate-200 bg-white text-slate-900 hover:bg-slate-50`}
           >
             Continue with Google
           </button>
@@ -107,7 +139,7 @@ const AuthForm = ({
           <p className="mt-5 text-center text-sm text-slate-500">
             {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
             <Link
-              className="font-semibold text-blue-600 transition hover:text-blue-700"
+              className="font-semibold text-blue-600 hover:text-blue-700"
               to={isLogin ? '/signup' : '/login'}
             >
               {isLogin ? 'Sign up' : 'Log in'}

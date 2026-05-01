@@ -32,7 +32,7 @@ const Navbar = ({
   }
 
   return (
-    <nav className="z-50 px-0 py-0">
+    <nav className="relative z-50 isolate overflow-visible px-0 py-0">
       <div className="flex min-w-0 items-center justify-end gap-6 sm:gap-3">
           <label className="group/search relative mr-3 flex h-10 w-10 cursor-text items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50 text-slate-600 shadow-sm transition-all duration-300 ease-out hover:w-56 hover:border-blue-200 hover:bg-white hover:shadow-md focus-within:w-56 focus-within:border-blue-500 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-100 sm:hover:w-72 sm:focus-within:w-72">
             <svg className="ml-3 h-4 w-4 shrink-0 transition-colors group-hover/search:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -60,7 +60,7 @@ const Navbar = ({
             </svg>
           </button>
 
-          <div className="group/profile relative">
+          <div className="group/profile relative z-50">
             <button
               type="button"
               className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-transparent bg-slate-200 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-300 focus:border-blue-500 focus:outline-none"
@@ -73,7 +73,7 @@ const Navbar = ({
               )}
             </button>
 
-            <div className="invisible absolute right-0 top-11 w-52 translate-y-2 rounded-2xl border border-slate-200 bg-white p-2 opacity-0 shadow-xl transition-all duration-200 group-hover/profile:visible group-hover/profile:translate-y-0 group-hover/profile:opacity-100 group-focus-within/profile:visible group-focus-within/profile:translate-y-0 group-focus-within/profile:opacity-100">
+            <div className="invisible absolute right-0 top-full z-60 mt-3 w-52 translate-y-2 rounded-2xl border border-slate-200 bg-white p-2 opacity-0 shadow-2xl transition-all duration-200 group-hover/profile:visible group-hover/profile:translate-y-0 group-hover/profile:opacity-100 group-focus-within/profile:visible group-focus-within/profile:translate-y-0 group-focus-within/profile:opacity-100">
               <div className="border-b border-slate-100 px-3 py-2">
                 <p className="truncate text-sm font-semibold text-slate-900">{user?.email || 'User'}</p>
                 <p className="mt-0.5 text-xs text-slate-500">Account menu</p>
