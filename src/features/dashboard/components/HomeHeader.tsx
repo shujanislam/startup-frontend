@@ -37,7 +37,7 @@ const HomeHeader = ({
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
             <span className="font-light">Hi</span> {userName},
           </h1>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+          <h1 className="mt-2 text-2xl md:text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
             Where do you want to go?
           </h1>
         </div>
