@@ -258,7 +258,7 @@ const Sidebar = ({
       <button
         type="button"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-transparent text-white shadow-lg transition hover:bg-slate-800 active:scale-95 lg:hidden"
+        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-slate-800 active:scale-95 lg:hidden"
         aria-label="Toggle filters"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

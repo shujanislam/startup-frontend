@@ -37,17 +37,6 @@ const TripCard = ({
 
   const hasUsableImage = trip.imageUrl.trim().length > 0 && !imageFailed
 
-  const getSeasonEmoji = (season: string) => {
-    const seasonMap: Record<string, string> = {
-      summer: '☀️',
-      winter: '❄️',
-      monsoon: '🌧️',
-      autumn: '🍂',
-      all: '🌍',
-    }
-    return seasonMap[season] || '🌍'
-  }
-
   const displayTags = trip.tags.slice(0, 3)
   const showSecondaryAction = Boolean(secondaryActionLabel && onSecondaryAction)
 
@@ -77,7 +66,6 @@ const TripCard = ({
       <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/5 via-black/10 to-black/75" />
 
       <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-lg border border-white/20 bg-black/50 px-2.5 py-1 text-white backdrop-blur-sm">
-        <span className="text-sm">{getSeasonEmoji(trip.season)}</span>
         <span className="text-xs font-semibold">
           {trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}
         </span>

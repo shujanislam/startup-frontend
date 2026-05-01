@@ -2,9 +2,17 @@ import type { TripDetail } from '../../types/trip'
 
 interface TripDetailBottomBarProps {
   trip: TripDetail
+  isRevealed: boolean
+  isUnlocking: boolean
+  onUnlockTrip: () => void
 }
 
-const TripDetailBottomBar = ({ trip }: TripDetailBottomBarProps) => {
+const TripDetailBottomBar = ({
+  trip,
+  isRevealed,
+  isUnlocking,
+  onUnlockTrip,
+}: TripDetailBottomBarProps) => {
   const formatPrice = (price: number) => {
     return `₹${price.toLocaleString()}`
   }
@@ -36,9 +44,11 @@ const TripDetailBottomBar = ({ trip }: TripDetailBottomBarProps) => {
 
           <button
             type="button"
-            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 md:px-6 md:text-sm"
+            onClick={onUnlockTrip}
+            disabled={isRevealed || isUnlocking}
+            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 md:px-6 md:text-sm"
           >
-            Book This Trip
+            {isRevealed ? 'Trip Unlocked' : isUnlocking ? 'Unlocking...' : 'Unlock Trip'}
           </button>
         </div>
       </div>
