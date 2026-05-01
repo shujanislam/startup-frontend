@@ -146,7 +146,7 @@ const FilterContent = ({
       </div>
     </div>
 
-    <div className="mt-2">
+    <div className="mt-6">
       <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
         Season
       </h3>
@@ -175,7 +175,7 @@ const FilterContent = ({
       </div>
     </div>
 
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 mt-2">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 mt-6">
       <div className="mb-2 flex items-center justify-between gap-3">
         <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
           Max Budget
