@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import type { TripDetail } from '../../types/trip'
-import { fetchPackageById } from '../../services/packageApi'
+import { fetchPackageById, fetchRevealedPackageIds, revealPackage } from '../../services/packageApi'
 import { TripDetailHero } from './TripDetailHero'
 import { TripDetailTitle } from './TripDetailTitle'
 import { TripDetailOverview } from './TripDetailOverview'
@@ -22,6 +22,9 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   const [trip, setTrip] = useState<TripDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [unlockError, setUnlockError] = useState<string | null>(null)
+  const [isRevealed, setIsRevealed] = useState(false)
+  const [isUnlocking, setIsUnlocking] = useState(false)
 
   const handleBack = () => {
     navigate('/home')
@@ -32,11 +35,16 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
       setIsLoading(true)
       setError(null)
       try {
-        const data = await fetchPackageById(tripId)
+        const [data, revealedIds] = await Promise.all([
+          fetchPackageById(tripId),
+          fetchRevealedPackageIds(),
+        ])
+
         if (!data) {
           setError('Trip not found')
         } else {
           setTrip(data)
+          setIsRevealed(revealedIds.includes(tripId))
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Failed to load trip details'
@@ -47,6 +55,25 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
     }
     loadTrip()
   }, [tripId])
+
+  const handleUnlockTrip = async () => {
+    if (isRevealed || isUnlocking) {
+      return
+    }
+
+    setUnlockError(null)
+    setIsUnlocking(true)
+
+    try {
+      await revealPackage(tripId)
+      setIsRevealed(true)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to unlock trip details'
+      setUnlockError(msg)
+    } finally {
+      setIsUnlocking(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -88,14 +115,24 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
         <TripDetailTitle trip={trip} />
         <TripDetailOverview trip={trip} />
         <TripDetailSpots trip={trip} />
-        <TripDetailHotels trip={trip} />
-        <TripDetailVehicles trip={trip} />
-        <TripDetailLinks trip={trip} />
         <TripDetailAdditional trip={trip} />
+        <TripDetailHotels trip={trip} isRevealed={isRevealed} />
+        <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
+        <TripDetailLinks trip={trip} />
         <TripDetailCreator trip={trip} />
+        {unlockError && (
+          <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {unlockError}
+          </p>
+        )}
         </div>
       </div>
-      <TripDetailBottomBar trip={trip} />
+      <TripDetailBottomBar
+        trip={trip}
+        isRevealed={isRevealed}
+        isUnlocking={isUnlocking}
+        onUnlockTrip={handleUnlockTrip}
+      />
     </div>
   )
 }

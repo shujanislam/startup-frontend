@@ -2,9 +2,10 @@ import type { TripDetail } from '../../types/trip'
 
 interface TripDetailHotelsProps {
   trip: TripDetail
+  isRevealed: boolean
 }
 
-const TripDetailHotels = ({ trip }: TripDetailHotelsProps) => {
+const TripDetailHotels = ({ trip, isRevealed }: TripDetailHotelsProps) => {
   const formatPrice = (price: number) => {
     return `₹${price.toLocaleString()}`
   }
@@ -20,7 +21,8 @@ const TripDetailHotels = ({ trip }: TripDetailHotelsProps) => {
         <h2 className="text-base font-semibold text-gray-900">Accommodation</h2>
       </div>
       {trip.hotels.length > 0 ? (
-        <div className="space-y-3">
+        <div className="relative">
+          <div className={`space-y-3 transition ${isRevealed ? '' : 'pointer-events-none select-none blur-[5px]'}`}>
           {trip.hotels.map((hotel) => (
             <div
               key={hotel.id}
@@ -29,12 +31,21 @@ const TripDetailHotels = ({ trip }: TripDetailHotelsProps) => {
               <div className="flex-1">
                 <p className="text-sm font-semibold text-gray-900">{hotel.name}</p>
                 <p className="mt-1 text-xs text-gray-600">{hotel.address || 'Address not provided'}</p>
+                <p className="mt-1 text-xs text-gray-600">{hotel.phone || 'Phone number not provided'}</p>
               </div>
               <p className="ml-4 whitespace-nowrap text-sm font-bold text-emerald-600">
                 {formatPrice(hotel.budget)}
               </p>
             </div>
           ))}
+          </div>
+          {!isRevealed && (
+            <div className="absolute inset-0 grid place-items-center rounded-lg bg-white/35">
+              <div className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-semibold text-gray-600">
+                Unlock trip to view accommodation details
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <p className="text-sm italic text-gray-500">No accommodation details added yet</p>
