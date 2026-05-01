@@ -1,5 +1,7 @@
 import { useState, type ChangeEvent, type ReactNode } from 'react'
 import type { SortType, SeasonType } from '../types/trip'
+import logoBlack from '../../../assets/logo-black.png'
+import favicon from '../../../assets/favicon.png'
 
 interface SidebarProps {
   onSortChange?: (sortType: SortType) => void
@@ -232,14 +234,8 @@ const Sidebar = ({
       {/* Desktop Sidebar */}
       <aside className="hidden h-screen w-72 shrink-0 overflow-hidden border-r border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:block">
         <div className="border-slate-200 px-5 py-4">
-          <div className="mb-4 flex items-center gap-2 rounded-full pr-2">
-            <span className="grid h-9 w-9 place-items-center rounded-2xl bg-slate-950 text-white shadow-sm">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10.5h.01" />
-              </svg>
-            </span>
-            <span className="text-lg font-bold text-slate-950">BudgetYatra</span>
+          <div className="flex items-center gap-2 rounded-full pr-2">
+            <img src={logoBlack} alt="Alpine" className="h-22 w-auto" />
           </div>
         </div>
         <div className="px-3 py-3">
@@ -258,12 +254,10 @@ const Sidebar = ({
       <button
         type="button"
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-slate-800 active:scale-95 lg:hidden"
+        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-white text-white shadow-lg transition hover:bg-slate-100 active:scale-95 lg:hidden"
         aria-label="Toggle filters"
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-        </svg>
+        <img src={favicon} alt="Open filters" className="h-7 w-7" />
       </button>
 
       {/* Mobile Drawer */}
