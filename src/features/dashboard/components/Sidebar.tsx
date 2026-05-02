@@ -233,7 +233,7 @@ const Sidebar = ({
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden h-screen w-72 shrink-0 overflow-hidden border-r border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:block">
-        <div className="border-slate-200 px-5 py-4">
+        <div className="border-slate-200 px-5">
           <div className="flex items-center gap-2 rounded-full pr-2">
             <img src={logoBlack} alt="Alpine" className="h-22 w-auto" />
           </div>
