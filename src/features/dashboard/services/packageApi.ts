@@ -330,6 +330,41 @@ export interface ReviewPayload {
   rating: number
 }
 
+export interface Review {
+  _id: string
+  packageId: string
+  userId: string
+  review: string
+  rating: number
+  createdAt: string
+  updatedAt: string
+  userName: string
+  userPicture: string
+}
+
+export interface ReviewEligibility {
+  revealed: boolean
+  revealedAt: string | null
+  canReview: boolean
+  reviewAvailableAt: string | null
+  daysRemaining: number | null
+  status: 'locked' | 'cooldown' | 'eligible'
+}
+
 export const createPackageReview = async (payload: ReviewPayload): Promise<void> => {
   await apiClient.post('/packages/post-package-review', payload)
-} 
+}
+
+export const fetchPackageReviews = async (packageId: string): Promise<Review[]> => {
+  const { data } = await apiClient.get<{ message: string; data: Review[] }>(
+    `/packages/get-package-reviews/${packageId}`
+  )
+  return data.data ?? []
+}
+
+export const fetchReviewEligibility = async (packageId: string): Promise<ReviewEligibility> => {
+  const { data } = await apiClient.get<{ message: string; data: ReviewEligibility }>(
+    `/packages/review-eligibility/${packageId}`
+  )
+  return data.data
+}
