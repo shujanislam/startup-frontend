@@ -62,6 +62,23 @@ export interface ApiVehicle {
   budget: number
 }
 
+export interface CreateHotelPayload {
+  name: string
+  phoneNumber: string
+  address: string
+  photos: string[]
+  budget: number
+}
+
+export interface CreateVehiclePayload {
+  car: string
+  carNumber: string
+  driverName?: string
+  driverPhoneNumber: string
+  vehicleType?: string
+  budget: number
+}
+
 export interface ApiPackage {
   _id: string
   name: string
@@ -318,6 +335,20 @@ export const revealPackage = async (id: string): Promise<void> => {
 export const fetchRevealedPackageIds = async (): Promise<string[]> => {
   const { data } = await apiClient.get<{ data: Array<{ _id: string }> }>('/profile/get-revealed-packages')
   return (data.data ?? []).map((pkg) => pkg._id)
+}
+
+// ─────────────────────────────────────────────
+// Hotels & Vehicles
+// ─────────────────────────────────────────────
+
+export const createHotel = async (payload: CreateHotelPayload): Promise<ApiHotel> => {
+  const { data } = await apiClient.post<{ message: string; data: ApiHotel }>('/hotels/post-hotel', payload)
+  return data.data
+}
+
+export const createVehicle = async (payload: CreateVehiclePayload): Promise<ApiVehicle> => {
+  const { data } = await apiClient.post<{ message: string; data: ApiVehicle }>('/vehicles/post-vehicle', payload)
+  return data.data
 }
 
 // ─────────────────────────────────────────────
