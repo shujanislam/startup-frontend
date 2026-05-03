@@ -325,6 +325,16 @@ export const fetchRevealedPackageIds = async (): Promise<string[]> => {
   return (data.data ?? []).map((pkg) => pkg._id)
 }
 
+export const fetchLikedPackagesCount = async (): Promise<number> => {
+  const { data } = await apiClient.get<{ data?: Array<{ _id: string }> }>('/packages/get-liked-packages')
+  return (data.data ?? []).length
+}
+
+export const fetchCreatedPackagesCount = async (): Promise<number> => {
+  const { data } = await apiClient.get<{ createdPackages?: Array<{ _id: string }> }>('/profile/get-created-packages')
+  return (data.createdPackages ?? []).length
+}
+
 // ─────────────────────────────────────────────
 // Reviews
 // ─────────────────────────────────────────────
