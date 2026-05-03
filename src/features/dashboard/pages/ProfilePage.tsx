@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { useEffect, useState } from 'react'
+import { fetchCurrentUser, type CurrentUser } from '../services/dashboardApi'
 
 const getDisplayName = (name?: string | null, email?: string | null) => {
   if (name?.trim()) {
@@ -39,8 +41,23 @@ const formatDate = (value?: string) => {
 const ProfilePage = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
 
-  const displayName = getDisplayName(user?.displayName, user?.email)
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const response = await fetchCurrentUser()
+        setCurrentUser(response.user)
+      } catch {
+        setCurrentUser(null)
+      }
+    }
+
+    void loadCurrentUser()
+  }, [])
+
+  const profileImage = currentUser?.profilePicture || user?.photoURL
+  const displayName = getDisplayName(currentUser?.name || user?.displayName, user?.email)
   const initials = getInitials(displayName)
   const provider = user?.providerData[0]?.providerId?.replace('.com', '') || 'Email'
 
@@ -86,9 +103,9 @@ const ProfilePage = () => {
             <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                 <div className="grid h-28 w-28 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-white/20 bg-white/10">
-                  {user?.photoURL ? (
+                  {profileImage ? (
                     <img
-                      src={user.photoURL}
+                      src={profileImage}
                       alt={displayName}
                       className="h-full w-full object-cover"
                     />
@@ -159,9 +176,9 @@ const ProfilePage = () => {
                 </p>
                 <div className="mt-5 flex items-center gap-4">
                   <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-slate-100">
-                    {user?.photoURL ? (
+                    {profileImage ? (
                       <img
-                        src={user.photoURL}
+                        src={profileImage}
                         alt={displayName}
                         className="h-full w-full object-cover"
                       />

@@ -286,7 +286,7 @@ const HomePage = () => {
             <HomeHeader
               userName={currentUser?.email?.split('@')[0] || 'User'}
               userEmail={user?.email}
-              userPhotoURL={user?.photoURL}
+              userPhotoURL={currentUser?.profilePicture || user?.photoURL}
               searchQuery={searchQuery}
               onSearch={handleSearch}
               onSubmitTrip={handleSubmitTrip}
@@ -294,6 +294,7 @@ const HomePage = () => {
               onProfileClick={() => navigate('/profile')}
               isLoggingOut={isLoggingOut}
               isAdmin={isAdmin}
+              profilePhotoURL={currentUser?.profilePicture}
             />
 
             {(isAdmin || banner) && (
