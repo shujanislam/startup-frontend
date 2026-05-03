@@ -315,6 +315,11 @@ export const revealPackage = async (id: string): Promise<void> => {
   await apiClient.patch(`/packages/reveal-package/${id}`, {})
 }
 
+export const likePackage = async (id: string): Promise<{ alreadyLiked: boolean }> => {
+  const { data } = await apiClient.post<{ alreadyLiked: boolean }>(`/packages/like-package/${id}`, {})
+  return { alreadyLiked: Boolean(data.alreadyLiked) }
+}
+
 export const fetchRevealedPackageIds = async (): Promise<string[]> => {
   const { data } = await apiClient.get<{ data: Array<{ _id: string }> }>('/profile/get-revealed-packages')
   return (data.data ?? []).map((pkg) => pkg._id)
