@@ -325,6 +325,32 @@ export const fetchRevealedPackageIds = async (): Promise<string[]> => {
   return (data.data ?? []).map((pkg) => pkg._id)
 }
 
+export const fetchLikedPackagesCount = async (): Promise<number> => {
+  const { data } = await apiClient.get<{ data?: Array<{ _id: string }> }>('/packages/get-liked-packages')
+  return (data.data ?? []).length
+}
+
+export interface LikedTripSummary {
+  id: string
+  name: string
+}
+
+export const fetchLikedTrips = async (): Promise<LikedTripSummary[]> => {
+  const { data } = await apiClient.get<{ data?: Array<{ _id: string; name?: string }> }>('/packages/get-liked-packages')
+
+  return (data.data ?? [])
+    .map((pkg) => ({
+      id: pkg._id,
+      name: pkg.name?.trim() ?? '',
+    }))
+    .filter((trip): trip is LikedTripSummary => Boolean(trip.id && trip.name))
+}
+
+export const fetchCreatedPackagesCount = async (): Promise<number> => {
+  const { data } = await apiClient.get<{ createdPackages?: Array<{ _id: string }> }>('/profile/get-created-packages')
+  return (data.createdPackages ?? []).length
+}
+
 // ─────────────────────────────────────────────
 // Reviews
 // ─────────────────────────────────────────────

@@ -8,6 +8,7 @@ interface NavbarProps {
   onLogout?: () => void
   isLoggingOut?: boolean
   isAdmin?: boolean
+  profilePhotoURL?: string
 }
 
 const Navbar = ({
@@ -15,6 +16,7 @@ const Navbar = ({
   onSubmitTrip,
   onLogout,
   isLoggingOut = false,
+  profilePhotoURL,
 }: NavbarProps) => {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -66,8 +68,8 @@ const Navbar = ({
               className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-transparent bg-slate-200 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-300 focus:border-blue-500 focus:outline-none"
               aria-label="Open profile menu"
             >
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt="" className="h-full w-full object-cover" />
+              {profilePhotoURL || user?.photoURL ? (
+                <img src={profilePhotoURL || user?.photoURL || ''} alt="" className="h-full w-full object-cover" />
               ) : (
                 <span>{getInitials(user?.email)}</span>
               )}

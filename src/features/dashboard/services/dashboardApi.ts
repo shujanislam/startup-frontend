@@ -4,6 +4,8 @@ export interface CurrentUser {
   uid: string
   email: string | null
   isAdmin: boolean
+  name?: string
+  profilePicture?: string
 }
 
 interface CurrentUserResponse {

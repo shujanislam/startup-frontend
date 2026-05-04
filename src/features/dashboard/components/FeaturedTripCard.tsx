@@ -29,7 +29,7 @@ const FeaturedTripCard = ({ trip, onClick }: FeaturedTripCardProps) => {
 
   return (
     <div
-      className="relative w-full h-56 sm:h-64 md:h-72 rounded-lg overflow-hidden cursor-pointer mb-6 md:mb-8 group"
+      className="relative mb-6 h-64 w-full cursor-pointer overflow-hidden rounded-lg sm:h-72 md:mb-8 md:h-72"
       onClick={onClick}
     >
       {/* Background Image */}
@@ -46,42 +46,31 @@ const FeaturedTripCard = ({ trip, onClick }: FeaturedTripCardProps) => {
         </div>
       )}
 
-      {/* Dark Gradient Overlay */}
-      <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-black/70 pointer-events-none" />
-
-      {/* Badge */}
-      <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-amber-400 text-black px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-xs font-semibold z-10">
-        {trip.badge}
-      </div>
+      {/* Readability overlays */}
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/5 via-transparent to-black/45" />
+      <div className="pointer-events-none absolute inset-0 backdrop-blur-[2px] [mask-image:linear-gradient(to_top,black_0%,black_34%,transparent_100%)]" />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-48 md:h-44"
+        style={{
+          background:
+            'linear-gradient(to top, rgba(0,0,0,0.74) 0%, rgba(0,0,0,0.56) 30%, rgba(0,0,0,0.34) 58%, rgba(0,0,0,0.14) 80%, rgba(0,0,0,0) 100%)',
+        }}
+      />
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 text-white z-20">
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 md:mb-2">{trip.name}</h2>
-        <p className="text-xs sm:text-sm text-gray-200 line-clamp-2 mb-3 md:mb-4">{trip.description}</p>
 
         <div className="flex items-start justify-between gap-4 mb-3 md:mb-4">
           <div>
             <div className="text-lg sm:text-xl font-bold text-green-500">{formatPrice(trip.price)}</div>
             <div className="flex flex-col gap-0.5 md:gap-1 text-xs text-gray-300 mt-1 md:mt-2">
               <span className="flex items-center gap-1.5">
-                📍 {trip.destination}
-              </span>
-              <span className="flex items-center gap-1.5">
-                ⏱ {trip.duration} days
-              </span>
-              <span className="flex items-center gap-1.5">
                 ⭐ {trip.rating}
               </span>
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          className="ml-auto bg-white text-black px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs font-semibold transition-all hover:bg-gray-100 hover:translate-x-1 active:scale-98"
-        >
-          View Trip →
-        </button>
       </div>
     </div>
   )
