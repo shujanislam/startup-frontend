@@ -1,10 +1,41 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
+import { fetchCurrentUser, updateProfile } from '../features/dashboard/services/dashboardApi'
 
-type Step = 0 | 1 | 2
+type Step = 0 | 1 | 2 | 3
+
+const TOTAL_STEPS = 4
 
 const genderOptions = ['Male', 'Female', 'Non-binary', 'Prefer not to say'] as const
+const travelStyleOptions = [
+  'Adventure',
+  'Relaxation',
+  'Cultural',
+  'Backpacking',
+  'Luxury',
+  'Solo',
+  'Family',
+  'Eco-friendly',
+] as const
+const languageOptions = [
+  'English',
+  'Hindi',
+  'Bengali',
+  'Tamil',
+  'Telugu',
+  'Marathi',
+  'Gujarati',
+  'Kannada',
+  'Urdu',
+  'Punjabi',
+  'Spanish',
+  'French',
+  'German',
+  'Japanese',
+  'Mandarin',
+] as const
 const vibeOptions = [
   'Mountains',
   'Beaches',
@@ -16,38 +47,128 @@ const vibeOptions = [
   'Culture',
   'Food Trails',
   'Wildlife',
-]
+  'Photography',
+  'Spiritual',
+] as const
+
+const FloatingLabelInput = ({
+  value,
+  onChange,
+  label,
+  type = 'text',
+  placeholder = ' ',
+}: {
+  value: string
+  onChange: (v: string) => void
+  label: string
+  type?: string
+  placeholder?: string
+}) => (
+  <label className="relative block">
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="peer h-14 w-full rounded-2xl border border-slate-200 px-4 pt-5 text-sm outline-none transition focus:border-[#14b8a6] focus:ring-4 focus:ring-[#14b8a6]/15"
+      placeholder={placeholder}
+    />
+    <span className="pointer-events-none absolute left-4 top-4 origin-left text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:scale-85 peer-focus:text-[#0f766e] peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:scale-85">
+      {label}
+    </span>
+  </label>
+)
 
 const OnboardingRoute = () => {
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>(0)
-  const [fullName, setFullName] = useState('')
-  const [username, setUsername] = useState('')
-  const [gender, setGender] = useState<string | null>(null)
-  const [interests, setInterests] = useState<string[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    location: '',
+    occupation: '',
+    languages: [] as string[],
+    travelStyle: '',
+    bio: '',
+    tags: [] as string[],
+  })
+
+  const updateField = (key: keyof typeof form, value: string | string[]) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const toggleItem = (key: 'languages' | 'tags', value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: prev[key].includes(value)
+        ? prev[key].filter((item) => item !== value)
+        : [...prev[key], value],
+    }))
+  }
 
   const stepNumber = step + 1
-  const progress = (stepNumber / 3) * 100
+  const progress = (stepNumber / TOTAL_STEPS) * 100
 
   const canContinue = useMemo(() => {
-    if (step === 0) return fullName.trim().length > 1 && username.trim().length > 2
-    if (step === 1) return Boolean(gender)
-    return interests.length > 0
-  }, [fullName, gender, interests.length, step, username])
+    if (step === 0) return form.name.trim().length > 1
+    if (step === 1) return form.gender.length > 0
+    if (step === 2) return form.travelStyle.length > 0
+    return form.tags.length > 0
+  }, [form, step])
 
-  const toggleInterest = (value: string) => {
-    setInterests((current) =>
-      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
-    )
+  const handleFinish = async () => {
+    setSubmitError(null)
+    setIsSubmitting(true)
+
+    try {
+      const { user } = await fetchCurrentUser()
+      const userId = user._id
+
+      if (!userId) {
+        setSubmitError('Unable to find your account. Please try again.')
+        setIsSubmitting(false)
+        return
+      }
+
+      const genderValue = form.gender.toLowerCase().replace(/\s+/g, '_')
+
+      await updateProfile(userId, {
+        name: form.name.trim(),
+        phone: form.phone.trim() || undefined,
+        dateOfBirth: form.dateOfBirth || undefined,
+        gender: genderValue,
+        location: form.location.trim() || undefined,
+        occupation: form.occupation.trim() || undefined,
+        languages: form.languages.length > 0 ? form.languages : undefined,
+        travelStyle: form.travelStyle,
+        bio: form.bio.trim() || undefined,
+        tags: form.tags,
+        onboardingComplete: true,
+      })
+
+      navigate('/home', { replace: true })
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to save profile. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const goNext = () => {
     if (!canContinue) return
-    if (step < 2) {
+    if (step < 3) {
       setStep((prev) => (prev + 1) as Step)
       return
     }
-    navigate('/home')
+    void handleFinish()
+  }
+
+  const goBack = () => {
+    if (step > 0) setStep((prev) => (prev - 1) as Step)
   }
 
   return (
@@ -75,7 +196,7 @@ const OnboardingRoute = () => {
           <div className="w-full max-w-[430px]">
             <div className="mb-9">
               <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-600">
-                <span>{`Step ${stepNumber} of 3`}</span>
+                <span>{`Step ${stepNumber} of ${TOTAL_STEPS}`}</span>
                 <span className="text-[#14b8a6]">{Math.round(progress)}%</span>
               </div>
               <div className="h-2 rounded-full bg-slate-100">
@@ -101,76 +222,159 @@ const OnboardingRoute = () => {
                     <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">
                       Hi there! Let&apos;s get to know you
                     </h1>
-                    <p className="mt-2 text-sm text-slate-500">Set up your traveler identity in under a minute.</p>
+                    <p className="mt-2 text-sm text-slate-500">Tell us the basics so we can personalize your experience.</p>
 
                     <div className="mt-8 space-y-5">
-                      <label className="relative block">
+                      <FloatingLabelInput
+                        value={form.name}
+                        onChange={(v) => updateField('name', v)}
+                        label="Full Name *"
+                      />
+                      <FloatingLabelInput
+                        value={form.phone}
+                        onChange={(v) => updateField('phone', v)}
+                        label="Phone Number"
+                        type="tel"
+                      />
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                          Date of Birth
+                        </label>
                         <input
-                          value={fullName}
-                          onChange={(event) => setFullName(event.target.value)}
-                          className="peer h-14 w-full rounded-2xl border border-slate-200 px-4 pt-5 text-sm outline-none transition focus:border-[#14b8a6] focus:ring-4 focus:ring-[#14b8a6]/15"
-                          placeholder=" "
+                          type="date"
+                          value={form.dateOfBirth}
+                          onChange={(e) => updateField('dateOfBirth', e.target.value)}
+                          className="h-14 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none transition focus:border-[#14b8a6] focus:ring-4 focus:ring-[#14b8a6]/15"
                         />
-                        <span className="pointer-events-none absolute left-4 top-4 origin-left text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:scale-85 peer-focus:text-[#0f766e] peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:scale-85">
-                          Full Name
-                        </span>
-                      </label>
-
-                      <label className="relative block">
-                        <input
-                          value={username}
-                          onChange={(event) => setUsername(event.target.value.replace(/\s+/g, ''))}
-                          className="peer h-14 w-full rounded-2xl border border-slate-200 px-4 pt-5 text-sm outline-none transition focus:border-[#14b8a6] focus:ring-4 focus:ring-[#14b8a6]/15"
-                          placeholder=" "
-                        />
-                        <span className="pointer-events-none absolute left-4 top-4 origin-left text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:scale-85 peer-focus:text-[#0f766e] peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:scale-85">
-                          Username
-                        </span>
-                      </label>
+                      </div>
                     </div>
                   </div>
                 )}
 
                 {step === 1 && (
                   <div>
-                    <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">Choose your identity</h1>
-                    <p className="mt-2 text-sm text-slate-500">Pick the option you are most comfortable with.</p>
+                    <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">Your identity & background</h1>
+                    <p className="mt-2 text-sm text-slate-500">Help us understand who you are and where you&apos;re from.</p>
 
-                    <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {genderOptions.map((option) => {
-                        const selected = gender === option
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => setGender(option)}
-                            className={`rounded-2xl border px-4 py-5 text-left text-sm font-semibold transition-all ${
-                              selected
-                                ? 'border-[#14b8a6] bg-[#14b8a6]/10 text-[#0f766e] shadow-[0_8px_20px_rgba(20,184,166,0.18)]'
-                                : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#14b8a6]/40 hover:shadow-md'
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        )
-                      })}
+                    <div className="mt-8 space-y-5">
+                      <div>
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Gender *</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          {genderOptions.map((option) => {
+                            const selected = form.gender === option
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => updateField('gender', option)}
+                                className={`rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-all ${
+                                  selected
+                                    ? 'border-[#14b8a6] bg-[#14b8a6]/10 text-[#0f766e] shadow-[0_8px_20px_rgba(20,184,166,0.18)]'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#14b8a6]/40 hover:shadow-md'
+                                }`}
+                              >
+                                {option}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <FloatingLabelInput
+                        value={form.location}
+                        onChange={(v) => updateField('location', v)}
+                        label="City / Country"
+                      />
+                      <FloatingLabelInput
+                        value={form.occupation}
+                        onChange={(v) => updateField('occupation', v)}
+                        label="Occupation"
+                      />
                     </div>
                   </div>
                 )}
 
                 {step === 2 && (
                   <div>
+                    <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">Your travel style</h1>
+                    <p className="mt-2 text-sm text-slate-500">How do you like to travel? Tell us about your style.</p>
+
+                    <div className="mt-8 space-y-5">
+                      <div>
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Travel Style *</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          {travelStyleOptions.map((option) => {
+                            const selected = form.travelStyle === option
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => updateField('travelStyle', option)}
+                                className={`rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-all ${
+                                  selected
+                                    ? 'border-[#14b8a6] bg-[#14b8a6]/10 text-[#0f766e] shadow-[0_8px_20px_rgba(20,184,166,0.18)]'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#14b8a6]/40 hover:shadow-md'
+                                }`}
+                              >
+                                {option}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Languages you speak</p>
+                        <div className="flex flex-wrap gap-2">
+                          {languageOptions.map((lang) => {
+                            const selected = form.languages.includes(lang)
+                            return (
+                              <button
+                                key={lang}
+                                type="button"
+                                onClick={() => toggleItem('languages', lang)}
+                                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                                  selected
+                                    ? 'border-[#14b8a6] bg-[#14b8a6] text-white shadow-[0_4px_12px_rgba(20,184,166,0.3)]'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:border-[#14b8a6]/40 hover:text-[#0f766e]'
+                                }`}
+                              >
+                                {lang}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                          Short Bio
+                        </label>
+                        <textarea
+                          value={form.bio}
+                          onChange={(e) => updateField('bio', e.target.value)}
+                          rows={3}
+                          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#14b8a6] focus:ring-4 focus:ring-[#14b8a6]/15"
+                          placeholder="Tell travelers what makes your trips unforgettable..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {step === 3 && (
+                  <div>
                     <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">Choose your Vibe</h1>
-                    <p className="mt-2 text-sm text-slate-500">Pick one or more styles so we can tailor your feed.</p>
+                    <p className="mt-2 text-sm text-slate-500">Pick one or more interests so we can tailor your feed.</p>
 
                     <div className="mt-8 flex flex-wrap gap-2.5">
                       {vibeOptions.map((option) => {
-                        const selected = interests.includes(option)
+                        const selected = form.tags.includes(option)
                         return (
                           <button
                             key={option}
                             type="button"
-                            onClick={() => toggleInterest(option)}
+                            onClick={() => toggleItem('tags', option)}
                             className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
                               selected
                                 ? 'border-[#14b8a6] bg-[#14b8a6] text-white shadow-[0_8px_18px_rgba(20,184,166,0.35)]'
@@ -187,16 +391,34 @@ const OnboardingRoute = () => {
               </motion.div>
             </AnimatePresence>
 
-            <motion.button
-              type="button"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.94 }}
-              onClick={goNext}
-              disabled={!canContinue}
-              className="mt-10 h-12 w-full rounded-xl bg-[#14b8a6] text-sm font-semibold text-white transition hover:bg-[#0ea697] disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {step === 2 ? 'Finish Onboarding' : 'Continue'}
-            </motion.button>
+            {submitError && (
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {submitError}
+              </div>
+            )}
+
+            <div className="mt-10 flex gap-3">
+              {step > 0 && (
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.94 }}
+                  onClick={goBack}
+                  className="h-12 flex-1 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Back
+                </motion.button>
+              )}
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.94 }}
+                onClick={goNext}
+                disabled={!canContinue || isSubmitting}
+                className="h-12 flex-1 rounded-xl bg-[#14b8a6] text-sm font-semibold text-white transition hover:bg-[#0ea697] disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {isSubmitting ? 'Saving...' : step === 3 ? 'Finish Onboarding' : 'Continue'}
+              </motion.button>
+            </div>
 
             <div className="mt-6 flex items-center justify-between text-sm">
               <button
@@ -217,4 +439,8 @@ const OnboardingRoute = () => {
   )
 }
 
-export default OnboardingRoute
+export default () => (
+  <ProtectedRoute>
+    <OnboardingRoute />
+  </ProtectedRoute>
+)

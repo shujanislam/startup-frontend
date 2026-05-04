@@ -16,6 +16,7 @@ import { TripDetailVehicles } from './TripDetailVehicles'
 import { TripDetailLinks } from './TripDetailLinks'
 import { TripDetailAdditional } from './TripDetailAdditional'
 import { TripDetailCreator } from './TripDetailCreator'
+import { TripDetailReviews } from './TripDetailReviews'
 import { TripDetailBottomBar } from './TripDetailBottomBar'
 
 interface TripDetailPageProps {
@@ -157,6 +158,7 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
         <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
         <TripDetailLinks trip={trip} />
         <TripDetailCreator trip={trip} />
+        <TripDetailReviews packageId={trip.id} isRevealed={isRevealed} />
         {unlockError && (
           <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {unlockError}

@@ -20,3 +20,42 @@
     font: inherit;
   }
 }
+
+@layer utilities {
+  .sidebar-rise {
+    animation: sidebar-rise 520ms ease-out both;
+  }
+
+  .sidebar-fade {
+    animation: sidebar-fade 420ms ease-out both;
+  }
+}
+
+@keyframes sidebar-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sidebar-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-rise,
+  .sidebar-fade {
+    animation: none;
+  }
+}

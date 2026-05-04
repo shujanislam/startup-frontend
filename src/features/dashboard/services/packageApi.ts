@@ -62,6 +62,23 @@ export interface ApiVehicle {
   budget: number
 }
 
+export interface CreateHotelPayload {
+  name: string
+  phoneNumber: string
+  address: string
+  photos: string[]
+  budget: number
+}
+
+export interface CreateVehiclePayload {
+  car: string
+  carNumber: string
+  driverName?: string
+  driverPhoneNumber: string
+  vehicleType?: string
+  budget: number
+}
+
 export interface ApiPackage {
   _id: string
   name: string
@@ -352,6 +369,20 @@ export const fetchCreatedPackagesCount = async (): Promise<number> => {
 }
 
 // ─────────────────────────────────────────────
+// Hotels & Vehicles
+// ─────────────────────────────────────────────
+
+export const createHotel = async (payload: CreateHotelPayload): Promise<ApiHotel> => {
+  const { data } = await apiClient.post<{ message: string; data: ApiHotel }>('/hotels/post-hotel', payload)
+  return data.data
+}
+
+export const createVehicle = async (payload: CreateVehiclePayload): Promise<ApiVehicle> => {
+  const { data } = await apiClient.post<{ message: string; data: ApiVehicle }>('/vehicles/post-vehicle', payload)
+  return data.data
+}
+
+// ─────────────────────────────────────────────
 // Reviews
 // ─────────────────────────────────────────────
 
@@ -361,6 +392,41 @@ export interface ReviewPayload {
   rating: number
 }
 
+export interface Review {
+  _id: string
+  packageId: string
+  userId: string
+  review: string
+  rating: number
+  createdAt: string
+  updatedAt: string
+  userName: string
+  userPicture: string
+}
+
+export interface ReviewEligibility {
+  revealed: boolean
+  revealedAt: string | null
+  canReview: boolean
+  reviewAvailableAt: string | null
+  daysRemaining: number | null
+  status: 'locked' | 'cooldown' | 'eligible'
+}
+
 export const createPackageReview = async (payload: ReviewPayload): Promise<void> => {
   await apiClient.post('/packages/post-package-review', payload)
-} 
+}
+
+export const fetchPackageReviews = async (packageId: string): Promise<Review[]> => {
+  const { data } = await apiClient.get<{ message: string; data: Review[] }>(
+    `/packages/get-package-reviews/${packageId}`
+  )
+  return data.data ?? []
+}
+
+export const fetchReviewEligibility = async (packageId: string): Promise<ReviewEligibility> => {
+  const { data } = await apiClient.get<{ message: string; data: ReviewEligibility }>(
+    `/packages/review-eligibility/${packageId}`
+  )
+  return data.data
+}

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useEffect, useState } from 'react'
-import { fetchCurrentUser, type CurrentUser } from '../services/dashboardApi'
+import { fetchCurrentUser, updateProfile, type CurrentUser } from '../services/dashboardApi'
 import {
   fetchCreatedPackagesCount,
   fetchLikedTrips,
@@ -54,6 +54,37 @@ const ProfilePage = () => {
   const [createdCount, setCreatedCount] = useState(0)
   const [likedTrips, setLikedTrips] = useState<LikedTripSummary[]>([])
   const [activeTab, setActiveTab] = useState<ProfileTab>('general')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editState, setEditState] = useState({
+    name: '',
+    gender: 'prefer_not_to_say',
+    profilePicture: '',
+    bio: '',
+    phone: '',
+    location: '',
+    dateOfBirth: '',
+    occupation: '',
+    languages: [] as string[],
+    travelStyle: '',
+    tags: [] as string[],
+  })
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
+
+  const buildEditState = (profile: CurrentUser) => ({
+    name: profile.name ?? '',
+    gender: profile.gender ?? 'prefer_not_to_say',
+    profilePicture: profile.profilePicture ?? '',
+    bio: profile.bio ?? '',
+    phone: profile.phone ?? '',
+    location: profile.location ?? '',
+    dateOfBirth: profile.dateOfBirth ?? '',
+    occupation: profile.occupation ?? '',
+    languages: profile.languages ?? [],
+    travelStyle: profile.travelStyle ?? '',
+    tags: profile.tags ?? [],
+  })
 
   useEffect(() => {
     const loadCurrentUser = async () => {
@@ -93,10 +124,21 @@ const ProfilePage = () => {
     void loadCurrentUser()
   }, [])
 
+  useEffect(() => {
+    if (!currentUser) {
+      return
+    }
+
+    setEditState(buildEditState(currentUser))
+    setIsEditing(false)
+  }, [currentUser])
+
   const profileImage = currentUser?.profilePicture || user?.photoURL
   const displayName = getDisplayName(currentUser?.name || user?.displayName, user?.email)
   const initials = getInitials(displayName)
-  const provider = user?.providerData[0]?.providerId?.replace('.com', '') || 'Email'
+  const tagList = (currentUser?.tags ?? []).filter(Boolean)
+  const mongoCreatedAt = currentUser?.createdAt || user?.metadata.creationTime || undefined
+  const mongoUpdatedAt = currentUser?.updatedAt || undefined
 
   const stats = [
     { label: 'Trips', value: String(createdCount) },
@@ -104,15 +146,106 @@ const ProfilePage = () => {
     { label: 'Reviews', value: '0' },
   ]
 
+  const profileInfo = [
+    { label: 'Gender', value: currentUser?.gender ? currentUser.gender.replace(/_/g, ' ') : 'Not set' },
+    { label: 'Date of Birth', value: currentUser?.dateOfBirth ? formatDate(currentUser.dateOfBirth) : 'Not set' },
+    { label: 'Location', value: currentUser?.location || 'Not set' },
+    { label: 'Occupation', value: currentUser?.occupation || 'Not set' },
+    { label: 'Travel Style', value: currentUser?.travelStyle || 'Not set' },
+  ]
+
   const details = [
-    { label: 'Email', value: user?.email || 'Not available' },
-    { label: 'Phone', value: user?.phoneNumber || 'Not added' },
-    { label: 'Provider', value: provider },
-    { label: 'Account ID', value: user?.uid || 'Not available' },
+    { label: 'Email', value: user?.email || currentUser?.email || 'Not available' },
+    { label: 'Phone', value: currentUser?.phone || user?.phoneNumber || 'Not added' },
     { label: 'Verified', value: user?.emailVerified ? 'Verified' : 'Not verified' },
-    { label: 'Joined', value: formatDate(user?.metadata.creationTime) },
+    { label: 'Joined', value: formatDate(mongoCreatedAt) },
+    { label: 'Profile updated', value: formatDate(mongoUpdatedAt) },
     { label: 'Last login', value: formatDate(user?.metadata.lastSignInTime) },
   ]
+
+  const handleEditChange = (key: keyof typeof editState, value: string | string[]) => {
+    setEditState((current) => ({
+      ...current,
+      [key]: value,
+    }))
+  }
+
+  const toggleEditItem = (key: 'languages' | 'tags', value: string) => {
+    setEditState((prev) => ({
+      ...prev,
+      [key]: prev[key].includes(value)
+        ? prev[key].filter((item) => item !== value)
+        : [...prev[key], value],
+    }))
+  }
+
+  const languageOptions = [
+    'English', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Marathi',
+    'Gujarati', 'Kannada', 'Urdu', 'Punjabi', 'Spanish', 'French',
+    'German', 'Japanese', 'Mandarin',
+  ]
+
+  const tagOptions = [
+    'Mountains', 'Beaches', 'Solo Travel', 'Luxury', 'Backpacking',
+    'Trekking', 'Road Trips', 'Culture', 'Food Trails', 'Wildlife',
+    'Photography', 'Spiritual',
+  ]
+
+  const handleProfileSave = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setSaveError(null)
+    setSaveSuccess(null)
+
+    if (!currentUser?._id) {
+      setSaveError('Profile data is unavailable right now.')
+      return
+    }
+
+    if (!editState.name.trim()) {
+      setSaveError('Name is required.')
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      const updated = await updateProfile(currentUser._id, {
+        name: editState.name.trim(),
+        gender: editState.gender,
+        profilePicture: editState.profilePicture.trim(),
+        bio: editState.bio.trim(),
+        phone: editState.phone.trim() || undefined,
+        location: editState.location.trim() || undefined,
+        dateOfBirth: editState.dateOfBirth || undefined,
+        occupation: editState.occupation.trim() || undefined,
+        languages: editState.languages.length > 0 ? editState.languages : undefined,
+        travelStyle: editState.travelStyle || undefined,
+        tags: editState.tags.length > 0 ? editState.tags : undefined,
+      })
+      setCurrentUser((previous) => (previous ? { ...previous, ...updated } : updated))
+      setSaveSuccess('Profile updated successfully.')
+      setIsEditing(false)
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to update profile.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const startEditing = () => {
+    setSaveError(null)
+    setSaveSuccess(null)
+    setIsEditing(true)
+  }
+
+  const cancelEditing = () => {
+    if (currentUser) {
+      setEditState(buildEditState(currentUser))
+    }
+    setSaveError(null)
+    setSaveSuccess(null)
+    setIsEditing(false)
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -170,7 +303,10 @@ const ProfilePage = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('liked')}
+                  onClick={() => {
+                    setActiveTab('liked')
+                    setIsEditing(false)
+                  }}
                   className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
                     activeTab === 'liked'
                       ? 'border-blue-600 text-blue-600'
@@ -193,23 +329,295 @@ const ProfilePage = () => {
               ))}
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="mt-2 text-2xl font-bold text-slate-950">Profile Details</h2>
               </div>
+              {activeTab === 'general' && !isEditing && (
+                <button
+                  type="button"
+                  onClick={startEditing}
+                  className="rounded-full border border-blue-200 bg-blue-50 px-5 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+                >
+                  Edit profile
+                </button>
+              )}
             </div>
 
             {activeTab === 'general' ? (
-              <div className="mt-6 grid gap-3 md:grid-cols-2">
-                {details.map((detail) => (
-                  <div
-                    key={detail.label}
-                    className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4"
-                  >
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{detail.label}</p>
-                    <p className="mt-2 truncate text-sm font-semibold text-slate-950">{detail.value}</p>
+              <div className="mt-6 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+                <div className="space-y-6">
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">About you</p>
+                    <h3 className="mt-3 text-lg font-semibold text-slate-900">Travel profile</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      {currentUser?.bio?.trim()
+                        ? currentUser.bio
+                        : 'Share your travel style, favorite experiences, or what makes a trip memorable.'}
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {profileInfo.map((info) => (
+                        <div key={info.label} className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">{info.label}</p>
+                          <p className="mt-2 text-sm font-semibold text-slate-900">{info.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {(currentUser?.languages ?? []).length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Languages</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {(currentUser?.languages ?? []).map((lang) => (
+                            <span
+                              key={lang}
+                              className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700"
+                            >
+                              {lang}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Tags</p>
+                      {tagList.length === 0 ? (
+                        <p className="mt-2 text-sm text-slate-500">No tags added yet.</p>
+                      ) : (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {tagList.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ))}
+
+                  {isEditing ? (
+                    <form
+                      onSubmit={handleProfileSave}
+                      className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Edit profile</p>
+                          <h3 className="mt-2 text-lg font-semibold text-slate-900">Keep your details fresh</h3>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={cancelEditing}
+                            disabled={isSaving}
+                            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isSaving}
+                            className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {isSaving ? 'Saving...' : 'Save changes'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Name</label>
+                          <input
+                            value={editState.name}
+                            onChange={(event) => handleEditChange('name', event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                            placeholder="Your name"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Gender</label>
+                          <select
+                            value={editState.gender}
+                            onChange={(event) => handleEditChange('gender', event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                          >
+                            <option value="prefer_not_to_say">Prefer not to say</option>
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                            <option value="non_binary">Non-binary</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Phone</label>
+                          <input
+                            value={editState.phone}
+                            onChange={(event) => handleEditChange('phone', event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                            placeholder="+91 98765 43210"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Date of Birth</label>
+                          <input
+                            type="date"
+                            value={editState.dateOfBirth}
+                            onChange={(event) => handleEditChange('dateOfBirth', event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Location</label>
+                          <input
+                            value={editState.location}
+                            onChange={(event) => handleEditChange('location', event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                            placeholder="City, Country"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Occupation</label>
+                          <input
+                            value={editState.occupation}
+                            onChange={(event) => handleEditChange('occupation', event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                            placeholder="Software Engineer, Student, etc."
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Travel Style</label>
+                          <select
+                            value={editState.travelStyle}
+                            onChange={(event) => handleEditChange('travelStyle', event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                          >
+                            <option value="">Select style</option>
+                            <option value="Adventure">Adventure</option>
+                            <option value="Relaxation">Relaxation</option>
+                            <option value="Cultural">Cultural</option>
+                            <option value="Backpacking">Backpacking</option>
+                            <option value="Luxury">Luxury</option>
+                            <option value="Solo">Solo</option>
+                            <option value="Family">Family</option>
+                            <option value="Eco-friendly">Eco-friendly</option>
+                          </select>
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Profile photo URL</label>
+                          <input
+                            value={editState.profilePicture}
+                            onChange={(event) => handleEditChange('profilePicture', event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                            placeholder="https://example.com/avatar.jpg"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Bio</label>
+                          <textarea
+                            value={editState.bio}
+                            onChange={(event) => handleEditChange('bio', event.target.value)}
+                            className="mt-2 min-h-24 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:bg-white"
+                            placeholder="Tell travelers what makes your trips unforgettable..."
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Languages</label>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {languageOptions.map((lang) => {
+                              const selected = editState.languages.includes(lang)
+                              return (
+                                <button
+                                  key={lang}
+                                  type="button"
+                                  onClick={() => toggleEditItem('languages', lang)}
+                                  className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                                    selected
+                                      ? 'border-blue-400 bg-blue-600 text-white'
+                                      : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                                  }`}
+                                >
+                                  {lang}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Tags / Interests</label>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {tagOptions.map((tag) => {
+                              const selected = editState.tags.includes(tag)
+                              return (
+                                <button
+                                  key={tag}
+                                  type="button"
+                                  onClick={() => toggleEditItem('tags', tag)}
+                                  className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                                    selected
+                                      ? 'border-blue-400 bg-blue-600 text-white'
+                                      : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                                  }`}
+                                >
+                                  {tag}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {(saveError || saveSuccess) && (
+                        <div
+                          className={`mt-4 rounded-xl border px-4 py-3 text-sm font-medium ${
+                            saveError
+                              ? 'border-red-200 bg-red-50 text-red-700'
+                              : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          }`}
+                        >
+                          {saveError || saveSuccess}
+                        </div>
+                      )}
+                    </form>
+                  ) : (
+                    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Edit profile</p>
+                      <h3 className="mt-2 text-lg font-semibold text-slate-900">Make changes when you need to</h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        Keep your personal information up to date. Click edit to update contact details, travel style, and preferences.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={startEditing}
+                        className="mt-4 inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                      >
+                        Edit profile
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Account</p>
+                  <h3 className="mt-2 text-lg font-semibold text-slate-900">Identity & access</h3>
+                  <div className="mt-5 grid gap-3">
+                    {details.map((detail) => (
+                      <div
+                        key={detail.label}
+                        className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4"
+                      >
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          {detail.label}
+                        </p>
+                        <p className="mt-2 break-words text-sm font-semibold text-slate-950">
+                          {detail.value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:p-5">

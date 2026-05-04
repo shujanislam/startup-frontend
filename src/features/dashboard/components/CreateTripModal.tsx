@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { CreatePackagePayload } from '../services/packageApi.ts'
+import {
+  createHotel,
+  createVehicle,
+  type CreateHotelPayload,
+  type CreatePackagePayload,
+  type CreateVehiclePayload,
+} from '../services/packageApi.ts'
 import type { SeasonType } from '../types/trip.ts'
 
 interface CreateTripModalProps {
@@ -26,6 +32,25 @@ interface CreateTripFormState {
   tags: string
   affiliateLinks: string
   additional: string
+  hotels: HotelFormState[]
+  vehicles: VehicleFormState[]
+}
+
+interface HotelFormState {
+  name: string
+  phoneNumber: string
+  address: string
+  photos: string
+  budget: string
+}
+
+interface VehicleFormState {
+  car: string
+  carNumber: string
+  driverName: string
+  driverPhoneNumber: string
+  vehicleType: string
+  budget: string
 }
 
 const DEFAULT_FORM_STATE: CreateTripFormState = {
@@ -44,7 +69,26 @@ const DEFAULT_FORM_STATE: CreateTripFormState = {
   tags: '',
   affiliateLinks: '',
   additional: '',
+  hotels: [],
+  vehicles: [],
 }
+
+const createEmptyHotel = (): HotelFormState => ({
+  name: '',
+  phoneNumber: '',
+  address: '',
+  photos: '',
+  budget: '',
+})
+
+const createEmptyVehicle = (): VehicleFormState => ({
+  car: '',
+  carNumber: '',
+  driverName: '',
+  driverPhoneNumber: '',
+  vehicleType: '',
+  budget: '',
+})
 
 const seasonOptions: Array<Exclude<SeasonType, 'all'>> = ['summer', 'winter', 'monsoon', 'autumn']
 
@@ -82,13 +126,65 @@ const CreateTripModal = ({
     'w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
   const labelClassName = 'mb-2 block text-sm font-semibold text-gray-700'
 
-  const handleChange = (
-    key: keyof CreateTripFormState,
-    value: string | boolean,
+  const handleChange = <K extends keyof CreateTripFormState>(
+    key: K,
+    value: CreateTripFormState[K],
   ) => {
     setFormState((current) => ({
       ...current,
       [key]: value,
+    }))
+  }
+
+  const handleHotelChange = (
+    index: number,
+    key: keyof HotelFormState,
+    value: string,
+  ) => {
+    setFormState((current) => {
+      const hotels = [...current.hotels]
+      hotels[index] = { ...hotels[index], [key]: value }
+      return { ...current, hotels }
+    })
+  }
+
+  const handleVehicleChange = (
+    index: number,
+    key: keyof VehicleFormState,
+    value: string,
+  ) => {
+    setFormState((current) => {
+      const vehicles = [...current.vehicles]
+      vehicles[index] = { ...vehicles[index], [key]: value }
+      return { ...current, vehicles }
+    })
+  }
+
+  const addHotel = () => {
+    setFormState((current) => ({
+      ...current,
+      hotels: [...current.hotels, createEmptyHotel()],
+    }))
+  }
+
+  const removeHotel = (index: number) => {
+    setFormState((current) => ({
+      ...current,
+      hotels: current.hotels.filter((_, idx) => idx !== index),
+    }))
+  }
+
+  const addVehicle = () => {
+    setFormState((current) => ({
+      ...current,
+      vehicles: [...current.vehicles, createEmptyVehicle()],
+    }))
+  }
+
+  const removeVehicle = (index: number) => {
+    setFormState((current) => ({
+      ...current,
+      vehicles: current.vehicles.filter((_, idx) => idx !== index),
     }))
   }
 
@@ -114,6 +210,128 @@ const CreateTripModal = ({
       return
     }
 
+    const hasHotelValue = (hotel: HotelFormState) =>
+      [
+        hotel.name,
+        hotel.phoneNumber,
+        hotel.address,
+        hotel.photos,
+        hotel.budget,
+      ].some((value) => value.trim().length > 0)
+
+    const hasVehicleValue = (vehicle: VehicleFormState) =>
+      [
+        vehicle.car,
+        vehicle.carNumber,
+        vehicle.driverName,
+        vehicle.driverPhoneNumber,
+        vehicle.vehicleType,
+        vehicle.budget,
+      ].some((value) => value.trim().length > 0)
+
+    const hotelPayloads: CreateHotelPayload[] = []
+    const hotelsToCreate = formState.hotels.filter(hasHotelValue)
+
+    for (let i = 0; i < hotelsToCreate.length; i += 1) {
+      const hotel = hotelsToCreate[i]
+      const name = hotel.name.trim()
+      const phoneNumber = hotel.phoneNumber.trim()
+      const address = hotel.address.trim()
+      const budgetValue = Number(hotel.budget)
+
+      if (!name) {
+        setLocalError(`Hotel ${i + 1}: name is required.`)
+        return
+      }
+
+      if (!phoneNumber) {
+        setLocalError(`Hotel ${i + 1}: phone number is required.`)
+        return
+      }
+
+      if (!address) {
+        setLocalError(`Hotel ${i + 1}: address is required.`)
+        return
+      }
+
+      if (!Number.isFinite(budgetValue) || budgetValue < 0) {
+        setLocalError(`Hotel ${i + 1}: budget must be zero or greater.`)
+        return
+      }
+
+      hotelPayloads.push({
+        name,
+        phoneNumber,
+        address,
+        photos: parseListInput(hotel.photos),
+        budget: budgetValue,
+      })
+    }
+
+    const vehiclePayloads: CreateVehiclePayload[] = []
+    const vehiclesToCreate = formState.vehicles.filter(hasVehicleValue)
+
+    for (let i = 0; i < vehiclesToCreate.length; i += 1) {
+      const vehicle = vehiclesToCreate[i]
+      const car = vehicle.car.trim()
+      const carNumber = vehicle.carNumber.trim()
+      const driverName = vehicle.driverName.trim()
+      const driverPhoneNumber = vehicle.driverPhoneNumber.trim()
+      const vehicleType = vehicle.vehicleType.trim()
+      const budgetValue = Number(vehicle.budget)
+
+      if (!car) {
+        setLocalError(`Vehicle ${i + 1}: name is required.`)
+        return
+      }
+
+      if (!carNumber) {
+        setLocalError(`Vehicle ${i + 1}: car number is required.`)
+        return
+      }
+
+      if (!driverPhoneNumber) {
+        setLocalError(`Vehicle ${i + 1}: driver phone number is required.`)
+        return
+      }
+
+      if (!Number.isFinite(budgetValue) || budgetValue < 0) {
+        setLocalError(`Vehicle ${i + 1}: budget must be zero or greater.`)
+        return
+      }
+
+      vehiclePayloads.push({
+        car,
+        carNumber,
+        driverName: driverName || undefined,
+        driverPhoneNumber,
+        vehicleType: vehicleType || undefined,
+        budget: budgetValue,
+      })
+    }
+
+    let hotelIds: string[] = []
+    let vehicleIds: string[] = []
+
+    try {
+      if (hotelPayloads.length > 0) {
+        const createdHotels = await Promise.all(
+          hotelPayloads.map((payload) => createHotel(payload))
+        )
+        hotelIds = createdHotels.map((hotel) => hotel._id)
+      }
+
+      if (vehiclePayloads.length > 0) {
+        const createdVehicles = await Promise.all(
+          vehiclePayloads.map((payload) => createVehicle(payload))
+        )
+        vehicleIds = createdVehicles.map((vehicle) => vehicle._id)
+      }
+    } catch (err: unknown) {
+      setLocalError(err instanceof Error ? err.message : 'Failed to save hotel or vehicle details.')
+      return
+    }
+
     await onSubmit({
       name: formState.name.trim(),
       description: formState.description.trim(),
@@ -130,8 +348,8 @@ const CreateTripModal = ({
       tags: parseListInput(formState.tags),
       affiliateLinks: parseListInput(formState.affiliateLinks),
       additional: formState.additional.trim() || undefined,
-      hotels: [],
-      vehicles: [],
+      hotels: hotelIds,
+      vehicles: vehicleIds,
     })
   }
 
@@ -371,6 +589,236 @@ const CreateTripModal = ({
                 placeholder="https://example.com/book"
               />
               <p className="mt-2 text-xs text-gray-500">Use commas or new lines to separate links.</p>
+            </div>
+
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between gap-4">
+                <label className={labelClassName}>Hotels</label>
+                <button
+                  type="button"
+                  onClick={addHotel}
+                  disabled={isSubmitting}
+                  className="rounded-full border border-gray-300 px-4 py-2 text-xs font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Add hotel
+                </button>
+              </div>
+
+              {formState.hotels.length === 0 && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Add hotels if this trip includes accommodations.
+                </p>
+              )}
+
+              {formState.hotels.map((hotel, index) => (
+                <div
+                  key={`hotel-${index}`}
+                  className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-700">Hotel {index + 1}</p>
+                    <button
+                      type="button"
+                      onClick={() => removeHotel(index)}
+                      disabled={isSubmitting}
+                      className="text-xs font-semibold text-red-600 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label htmlFor={`hotel-name-${index}`} className={labelClassName}>
+                        Hotel name
+                      </label>
+                      <input
+                        id={`hotel-name-${index}`}
+                        className={inputClassName}
+                        value={hotel.name}
+                        onChange={(event) => handleHotelChange(index, 'name', event.target.value)}
+                        placeholder="Lush Retreat"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor={`hotel-phone-${index}`} className={labelClassName}>
+                        Phone number
+                      </label>
+                      <input
+                        id={`hotel-phone-${index}`}
+                        className={inputClassName}
+                        value={hotel.phoneNumber}
+                        onChange={(event) => handleHotelChange(index, 'phoneNumber', event.target.value)}
+                        placeholder="+91 98765 43210"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor={`hotel-budget-${index}`} className={labelClassName}>
+                        Budget
+                      </label>
+                      <input
+                        id={`hotel-budget-${index}`}
+                        type="number"
+                        min="0"
+                        className={inputClassName}
+                        value={hotel.budget}
+                        onChange={(event) => handleHotelChange(index, 'budget', event.target.value)}
+                        placeholder="3200"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label htmlFor={`hotel-address-${index}`} className={labelClassName}>
+                        Address
+                      </label>
+                      <input
+                        id={`hotel-address-${index}`}
+                        className={inputClassName}
+                        value={hotel.address}
+                        onChange={(event) => handleHotelChange(index, 'address', event.target.value)}
+                        placeholder="Main Road, Coorg"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label htmlFor={`hotel-photos-${index}`} className={labelClassName}>
+                        Photo URLs
+                      </label>
+                      <textarea
+                        id={`hotel-photos-${index}`}
+                        className={`${inputClassName} min-h-20 resize-y`}
+                        value={hotel.photos}
+                        onChange={(event) => handleHotelChange(index, 'photos', event.target.value)}
+                        placeholder="https://example.com/hotel.jpg"
+                      />
+                      <p className="mt-2 text-xs text-gray-500">Use commas or new lines to separate URLs.</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between gap-4">
+                <label className={labelClassName}>Vehicles</label>
+                <button
+                  type="button"
+                  onClick={addVehicle}
+                  disabled={isSubmitting}
+                  className="rounded-full border border-gray-300 px-4 py-2 text-xs font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Add vehicle
+                </button>
+              </div>
+
+              {formState.vehicles.length === 0 && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Add vehicles if transport is included in the package.
+                </p>
+              )}
+
+              {formState.vehicles.map((vehicle, index) => (
+                <div
+                  key={`vehicle-${index}`}
+                  className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-700">Vehicle {index + 1}</p>
+                    <button
+                      type="button"
+                      onClick={() => removeVehicle(index)}
+                      disabled={isSubmitting}
+                      className="text-xs font-semibold text-red-600 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label htmlFor={`vehicle-name-${index}`} className={labelClassName}>
+                        Vehicle name
+                      </label>
+                      <input
+                        id={`vehicle-name-${index}`}
+                        className={inputClassName}
+                        value={vehicle.car}
+                        onChange={(event) => handleVehicleChange(index, 'car', event.target.value)}
+                        placeholder="Innova"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor={`vehicle-number-${index}`} className={labelClassName}>
+                        Car number
+                      </label>
+                      <input
+                        id={`vehicle-number-${index}`}
+                        className={inputClassName}
+                        value={vehicle.carNumber}
+                        onChange={(event) => handleVehicleChange(index, 'carNumber', event.target.value)}
+                        placeholder="KA 01 AB 1234"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor={`vehicle-driver-${index}`} className={labelClassName}>
+                        Driver name (optional)
+                      </label>
+                      <input
+                        id={`vehicle-driver-${index}`}
+                        className={inputClassName}
+                        value={vehicle.driverName}
+                        onChange={(event) => handleVehicleChange(index, 'driverName', event.target.value)}
+                        placeholder="Ravi"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor={`vehicle-driver-phone-${index}`} className={labelClassName}>
+                        Driver phone number
+                      </label>
+                      <input
+                        id={`vehicle-driver-phone-${index}`}
+                        className={inputClassName}
+                        value={vehicle.driverPhoneNumber}
+                        onChange={(event) => handleVehicleChange(index, 'driverPhoneNumber', event.target.value)}
+                        placeholder="+91 90000 00000"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor={`vehicle-type-${index}`} className={labelClassName}>
+                        Vehicle type (optional)
+                      </label>
+                      <input
+                        id={`vehicle-type-${index}`}
+                        className={inputClassName}
+                        value={vehicle.vehicleType}
+                        onChange={(event) => handleVehicleChange(index, 'vehicleType', event.target.value)}
+                        placeholder="SUV"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor={`vehicle-budget-${index}`} className={labelClassName}>
+                        Budget
+                      </label>
+                      <input
+                        id={`vehicle-budget-${index}`}
+                        type="number"
+                        min="0"
+                        className={inputClassName}
+                        value={vehicle.budget}
+                        onChange={(event) => handleVehicleChange(index, 'budget', event.target.value)}
+                        placeholder="1800"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="md:col-span-2">
