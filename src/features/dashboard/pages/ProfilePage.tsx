@@ -2,7 +2,14 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useEffect, useState } from 'react'
 import { fetchCurrentUser, type CurrentUser } from '../services/dashboardApi'
-import { fetchCreatedPackagesCount, fetchLikedPackagesCount } from '../services/packageApi'
+import {
+  fetchCreatedPackagesCount,
+  fetchLikedTrips,
+  fetchLikedPackagesCount,
+  type LikedTripSummary,
+} from '../services/packageApi'
+
+type ProfileTab = 'general' | 'liked'
 
 const getDisplayName = (name?: string | null, email?: string | null) => {
   if (name?.trim()) {
@@ -45,6 +52,8 @@ const ProfilePage = () => {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [likedCount, setLikedCount] = useState(0)
   const [createdCount, setCreatedCount] = useState(0)
+  const [likedTrips, setLikedTrips] = useState<LikedTripSummary[]>([])
+  const [activeTab, setActiveTab] = useState<ProfileTab>('general')
 
   useEffect(() => {
     const loadCurrentUser = async () => {
@@ -53,6 +62,8 @@ const ProfilePage = () => {
         fetchLikedPackagesCount(),
         fetchCreatedPackagesCount(),
       ])
+
+      const likedTripsResult = await Promise.allSettled([fetchLikedTrips()])
 
       if (userResult.status === 'fulfilled') {
         setCurrentUser(userResult.value.user)
@@ -64,6 +75,12 @@ const ProfilePage = () => {
         setLikedCount(likedResult.value)
       } else {
         setLikedCount(0)
+      }
+
+      if (likedTripsResult[0].status === 'fulfilled') {
+        setLikedTrips(likedTripsResult[0].value)
+      } else {
+        setLikedTrips([])
       }
 
       if (createdResult.status === 'fulfilled') {
@@ -138,6 +155,33 @@ const ProfilePage = () => {
       <div className="relative z-10 -mt-6 rounded-t-3xl bg-slate-50 pt-4 md:mx-auto md:mt-0 md:max-w-6xl md:rounded-none md:bg-transparent md:px-6 md:pt-6 lg:px-8">
         <div className="mx-auto w-full max-w-6xl px-4 pb-8 md:px-0">
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-5 border-b border-slate-200">
+              <div className="grid grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('general')}
+                  className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                    activeTab === 'general'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  General
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('liked')}
+                  className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                    activeTab === 'liked'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  Liked Trips
+                </button>
+              </div>
+            </div>
+
             <div className="mb-5 grid grid-cols-3 gap-3">
               {stats.map((stat) => (
                 <div key={stat.label} className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-3 text-center">
@@ -155,17 +199,43 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3 md:grid-cols-2">
-              {details.map((detail) => (
-                <div
-                  key={detail.label}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{detail.label}</p>
-                  <p className="mt-2 truncate text-sm font-semibold text-slate-950">{detail.value}</p>
-                </div>
-              ))}
-            </div>
+            {activeTab === 'general' ? (
+              <div className="mt-6 grid gap-3 md:grid-cols-2">
+                {details.map((detail) => (
+                  <div
+                    key={detail.label}
+                    className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{detail.label}</p>
+                    <p className="mt-2 truncate text-sm font-semibold text-slate-950">{detail.value}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Liked Trips</p>
+
+                {likedTrips.length === 0 ? (
+                  <p className="mt-3 text-sm text-slate-600">No liked trips yet.</p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {likedTrips.map((trip) => (
+                      <li
+                        key={trip.id}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/trip/${trip.id}`)}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-sm font-medium text-slate-900 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                        >
+                          {trip.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </section>
         </div>
       </div>
