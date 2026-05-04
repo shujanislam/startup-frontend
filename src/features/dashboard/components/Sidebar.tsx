@@ -97,7 +97,7 @@ const sortOptions: Array<FilterOption<SortType>> = [
   { id: 'popular', label: 'Most Popular', icon: <FlameIcon /> },
   { id: 'cheapest', label: 'Cheapest First', icon: <WalletIcon /> },
   { id: 'newest', label: 'Newest', icon: <SparkIcon /> },
-  { id: 'shortest', label: 'Shortest Trip', icon: <ClockIcon /> },
+  { id: 'myTrips', label: 'My Trips', icon: <ClockIcon /> },
 ]
 
 const seasonOptions: Array<FilterOption<SeasonType>> = [

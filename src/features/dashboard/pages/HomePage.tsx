@@ -146,6 +146,12 @@ const HomePage = () => {
   }, [authLoading, user, loadCurrentUser])
 
   useEffect(() => {
+    if (currentUser && !currentUser.onboardingComplete) {
+      navigate('/onboarding', { replace: true })
+    }
+  }, [currentUser, navigate])
+
+  useEffect(() => {
     void fetchPendingTrips()
   }, [fetchPendingTrips])
 
