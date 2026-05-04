@@ -254,8 +254,15 @@ const HomePage = () => {
     }
   }
 
-  const featured = !isAdmin && trips.length > 0 ? { ...trips[0], badge: 'Featured', isFeatured: true } : null
-  const remainingTrips = isAdmin ? trips : featured ? trips.slice(1) : trips
+  const hasActiveFilters =
+    searchQuery.trim().length > 0 || season !== 'all' || sortBy !== 'all' || maxBudget < 10000
+
+  const featured =
+    !isAdmin && !hasActiveFilters && trips.length > 0
+      ? { ...trips[0], badge: 'Featured', isFeatured: true }
+      : null
+
+  const remainingTrips = isAdmin || hasActiveFilters ? trips : featured ? trips.slice(1) : trips
 
   if (authLoading) {
     return (
@@ -286,7 +293,7 @@ const HomePage = () => {
             <HomeHeader
               userName={currentUser?.email?.split('@')[0] || 'User'}
               userEmail={user?.email}
-              userPhotoURL={user?.photoURL}
+              userPhotoURL={currentUser?.profilePicture || user?.photoURL}
               searchQuery={searchQuery}
               onSearch={handleSearch}
               onSubmitTrip={handleSubmitTrip}
@@ -294,6 +301,7 @@ const HomePage = () => {
               onProfileClick={() => navigate('/profile')}
               isLoggingOut={isLoggingOut}
               isAdmin={isAdmin}
+              profilePhotoURL={currentUser?.profilePicture}
             />
 
             {(isAdmin || banner) && (
@@ -435,7 +443,7 @@ const HomePage = () => {
               {!isLoading && !error && remainingTrips.length === 0 && (
                 <div className="flex min-h-64 flex-col items-center justify-center px-4 text-center">
                   <div className="mb-4 text-5xl">O</div>
-                  <p className="mb-2 text-lg font-semibold text-gray-700">No approved trips found</p>
+                  <p className="mb-2 text-lg font-semibold text-gray-700">No trips found</p>
                   <p className="text-sm text-gray-500">Try changing your filters or submit a new trip.</p>
                 </div>
               )}

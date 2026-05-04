@@ -11,6 +11,7 @@ interface HomeHeaderProps {
   onProfileClick: () => void
   isLoggingOut: boolean
   isAdmin: boolean
+  profilePhotoURL?: string
 }
 
 const getInitials = (email?: string | null) => {
@@ -29,6 +30,7 @@ const HomeHeader = ({
   onProfileClick,
   isLoggingOut,
   isAdmin,
+  profilePhotoURL,
 }: HomeHeaderProps) => {
   return (
     <section className="mx-auto w-full max-w-5xl px-4 pt-6 md:px-6 lg:px-8 md:pt-8">
@@ -61,6 +63,7 @@ const HomeHeader = ({
             onLogout={onLogout}
             isLoggingOut={isLoggingOut}
             isAdmin={isAdmin}
+            profilePhotoURL={profilePhotoURL}
           />
         </div>
       </div>

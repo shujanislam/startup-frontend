@@ -1,7 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import type { TripDetail } from '../../types/trip'
-import { fetchPackageById, fetchRevealedPackageIds, revealPackage } from '../../services/packageApi'
+import {
+  fetchPackageById,
+  fetchRevealedPackageIds,
+  likePackage,
+  revealPackage,
+} from '../../services/packageApi'
 import { TripDetailHero } from './TripDetailHero'
 import { TripDetailTitle } from './TripDetailTitle'
 import { TripDetailOverview } from './TripDetailOverview'
@@ -24,8 +29,11 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [unlockError, setUnlockError] = useState<string | null>(null)
+  const [likeError, setLikeError] = useState<string | null>(null)
   const [isRevealed, setIsRevealed] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
+  const [isLiked, setIsLiked] = useState(false)
+  const [isLiking, setIsLiking] = useState(false)
 
   const handleBack = () => {
     navigate('/home')
@@ -76,6 +84,29 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
     }
   }
 
+  const handleLikeTrip = async () => {
+    if (isLiked || isLiking) {
+      return
+    }
+
+    setLikeError(null)
+    setIsLiking(true)
+
+    try {
+      const result = await likePackage(tripId)
+      setIsLiked(true)
+
+      if (result.alreadyLiked) {
+        setLikeError('You have already liked this trip.')
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to like this trip'
+      setLikeError(msg)
+    } finally {
+      setIsLiking(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
@@ -110,7 +141,13 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-24">
-      <TripDetailHero trip={trip} onBack={handleBack} />
+      <TripDetailHero
+        trip={trip}
+        onBack={handleBack}
+        isLiked={isLiked}
+        isLiking={isLiking}
+        onLikeTrip={handleLikeTrip}
+      />
       <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0">
         <div className="max-w-3xl mx-auto w-full px-4 md:px-6 lg:px-8">
         <TripDetailTitle trip={trip} />
@@ -125,6 +162,11 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
         {unlockError && (
           <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {unlockError}
+          </p>
+        )}
+        {likeError && (
+          <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            {likeError}
           </p>
         )}
         </div>
