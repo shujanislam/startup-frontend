@@ -22,17 +22,6 @@
 }
 
 @layer utilities {
-  .dashboard-shell {
-    background-color: #f8fdff;
-    background-image:
-      radial-gradient(circle at 12% 12%, rgba(14, 165, 233, 0.18), transparent 42%),
-      radial-gradient(circle at 82% 16%, rgba(20, 184, 166, 0.2), transparent 40%),
-      radial-gradient(circle at 22% 78%, rgba(56, 189, 248, 0.12), transparent 45%),
-      linear-gradient(180deg, #f8fdff 0%, #edfdfc 48%, #ffffff 100%);
-    background-repeat: no-repeat;
-    background-size: cover;
-  }
-
   .sidebar-rise {
     animation: sidebar-rise 520ms ease-out both;
   }

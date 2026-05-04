@@ -259,7 +259,7 @@ const HomePage = () => {
 
   if (authLoading) {
     return (
-      <div className="dashboard-shell flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
           <p className="text-sm text-gray-500">Checking session...</p>
@@ -274,15 +274,15 @@ const HomePage = () => {
 
   return (
     <>
-      <div className="dashboard-shell flex min-h-screen">
-        <div className="flex w-full">
+      <div className="flex min-h-screen bg-gray-50">
+        <div className="flex w-full overflow-hidden">
           <Sidebar
             onSortChange={handleSortChange}
             onSeasonChange={handleSeasonChange}
             onBudgetChange={handleBudgetChange}
           />
 
-          <main className="flex-1 overflow-y-auto pb-24">
+          <main className="flex-1 overflow-y-auto bg-gray-50 pb-24">
             <HomeHeader
               userName={currentUser?.email?.split('@')[0] || 'User'}
               userEmail={user?.email}
