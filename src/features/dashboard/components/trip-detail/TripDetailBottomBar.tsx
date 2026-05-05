@@ -33,9 +33,15 @@ const TripDetailBottomBar = ({
             type="button"
             onClick={onUnlockTrip}
             disabled={isRevealed || isUnlocking}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 md:px-6 md:text-sm"
+            className={`rounded-lg px-4 py-2 text-xs font-semibold text-white transition md:px-6 md:text-sm ${
+              isRevealed
+                ? 'bg-emerald-500'
+                : isUnlocking
+                  ? 'bg-slate-600'
+                  : 'bg-slate-900 hover:bg-slate-800'
+            } disabled:cursor-not-allowed`}
           >
-            {isRevealed ? 'Trip Unlocked' : isUnlocking ? 'Unlocking...' : 'Unlock Trip'}
+            {isRevealed ? '✅ Trip Unlocked' : isUnlocking ? 'Unlocking...' : 'Unlock Trip'}
           </button>
         </div>
       </div>

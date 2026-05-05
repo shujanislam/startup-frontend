@@ -152,9 +152,10 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
           />
         </div>
 
-        <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0 lg:z-auto lg:mx-0 lg:mt-0 lg:w-2/5 lg:max-w-none lg:overflow-y-auto lg:bg-gray-50 lg:pt-6 lg:pb-24">
+        <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0 lg:z-auto lg:mx-0 lg:mt-0 lg:w-2/5 lg:max-w-none lg:overflow-y-auto lg:bg-linear-to-b lg:from-[#f8faff] lg:via-white lg:to-white lg:pt-6 lg:pb-24">
           <div className="mx-auto w-full max-w-3xl px-4 md:px-6 lg:max-w-none lg:px-8">
             <TripDetailTitle trip={trip} />
+            <div className="my-6 h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
             <TripDetailOverview trip={trip} />
             <TripDetailSpots trip={trip} />
             <TripDetailAdditional trip={trip} />

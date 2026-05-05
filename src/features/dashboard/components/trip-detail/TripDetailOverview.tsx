@@ -16,7 +16,7 @@ const TripDetailOverview = ({ trip }: TripDetailOverviewProps) => {
 
   return (
     <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-slate-200 border-l-[3px] border-l-blue-500 bg-blue-50/40 p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-full border border-gray-300 bg-white text-gray-500">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -36,14 +36,14 @@ const TripDetailOverview = ({ trip }: TripDetailOverviewProps) => {
             ['End Date', formatDate(trip.endDate || trip.startDate)],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
-              <span className="text-xs font-medium text-gray-500 md:text-sm">{label}</span>
-              <span className="text-xs font-semibold text-gray-800 md:text-sm">{value}</span>
+              <span className="text-xs font-medium text-[#94a3b8] md:text-sm">{label}</span>
+              <span className="text-xs font-semibold text-[#0f172a] md:text-sm">{value}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-slate-200 border-l-[3px] border-l-orange-400 bg-orange-50/40 p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-full border border-gray-300 bg-white text-gray-500">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -55,14 +55,14 @@ const TripDetailOverview = ({ trip }: TripDetailOverviewProps) => {
 
         <div className="space-y-3">
           <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
-            <p className="text-xs font-medium text-gray-500">Identification</p>
-            <p className="mt-1 text-sm font-semibold text-gray-800">
+            <p className="text-xs font-medium text-[#94a3b8]">Identification</p>
+            <p className="mt-1 text-sm font-semibold text-[#0f172a]">
               {trip.identification ? 'Carry ID proof' : 'No ID required'}
             </p>
           </div>
           <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
-            <p className="text-xs font-medium text-gray-500">Permit</p>
-            <p className="mt-1 text-sm font-semibold text-gray-800">{trip.permit}</p>
+            <p className="text-xs font-medium text-[#94a3b8]">Permit</p>
+            <p className="mt-1 text-sm font-semibold text-[#0f172a]">{trip.permit}</p>
           </div>
         </div>
       </div>
