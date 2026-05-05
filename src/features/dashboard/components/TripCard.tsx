@@ -39,6 +39,17 @@ const TripCard = ({
 
   const displayTags = trip.tags.slice(0, 3)
   const showSecondaryAction = Boolean(secondaryActionLabel && onSecondaryAction)
+  const seasonLabel = trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)
+  const seasonEmoji =
+    trip.season === 'summer'
+      ? '☀️'
+      : trip.season === 'winter'
+        ? '❄️'
+        : trip.season === 'monsoon'
+          ? '🌧️'
+          : trip.season === 'autumn'
+            ? '🍂'
+            : '🌍'
 
   const handleSecondaryActionClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
@@ -63,13 +74,7 @@ const TripCard = ({
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/5 via-black/10 to-black/75" />
-
-      <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-lg border border-white/20 bg-black/50 px-2.5 py-1 text-white backdrop-blur-sm">
-        <span className="text-xs font-semibold">
-          {trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}
-        </span>
-      </div>
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-transparent via-black/20 to-black/85" />
 
       {showSecondaryAction && (
         <button
@@ -83,11 +88,16 @@ const TripCard = ({
       )}
 
       <div className="absolute bottom-0 left-0 right-0 z-10 p-3 text-white">
-        <h3 className="line-clamp-1 text-base font-semibold leading-snug">{trip.name}</h3>
-        <div className="mt-1 flex items-center justify-between text-sm">
-          <span className="font-semibold text-emerald-300">{formatPrice(trip.price)}</span>
-          <span className="font-medium">⭐ {trip.rating}</span>
+        <div className="flex items-end justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-lg font-semibold text-emerald-200">{formatPrice(trip.price)}</span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/50 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+              {seasonEmoji} {seasonLabel}
+            </span>
+          </div>
+          <span className="text-sm font-medium">⭐ {trip.rating}</span>
         </div>
+        <h3 className="mt-2 line-clamp-1 text-base font-semibold leading-snug">{trip.name}</h3>
 
         {displayTags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">

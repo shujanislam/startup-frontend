@@ -6,7 +6,7 @@ interface TripDetailTitleProps {
 
 const TripDetailTitle = ({ trip }: TripDetailTitleProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mt-8 md:mt-12 lg:mt-16">
+    <div className="rounded-lg bg-linear-to-b from-[#f8faff] to-white shadow-md p-6 mt-4 md:mt-6 lg:mt-8">
       {/* Row 1: Title + Rating */}
       <div className="flex justify-between items-start gap-4 mb-4">
         <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
@@ -50,9 +50,9 @@ const TripDetailTitle = ({ trip }: TripDetailTitleProps) => {
       {/*   </div> */}
       {/* )} */}
 
-      <div className="mt-8 rounded-xl bg-gray-50">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-900">Description</p>
-        <p className="mt-2 text-sm leading-6 text-gray-700">{trip.description}</p>
+      <div className="mt-6 rounded-xl bg-white/70">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#94a3b8]">Description</p>
+        <p className="mt-2 text-base leading-[1.7] text-gray-700">{trip.description}</p>
       </div>
     </div>
   )
