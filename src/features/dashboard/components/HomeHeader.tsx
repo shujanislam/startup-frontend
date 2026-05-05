@@ -44,18 +44,33 @@ const HomeHeader = ({
           </h1>
         </div>
 
-        <button
-          type="button"
-          className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-transparent bg-slate-200 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-300 focus:border-blue-500 focus:outline-none md:hidden"
-          aria-label="Go to profile"
-          onClick={onProfileClick}
-        >
-          {userPhotoURL ? (
-            <img src={userPhotoURL} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <span>{getInitials(userEmail)}</span>
-          )}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            type="button"
+            className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-transparent bg-slate-200 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-300 focus:border-blue-500 focus:outline-none"
+            aria-label="Go to profile"
+            onClick={onProfileClick}
+          >
+            {userPhotoURL ? (
+              <img src={userPhotoURL} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span>{getInitials(userEmail)}</span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={onLogout}
+            disabled={isLoggingOut}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-red-200 hover:text-red-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+            aria-label="Log out"
+            title="Log out"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m-3-3h8.25m0 0-3-3m3 3-3 3" />
+            </svg>
+            <span className="hidden sm:inline">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+          </button>
+        </div>
         <div className="hidden md:block">
           <Navbar
             onSearch={onSearch}
