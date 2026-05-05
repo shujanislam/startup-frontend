@@ -16,7 +16,7 @@ const TripDetailOverview = ({ trip }: TripDetailOverviewProps) => {
 
   return (
     <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="rounded-xl border border-slate-200 border-l-[3px] border-l-blue-500 bg-blue-50/40 p-5 shadow-sm">
+      <div className="rounded-xl border border-slate-200  p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-full border border-gray-300 bg-white text-gray-500">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -43,7 +43,7 @@ const TripDetailOverview = ({ trip }: TripDetailOverviewProps) => {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 border-l-[3px] border-l-orange-400 bg-orange-50/40 p-5 shadow-sm">
+      <div className="rounded-xl border border-slate-200 p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-full border border-gray-300 bg-white text-gray-500">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

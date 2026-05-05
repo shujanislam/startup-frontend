@@ -25,6 +25,7 @@ interface TripDetailPageProps {
 
 const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   const navigate = useNavigate()
+  const [activeDesktopTab, setActiveDesktopTab] = useState<'overview' | 'places' | 'contact'>('overview')
   const [trip, setTrip] = useState<TripDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -140,20 +141,18 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-24 lg:h-screen lg:overflow-hidden lg:pb-0">
-      <div className="flex flex-col lg:flex-row lg:h-full">
-        <div className="lg:w-3/5 lg:h-screen">
-          <TripDetailHero
-            trip={trip}
-            onBack={handleBack}
-            isLiked={isLiked}
-            isLiking={isLiking}
-            onLikeTrip={handleLikeTrip}
-          />
-        </div>
+    <div className="flex min-h-screen flex-col bg-gray-50 pb-24 lg:pb-8">
+      <TripDetailHero
+        trip={trip}
+        onBack={handleBack}
+        isLiked={isLiked}
+        isLiking={isLiking}
+        onLikeTrip={handleLikeTrip}
+      />
 
-        <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0 lg:z-auto lg:mx-0 lg:mt-0 lg:w-2/5 lg:max-w-none lg:overflow-y-auto lg:bg-linear-to-b lg:from-[#f8faff] lg:via-white lg:to-white lg:pt-6 lg:pb-24">
-          <div className="mx-auto w-full max-w-3xl px-4 md:px-6 lg:max-w-none lg:px-8">
+      <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0 lg:-mt-10 lg:w-[1200px] lg:max-w-[1200px] lg:rounded-3xl lg:border lg:border-slate-200 lg:bg-white lg:px-8 lg:pt-8 lg:shadow-sm">
+        <div className="mx-auto w-full max-w-3xl px-4 pb-8 md:px-6 lg:max-w-none lg:px-0 lg:pb-10">
+          <div className="lg:hidden">
             <TripDetailTitle trip={trip} />
             <div className="my-6 h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
             <TripDetailOverview trip={trip} />
@@ -164,6 +163,7 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
             <TripDetailLinks trip={trip} />
             <TripDetailCreator trip={trip} />
             <TripDetailReviews packageId={trip.id} isRevealed={isRevealed} />
+
             {unlockError && (
               <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                 {unlockError}
@@ -174,6 +174,86 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
                 {likeError}
               </p>
             )}
+          </div>
+
+          <div className="hidden lg:grid lg:grid-cols-[680px_424px] lg:gap-8">
+            <section className="w-[680px] rounded-2xl border border-slate-200 bg-white p-6">
+              <div className="mb-6 border-b border-slate-200">
+                <div className="grid grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={() => setActiveDesktopTab('overview')}
+                    className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                      activeDesktopTab === 'overview'
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    Overview
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveDesktopTab('places')}
+                    className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                      activeDesktopTab === 'places'
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    Places
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveDesktopTab('contact')}
+                    className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                      activeDesktopTab === 'contact'
+                        ? 'border-blue-600 text-blue-600'
+                        : 'border-transparent text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    Contact
+                  </button>
+                </div>
+              </div>
+
+              {activeDesktopTab === 'overview' && (
+                <>
+                  <TripDetailTitle trip={trip} />
+                  <TripDetailOverview trip={trip} />
+                </>
+              )}
+
+              {activeDesktopTab === 'places' && (
+                <>
+                  <TripDetailSpots trip={trip} />
+                  <TripDetailAdditional trip={trip} />
+                </>
+              )}
+
+              {activeDesktopTab === 'contact' && (
+                <>
+                  <TripDetailHotels trip={trip} isRevealed={isRevealed} />
+                  <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
+                  <TripDetailLinks trip={trip} />
+                  <TripDetailCreator trip={trip} />
+                </>
+              )}
+
+              {unlockError && (
+                <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {unlockError}
+                </p>
+              )}
+              {likeError && (
+                <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                  {likeError}
+                </p>
+              )}
+            </section>
+
+            <section className="w-[424px] rounded-2xl border border-slate-200 bg-white p-6">
+              <TripDetailReviews packageId={trip.id} isRevealed={isRevealed} />
+            </section>
           </div>
         </div>
       </div>
