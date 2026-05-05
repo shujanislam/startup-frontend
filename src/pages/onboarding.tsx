@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
 import { fetchCurrentUser, updateProfile } from '../features/dashboard/services/dashboardApi'
+import onboard from "../assets/onboard.png"
 
 type Step = 0 | 1 | 2 | 3
 
@@ -69,10 +70,10 @@ const FloatingLabelInput = ({
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="peer h-14 w-full rounded-2xl border border-slate-200 px-4 pt-5 text-sm outline-none transition focus:border-[#14b8a6] focus:ring-4 focus:ring-[#14b8a6]/15"
+      className="peer h-14 w-full rounded-2xl border border-slate-200 px-4 pt-5 text-sm outline-none transition focus:border-[#3b82f6] focus:ring-4 focus:ring-[#3b82f6]/15"
       placeholder={placeholder}
     />
-    <span className="pointer-events-none absolute left-4 top-4 origin-left text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:scale-85 peer-focus:text-[#0f766e] peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:scale-85">
+    <span className="pointer-events-none absolute left-4 top-4 origin-left text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:scale-85 peer-focus:text-[#1d4ed8] peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:scale-85">
       {label}
     </span>
   </label>
@@ -172,36 +173,47 @@ const OnboardingRoute = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fbfb] text-slate-900">
+    <div className="relative min-h-screen bg-transparent text-slate-900 lg:bg-[#f8fbfb]">
+      <div
+        className="fixed inset-0 -z-10 lg:hidden"
+        style={{
+          backgroundImage: `url(${onboard})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
       <div className="mx-auto flex min-h-screen max-w-[1520px]">
         <section className="relative hidden flex-1 overflow-hidden lg:block">
           <img
-            src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1800&q=80"
+            src={onboard}
             alt="Hiker exploring mountain landscape"
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-linear-to-br from-[#0f172acc] via-[#0f766ec4] to-[#0f172a8c]" />
+          <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-[#0a0000]"/>
           <div className="absolute inset-0 flex flex-col justify-end p-12 text-white">
-            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-emerald-200">BudgetYatra</p>
+            {/* <p className="text-7xl font-serif font-bold uppercase tracking-[0.10em] text-[#71b0f8]">Alpine</p> */}
             <h2 className="mt-4 max-w-xl text-4xl font-bold leading-tight">
               Build your next adventure with trips that match your vibe and your budget.
             </h2>
-            <p className="mt-4 max-w-md text-sm leading-7 text-emerald-50/90">
+            <p className="mt-4 max-w-md text-sm leading-7 text-blue-200">
               From mountain treks to beach escapes, personalize your journey in seconds.
             </p>
           </div>
         </section>
 
-        <section className="flex w-full items-center justify-center bg-white px-6 py-10 lg:w-[620px] lg:px-12">
+        <section className="mx-4 my-6 flex w-full items-center justify-center rounded-[28px] border border-white/60 bg-white/75 px-6 py-10 shadow-[0_30px_80px_rgba(15,23,42,0.16)] backdrop-blur-sm lg:mx-0 lg:my-0 lg:w-[620px] lg:rounded-none lg:border-none lg:bg-white lg:px-12 lg:shadow-none lg:backdrop-blur-none">
           <div className="w-full max-w-[430px]">
+            <div className="mb-4 text-center text-lg font-bold font-display uppercase tracking-[0.45em] text-blue-700/80 lg:hidden">
+              Alpine
+            </div>
             <div className="mb-9">
               <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-600">
                 <span>{`Step ${stepNumber} of ${TOTAL_STEPS}`}</span>
-                <span className="text-[#14b8a6]">{Math.round(progress)}%</span>
+                <span className="text-blue-600">{Math.round(progress)}%</span>
               </div>
               <div className="h-2 rounded-full bg-slate-100">
                 <motion.div
-                  className="h-full rounded-full bg-[#14b8a6]"
+                  className="h-full rounded-full bg-blue-600"
                   initial={false}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -244,7 +256,7 @@ const OnboardingRoute = () => {
                           type="date"
                           value={form.dateOfBirth}
                           onChange={(e) => updateField('dateOfBirth', e.target.value)}
-                          className="h-14 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none transition focus:border-[#14b8a6] focus:ring-4 focus:ring-[#14b8a6]/15"
+                          className="h-14 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none transition focus:border-[#3b82f6] focus:ring-4 focus:ring-[#3b82f6]/15"
                         />
                       </div>
                     </div>
@@ -269,8 +281,8 @@ const OnboardingRoute = () => {
                                 onClick={() => updateField('gender', option)}
                                 className={`rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-all ${
                                   selected
-                                    ? 'border-[#14b8a6] bg-[#14b8a6]/10 text-[#0f766e] shadow-[0_8px_20px_rgba(20,184,166,0.18)]'
-                                    : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#14b8a6]/40 hover:shadow-md'
+                                    ? 'border-[#3b82f6] bg-[#3b82f6]/10 text-[#1d4ed8] shadow-[0_8px_20px_rgba(59,130,246,0.18)]'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#3b82f6]/40 hover:shadow-md'
                                 }`}
                               >
                                 {option}
@@ -312,8 +324,8 @@ const OnboardingRoute = () => {
                                 onClick={() => updateField('travelStyle', option)}
                                 className={`rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-all ${
                                   selected
-                                    ? 'border-[#14b8a6] bg-[#14b8a6]/10 text-[#0f766e] shadow-[0_8px_20px_rgba(20,184,166,0.18)]'
-                                    : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#14b8a6]/40 hover:shadow-md'
+                                    ? 'border-[#3b82f6] bg-[#3b82f6]/10 text-[#1d4ed8] shadow-[0_8px_20px_rgba(59,130,246,0.18)]'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#3b82f6]/40 hover:shadow-md'
                                 }`}
                               >
                                 {option}
@@ -335,8 +347,8 @@ const OnboardingRoute = () => {
                                 onClick={() => toggleItem('languages', lang)}
                                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
                                   selected
-                                    ? 'border-[#14b8a6] bg-[#14b8a6] text-white shadow-[0_4px_12px_rgba(20,184,166,0.3)]'
-                                    : 'border-slate-200 bg-white text-slate-600 hover:border-[#14b8a6]/40 hover:text-[#0f766e]'
+                                    ? 'border-[#3b82f6] bg-[#3b82f6] text-white shadow-[0_4px_12px_rgba(59,130,246,0.3)]'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:border-[#3b82f6]/40 hover:text-[#1d4ed8]'
                                 }`}
                               >
                                 {lang}
@@ -354,7 +366,7 @@ const OnboardingRoute = () => {
                           value={form.bio}
                           onChange={(e) => updateField('bio', e.target.value)}
                           rows={3}
-                          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#14b8a6] focus:ring-4 focus:ring-[#14b8a6]/15"
+                          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#3b82f6] focus:ring-4 focus:ring-[#3b82f6]/15"
                           placeholder="Tell travelers what makes your trips unforgettable..."
                         />
                       </div>
@@ -377,8 +389,8 @@ const OnboardingRoute = () => {
                             onClick={() => toggleItem('tags', option)}
                             className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
                               selected
-                                ? 'border-[#14b8a6] bg-[#14b8a6] text-white shadow-[0_8px_18px_rgba(20,184,166,0.35)]'
-                                : 'border-slate-200 bg-white text-slate-600 hover:border-[#14b8a6]/40 hover:text-[#0f766e]'
+                                ? 'border-[#3b82f6] bg-[#3b82f6] text-white shadow-[0_8px_18px_rgba(59,130,246,0.35)]'
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-[#3b82f6]/40 hover:text-[#1d4ed8]'
                             }`}
                           >
                             {option}
@@ -414,7 +426,7 @@ const OnboardingRoute = () => {
                 whileTap={{ scale: 0.94 }}
                 onClick={goNext}
                 disabled={!canContinue || isSubmitting}
-                className="h-12 flex-1 rounded-xl bg-[#14b8a6] text-sm font-semibold text-white transition hover:bg-[#0ea697] disabled:cursor-not-allowed disabled:opacity-45"
+                className="h-12 flex-1 rounded-xl bg-blue-600 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {isSubmitting ? 'Saving...' : step === 3 ? 'Finish Onboarding' : 'Continue'}
               </motion.button>
