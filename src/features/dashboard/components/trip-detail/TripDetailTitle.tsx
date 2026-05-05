@@ -6,7 +6,7 @@ interface TripDetailTitleProps {
 
 const TripDetailTitle = ({ trip }: TripDetailTitleProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mt-8 md:mt-12 lg:mt-16">
+    <div className="bg-white rounded-lg shadow-md p-6 mt-4 md:mt-6 lg:mt-8">
       {/* Row 1: Title + Rating */}
       <div className="flex justify-between items-start gap-4 mb-4">
         <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">

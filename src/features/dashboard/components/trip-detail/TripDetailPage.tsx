@@ -140,39 +140,44 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-24">
-      <TripDetailHero
-        trip={trip}
-        onBack={handleBack}
-        isLiked={isLiked}
-        isLiking={isLiking}
-        onLikeTrip={handleLikeTrip}
-      />
-      <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0">
-        <div className="max-w-3xl mx-auto w-full px-4 md:px-6 lg:px-8">
-        <TripDetailTitle trip={trip} />
-        <TripDetailOverview trip={trip} />
-        <TripDetailSpots trip={trip} />
-        <TripDetailAdditional trip={trip} />
-        <TripDetailHotels trip={trip} isRevealed={isRevealed} />
-        <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
-        <TripDetailLinks trip={trip} />
-        <TripDetailCreator trip={trip} />
-        <TripDetailReviews packageId={trip.id} isRevealed={isRevealed} />
-        {unlockError && (
-          <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {unlockError}
-          </p>
-        )}
-        {likeError && (
-          <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
-            {likeError}
-          </p>
-        )}
+    <div className="flex flex-col min-h-screen bg-gray-50 pb-24 lg:h-screen lg:overflow-hidden lg:pb-0">
+      <div className="flex flex-col lg:flex-row lg:h-full">
+        <div className="lg:w-3/5 lg:h-screen">
+          <TripDetailHero
+            trip={trip}
+            onBack={handleBack}
+            isLiked={isLiked}
+            isLiking={isLiking}
+            onLikeTrip={handleLikeTrip}
+          />
+        </div>
+
+        <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0 lg:z-auto lg:mx-0 lg:mt-0 lg:w-2/5 lg:max-w-none lg:overflow-y-auto lg:bg-gray-50 lg:pt-6 lg:pb-24">
+          <div className="mx-auto w-full max-w-3xl px-4 md:px-6 lg:max-w-none lg:px-8">
+            <TripDetailTitle trip={trip} />
+            <TripDetailOverview trip={trip} />
+            <TripDetailSpots trip={trip} />
+            <TripDetailAdditional trip={trip} />
+            <TripDetailHotels trip={trip} isRevealed={isRevealed} />
+            <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
+            <TripDetailLinks trip={trip} />
+            <TripDetailCreator trip={trip} />
+            <TripDetailReviews packageId={trip.id} isRevealed={isRevealed} />
+            {unlockError && (
+              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {unlockError}
+              </p>
+            )}
+            {likeError && (
+              <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                {likeError}
+              </p>
+            )}
+          </div>
         </div>
       </div>
+
       <TripDetailBottomBar
-        trip={trip}
         isRevealed={isRevealed}
         isUnlocking={isUnlocking}
         onUnlockTrip={handleUnlockTrip}

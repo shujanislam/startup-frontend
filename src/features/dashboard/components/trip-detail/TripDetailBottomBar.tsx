@@ -1,32 +1,19 @@
 import type { TripDetail } from '../../types/trip'
 
 interface TripDetailBottomBarProps {
-  trip: TripDetail
   isRevealed: boolean
   isUnlocking: boolean
   onUnlockTrip: () => void
 }
 
 const TripDetailBottomBar = ({
-  trip,
   isRevealed,
   isUnlocking,
   onUnlockTrip,
 }: TripDetailBottomBarProps) => {
-  const formatPrice = (price: number) => {
-    return `₹${price.toLocaleString()}`
-  }
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white/95 backdrop-blur-md">
-      <div className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full gap-4">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs uppercase tracking-[0.14em] text-gray-500">Estimated Budget</p>
-          <p className="mt-1 text-sm font-bold text-emerald-600 md:text-base">
-            {formatPrice(trip.price)} total
-          </p>
-        </div>
-
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-300 bg-slate-200 backdrop-blur-md lg:left-auto lg:right-0 lg:w-2/5 lg:border-l">
+      <div className="flex items-center justify-end gap-4 px-6 py-4 w-full max-w-6xl mx-auto lg:max-w-none">
         <div className="flex gap-2 md:gap-3 flex-wrap md:flex-nowrap">
           <button
             type="button"
