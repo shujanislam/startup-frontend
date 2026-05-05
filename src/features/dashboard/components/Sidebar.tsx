@@ -97,7 +97,7 @@ const sortOptions: Array<FilterOption<SortType>> = [
   { id: 'popular', label: 'Most Popular', icon: <FlameIcon /> },
   { id: 'cheapest', label: 'Cheapest First', icon: <WalletIcon /> },
   { id: 'newest', label: 'Newest', icon: <SparkIcon /> },
-  { id: 'myTrips', label: 'My Trips', icon: <ClockIcon /> },
+  { id: 'shortest', label: 'Shortest Trip', icon: <ClockIcon /> },
 ]
 
 const seasonOptions: Array<FilterOption<SeasonType>> = [
@@ -232,7 +232,7 @@ const Sidebar = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden h-screen w-72 shrink-0 overflow-hidden border-r border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:block">
+      <aside className="hidden h-screen w-72 shrink-0 overflow-hidden border-r border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:fixed lg:left-0 lg:top-0 lg:z-30 lg:block">
         <div className="border-slate-200 px-5">
           <div className="flex items-center gap-2 rounded-full pr-2">
             <img src={logoBlack} alt="Alpine" className="h-22 w-auto" />

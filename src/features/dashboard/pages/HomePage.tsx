@@ -295,7 +295,7 @@ const HomePage = () => {
             onBudgetChange={handleBudgetChange}
           />
 
-          <main className="flex-1 overflow-y-auto bg-gray-50 pb-24">
+          <main className="flex-1 overflow-y-auto bg-gray-50 pb-24 lg:ml-72">
             <HomeHeader
               userName={currentUser?.email?.split('@')[0] || 'User'}
               userEmail={user?.email}
