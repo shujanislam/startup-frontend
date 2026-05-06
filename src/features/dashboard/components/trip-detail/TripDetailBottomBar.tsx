@@ -1,5 +1,3 @@
-import type { TripDetail } from '../../types/trip'
-
 interface TripDetailBottomBarProps {
   isRevealed: boolean
   isUnlocking: boolean
@@ -12,8 +10,8 @@ const TripDetailBottomBar = ({
   onUnlockTrip,
 }: TripDetailBottomBarProps) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-300 bg-slate-200 backdrop-blur-md lg:left-auto lg:right-0 lg:w-2/5 lg:border-l">
-      <div className="flex items-center justify-end gap-4 px-6 py-4 w-full max-w-6xl mx-auto lg:max-w-none">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-300 backdrop-blur-md lg:static lg:mt-6 lg:w-full lg:rounded-none lg:border-x-0 lg:border-b-0 lg:bg-white lg:backdrop-blur-none">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-4 px-6 py-4 lg:max-w-none lg:py-2">
         <div className="flex gap-2 md:gap-3 flex-wrap md:flex-nowrap">
           <button
             type="button"
@@ -35,13 +33,13 @@ const TripDetailBottomBar = ({
             disabled={isRevealed || isUnlocking}
             className={`rounded-lg px-4 py-2 text-xs font-semibold text-white transition md:px-6 md:text-sm ${
               isRevealed
-                ? 'bg-emerald-500'
+                ? 'bg-blue-500'
                 : isUnlocking
                   ? 'bg-slate-600'
                   : 'bg-slate-900 hover:bg-slate-800'
             } disabled:cursor-not-allowed`}
           >
-            {isRevealed ? '✅ Trip Unlocked' : isUnlocking ? 'Unlocking...' : 'Unlock Trip'}
+            {isRevealed ? 'Trip Unlocked' : isUnlocking ? 'Unlocking...' : 'Unlock Trip'}
           </button>
         </div>
       </div>

@@ -29,20 +29,9 @@ const TripDetailHero = ({ trip, onBack, isLiked, isLiking, onLikeTrip }: TripDet
   }, [trip.name])
 
   const hasUsableImage = trip.imageUrl.trim().length > 0 && !imageFailed
-  const seasonLabel = trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)
-  const seasonEmoji =
-    trip.season === 'summer'
-      ? '☀️'
-      : trip.season === 'winter'
-        ? '❄️'
-        : trip.season === 'monsoon'
-          ? '🌧️'
-          : trip.season === 'autumn'
-            ? '🍂'
-            : '🌍'
 
   return (
-    <div className="relative h-[40vh] min-h-70 w-full overflow-hidden md:h-80 lg:h-screen">
+    <div className="relative h-[40vh] min-h-[280px] w-full overflow-hidden md:h-80 lg:h-[52vh] lg:min-h-[420px]">
       {/* Background Image */}
       {hasUsableImage ? (
         <img
@@ -58,7 +47,7 @@ const TripDetailHero = ({ trip, onBack, isLiked, isLiking, onLikeTrip }: TripDet
       )}
 
       {/* Dark Gradient Overlay */}
-      <div className="absolute inset-0 bg-linear-to-b from-transparent via-black/20 to-black/85" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-black/70" />
 
       {/* Back Button (Top Left) */}
       <button
@@ -85,16 +74,15 @@ const TripDetailHero = ({ trip, onBack, isLiked, isLiking, onLikeTrip }: TripDet
         </svg>
       </button>
 
-      <div className="absolute bottom-10 left-4 z-20 flex flex-col gap-2 md:bottom-6">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
-          Estimated Budget
-        </span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1.5 text-sm font-bold text-emerald-700">
-          {formatPrice(trip.price)}
-        </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/55 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur-sm">
-          {seasonEmoji} {seasonLabel}
-        </span>
+      {/* Season Badge (Bottom Left) */}
+      <div className="absolute bottom-10 left-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5 z-20 md:bottom-6">
+        {/* <span>{getSeasonEmoji(trip.season)}</span> */}
+        <span>{trip.season.charAt(0).toUpperCase() + trip.season.slice(1)}</span>
+      </div>
+
+      {/* Budget Badge (Bottom Right) */}
+      <div className="absolute bottom-10 right-4 bg-white text-green-600 px-3 py-1.5 rounded-full text-sm font-bold z-20 md:bottom-6">
+        {formatPrice(trip.price)}
       </div>
     </div>
   )

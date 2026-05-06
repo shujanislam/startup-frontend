@@ -90,15 +90,12 @@ const TripCard = ({
       <div className="absolute bottom-0 left-0 right-0 z-10 p-3 text-white">
         <div className="flex items-end justify-between gap-3">
           <div className="flex flex-col gap-1">
-            <span className="text-lg font-semibold text-emerald-200">{formatPrice(trip.price)}</span>
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/50 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-              {seasonEmoji} {seasonLabel}
-            </span>
+            <h3 className="mt-2 line-clamp-1 text-base font-semibold leading-snug">{trip.name}</h3>
           </div>
           <span className="text-sm font-medium">⭐ {trip.rating}</span>
         </div>
-        <h3 className="mt-2 line-clamp-1 text-base font-semibold leading-snug">{trip.name}</h3>
-
+        <span className="text-sm font-semibold text-emerald-200">{formatPrice(trip.price)}</span>
+        
         {displayTags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {displayTags.map((tag) => (

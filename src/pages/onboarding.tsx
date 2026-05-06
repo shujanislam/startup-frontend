@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
 import { fetchCurrentUser, updateProfile } from '../features/dashboard/services/dashboardApi'
 import onboard from "../assets/onboard.png"
+import Logo from '../assets/logo-black.png'
 
 type Step = 0 | 1 | 2 | 3
 
@@ -201,10 +202,10 @@ const OnboardingRoute = () => {
           </div>
         </section>
 
-        <section className="mx-4 my-6 flex w-full items-center justify-center rounded-[28px] border border-white/60 bg-white/75 px-6 py-10 shadow-[0_30px_80px_rgba(15,23,42,0.16)] backdrop-blur-sm lg:mx-0 lg:my-0 lg:w-[620px] lg:rounded-none lg:border-none lg:bg-white lg:px-12 lg:shadow-none lg:backdrop-blur-none">
+        <section className="mx-4 my-6 flex w-full items-center justify-center rounded-[28px] border border-white/60 bg-white/70 px-6 py-10 shadow-[0_30px_80px_rgba(15,23,42,0.16)] backdrop-blur-sm lg:mx-0 lg:my-0 lg:w-[620px] lg:rounded-none lg:border-none lg:bg-white lg:px-12 lg:shadow-none lg:backdrop-blur-none">
           <div className="w-full max-w-[430px]">
             <div className="mb-4 text-center text-lg font-bold font-display uppercase tracking-[0.45em] text-blue-700/80 lg:hidden">
-              Alpine
+              <img src={Logo} className="h-22 w-auto" /> 
             </div>
             <div className="mb-9">
               <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-600">
