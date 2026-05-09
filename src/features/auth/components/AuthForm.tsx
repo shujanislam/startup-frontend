@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import heroImage from '../../../assets/pikachu.jpg'
+import logoBlack from '../../../assets/logo-black.png'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -23,10 +24,10 @@ const AuthForm = ({
   const isLogin = mode === 'login'
 
   const inputClassName =
-    'w-full rounded-md border border-white/35 bg-white/15 px-4 py-3.5 mt-2 mb-2 text-md text-white shadow-inner outline-none transition placeholder:text-white/70 focus:border-white/70 focus:ring-4 focus:ring-white/30 lg:border-slate-200 lg:bg-white lg:text-slate-900 lg:placeholder:text-slate-400 lg:focus:border-blue-600 lg:focus:ring-blue-100'
+    'w-full rounded-2xl border border-white/35 bg-white/15 px-4 py-3.5 mt-2 mb-2 text-md text-white shadow-inner outline-none transition placeholder:text-white/70 focus:border-white/70 focus:ring-4 focus:ring-white/30 lg:rounded-md lg:border-slate-200 lg:bg-white lg:text-slate-900 lg:placeholder:text-slate-400 lg:focus:border-blue-600 lg:focus:ring-blue-100'
 
   const buttonClassName =
-    'w-full rounded-md px-4 py-4 text-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-60'
+    'w-full rounded-2xl px-4 py-4 text-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 lg:rounded-md'
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -61,12 +62,15 @@ const AuthForm = ({
         {/* 🔥 FORM */}
         <div
           className="
-            grid content-center p-6 sm:p-8 lg:p-14
+            grid -translate-y-4 content-center p-6 sm:p-8 lg:translate-y-0 lg:p-14
             bg-transparent text-white
             lg:bg-white/95 lg:text-slate-900
           "
         >
-          <h1 className="mb-4 text-6xl font-semibold font-display leading-tight text-white lg:text-slate-900">
+          <div className="mb-4 flex justify-center lg:hidden">
+            <img src={logoBlack} alt="Alpine" className="h-15 w-auto" />
+          </div>
+          <h1 className="mb-4 text-center text-6xl font-semibold font-display leading-tight text-white lg:text-left lg:text-slate-900">
             {isLogin ? (
               <>
                 Hey, <br /> Login now!
