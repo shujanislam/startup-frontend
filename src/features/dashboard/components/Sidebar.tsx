@@ -131,23 +131,21 @@ const FilterContent = ({
 }: FilterContentProps) => (
   <>
     <div>
-      <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Sort By</h3>
-      <div className="mt-3 grid gap-2">
+      <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Sort By</h3>
+      <div className="mt-2 grid gap-1">
         {sortOptions.map((option) => (
           <button
             key={option.id}
             type="button"
-            className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+            className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm font-medium transition ${
               activeSort === option.id
                 ? 'border-slate-950 bg-slate-950 text-white'
-                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
             }`}
             onClick={() => onSortClick(option.id)}
           >
             <span
-              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
-                activeSort === option.id ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'
-              }`}
+              className={`shrink-0 ${activeSort === option.id ? 'text-white' : 'text-slate-400'}`}
             >
               {option.icon}
             </span>
@@ -157,24 +155,22 @@ const FilterContent = ({
       </div>
     </div>
 
-    <div className="mt-7">
-      <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Season</h3>
-      <div className="mt-3 grid gap-2">
+    <div className="mt-4">
+      <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Season</h3>
+      <div className="mt-2 grid gap-1">
         {seasonOptions.map((option) => (
           <button
             key={option.id}
             type="button"
-            className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+            className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm font-medium transition ${
               activeSeason === option.id
                 ? 'border-slate-950 bg-slate-950 text-white'
-                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
             }`}
             onClick={() => onSeasonClick(option.id)}
           >
             <span
-              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
-                activeSeason === option.id ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'
-              }`}
+              className={`shrink-0 ${activeSeason === option.id ? 'text-white' : 'text-slate-400'}`}
             >
               {option.icon}
             </span>
@@ -184,10 +180,10 @@ const FilterContent = ({
       </div>
     </div>
 
-    <div className="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Max Budget</h3>
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-950 shadow-sm">
+    <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Max Budget</h3>
+        <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-950">
           ₹{maxBudget.toLocaleString()}
         </span>
       </div>
@@ -200,7 +196,7 @@ const FilterContent = ({
         value={maxBudget}
         onChange={onBudgetChange}
       />
-      <div className="mt-2 flex justify-between text-xs font-medium text-slate-400">
+      <div className="mt-1.5 flex justify-between text-[11px] font-medium text-slate-400">
         <span>₹500</span>
         <span>₹10,000</span>
       </div>
@@ -263,12 +259,12 @@ const TripFilterButton = ({
             onClick={() => setIsOpen(false)}
           />
 
-          <div className="fixed inset-x-3 bottom-3 z-50 max-h-[82vh] overflow-y-auto rounded-3xl bg-white p-4 text-left shadow-2xl md:absolute md:inset-auto md:right-0 md:top-12 md:w-80 md:rounded-2xl md:border md:border-slate-200">
-            <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
-              <h2 className="text-base font-semibold text-slate-950">Filters</h2>
+          <div className="fixed inset-x-3 bottom-3 z-50 max-h-[72vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-xl md:absolute md:inset-auto md:right-0 md:top-12 md:w-72">
+            <div className="mb-3 flex items-center justify-between gap-3 border-b border-slate-100 pb-2">
+              <h2 className="text-sm font-semibold text-slate-950">Filters</h2>
               <button
                 type="button"
-                className="grid h-9 w-9 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
                 onClick={() => setIsOpen(false)}
                 aria-label="Close filters"
               >

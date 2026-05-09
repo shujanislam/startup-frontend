@@ -86,13 +86,13 @@ const TripCard = ({
 
       <div className="absolute bottom-0 left-0 right-0 z-10 p-5 text-white">
         <h3 className="line-clamp-2 text-xl font-semibold leading-tight">{trip.name}</h3>
-        <p className="mt-3 text-lg font-semibold">Starting at {formatPrice(trip.price)}</p>
+        <p className="mt-3 text-sm font-medium text-white/75">Starting at {formatPrice(trip.price)}</p>
 
-        <div className="mt-2 flex items-center justify-between gap-3 text-sm font-semibold">
-          <span>{durationText}</span>
-          <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <span className="text-xs font-medium text-white/65">{durationText}</span>
+          <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white/90">
             Learn More
-            <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-5-5 5 5-5 5" />
             </svg>
           </span>

@@ -64,9 +64,9 @@ const FeaturedTripCard = ({ trip, onClick }: FeaturedTripCardProps) => {
           <h2 className="line-clamp-2 text-2xl font-semibold leading-tight sm:text-4xl">
             {trip.name}
           </h2>
-          <p className="mt-3 text-lg font-semibold sm:text-2xl">Starting at {formatPrice(trip.price)}</p>
+          <p className="mt-3 text-md text-gray-300 font-semibold sm:text-xl">Starting at {formatPrice(trip.price)}</p>
 
-          <div className="mt-3 flex w-full items-center justify-between gap-4 text-sm font-semibold sm:text-base">
+          <div className="mt-3 flex w-full items-center justify-between gap-4 text-sm font-normal text-gray-400 sm:text-base">
             <span>{durationText}</span>
             <span className="inline-flex items-center gap-1 whitespace-nowrap">
               Learn More
