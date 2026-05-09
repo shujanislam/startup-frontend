@@ -71,10 +71,10 @@ const FloatingLabelInput = ({
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="peer h-14 w-full rounded-2xl border border-slate-200 px-4 pt-5 text-sm outline-none transition focus:border-[#3b82f6] focus:ring-4 focus:ring-[#3b82f6]/15"
+      className="peer h-14 w-full rounded-2xl border border-white/35 bg-white/15 px-4 pt-5 text-sm text-white outline-none transition placeholder:text-white/70 focus:border-white/70 focus:ring-4 focus:ring-white/30 lg:border-slate-200 lg:bg-white lg:text-slate-900 lg:placeholder:text-slate-400 lg:focus:border-[#3b82f6] lg:focus:ring-[#3b82f6]/15"
       placeholder={placeholder}
     />
-    <span className="pointer-events-none absolute left-4 top-4 origin-left text-sm text-slate-500 transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:scale-85 peer-focus:text-[#1d4ed8] peer-[&:not(:placeholder-shown)]:top-2 peer-[&:not(:placeholder-shown)]:scale-85">
+    <span className="pointer-events-none absolute left-4 top-4 origin-left text-sm text-white/70 transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:scale-85 peer-focus:text-white peer-not-placeholder-shown:top-2 peer-not-placeholder-shown:scale-85 lg:text-slate-500 lg:peer-focus:text-[#1d4ed8]">
       {label}
     </span>
   </label>
@@ -174,18 +174,18 @@ const OnboardingRoute = () => {
   }
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-slate-950 text-slate-900 lg:bg-[#f8fbfb]">
+    <div className="relative isolate min-h-screen overflow-hidden bg-slate-950 text-white lg:bg-[#f8fbfb] lg:text-slate-900">
       <div
-        className="absolute inset-0 z-0 lg:hidden"
+        className="fixed inset-0 -z-20 scale-105 blur-[5px] lg:hidden"
         style={{
           backgroundImage: `url(${onboard})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       />
-      <div className="absolute inset-0 z-0 bg-slate-950/20 lg:hidden" />
+      <div className="fixed inset-0 -z-10 bg-black/40 lg:hidden" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1520px] items-center justify-center px-3 py-4 sm:px-5 sm:py-7 lg:items-stretch lg:justify-start lg:p-0">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-380 items-center justify-center px-3 py-4 sm:px-5 sm:py-7 lg:items-stretch lg:justify-start lg:p-0">
         <section className="relative hidden flex-1 overflow-hidden lg:block">
           <img
             src={onboard}
@@ -204,19 +204,19 @@ const OnboardingRoute = () => {
           </div>
         </section>
 
-        <section className="flex w-full max-w-[430px] items-center justify-center rounded-[22px] border border-white/60 bg-white/65 px-6 py-8 shadow-[0_30px_80px_rgba(15,23,42,0.20)] backdrop-blur-md sm:px-8 sm:py-10 lg:max-w-none lg:w-[620px] lg:rounded-none lg:border-none lg:bg-white lg:px-12 lg:py-10 lg:shadow-none lg:backdrop-blur-none">
-          <div className="w-full max-w-[430px]">
-            <div className="mb-4 text-center text-lg font-bold font-display uppercase tracking-[0.45em] text-blue-700/80 lg:hidden">
-              <img src={Logo} className="h-22 w-auto" /> 
+        <section className="flex w-full max-w-107.5 items-center justify-center bg-transparent px-6 py-8 text-white sm:px-8 sm:py-10 lg:max-w-none lg:w-155 lg:rounded-none lg:border-none lg:bg-white lg:px-12 lg:py-10 lg:text-slate-900 lg:shadow-none lg:backdrop-blur-none">
+          <div className="w-full max-w-107.5">
+            <div className="mb-4 flex justify-center lg:hidden">
+              <img src={Logo} className="h-15 w-auto" alt="Alpine" />
             </div>
             <div className="mb-9">
-              <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-600">
+              <div className="mb-2 flex items-center justify-between text-sm font-semibold text-white/80 lg:text-slate-700">
                 <span>{`Step ${stepNumber} of ${TOTAL_STEPS}`}</span>
-                <span className="text-blue-600">{Math.round(progress)}%</span>
+                <span className="text-white/90 lg:text-slate-950">{Math.round(progress)}%</span>
               </div>
-              <div className="h-2 rounded-full bg-slate-100">
+              <div className="h-2 rounded-full bg-white/20 lg:bg-slate-200">
                 <motion.div
-                  className="h-full rounded-full bg-blue-600"
+                  className="h-full rounded-full bg-white/80 lg:bg-slate-950"
                   initial={false}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -234,10 +234,10 @@ const OnboardingRoute = () => {
               >
                 {step === 0 && (
                   <div>
-                    <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">
+                    <h1 className="text-3xl font-semibold leading-tight text-white lg:text-[#0f172a]">
                       Hi there! Let&apos;s get to know you
                     </h1>
-                    <p className="mt-2 text-sm text-slate-500">Tell us the basics so we can personalize your experience.</p>
+                    <p className="mt-2 text-sm text-white/70 lg:text-slate-500">Tell us the basics so we can personalize your experience.</p>
 
                     <div className="mt-8 space-y-5">
                       <FloatingLabelInput
@@ -252,14 +252,14 @@ const OnboardingRoute = () => {
                         type="tel"
                       />
                       <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-slate-500">
                           Date of Birth
                         </label>
                         <input
                           type="date"
                           value={form.dateOfBirth}
                           onChange={(e) => updateField('dateOfBirth', e.target.value)}
-                          className="h-14 w-full rounded-2xl border border-slate-200 px-4 text-sm outline-none transition focus:border-[#3b82f6] focus:ring-4 focus:ring-[#3b82f6]/15"
+                          className="h-14 w-full rounded-2xl border border-white/35 bg-white/15 px-4 text-sm text-white outline-none transition focus:border-white/70 focus:ring-4 focus:ring-white/30 lg:border-slate-200 lg:bg-white lg:text-slate-900 lg:focus:border-[#3b82f6] lg:focus:ring-[#3b82f6]/15"
                         />
                       </div>
                     </div>
@@ -268,12 +268,12 @@ const OnboardingRoute = () => {
 
                 {step === 1 && (
                   <div>
-                    <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">Your identity & background</h1>
-                    <p className="mt-2 text-sm text-slate-500">Help us understand who you are and where you&apos;re from.</p>
+                    <h1 className="text-3xl font-semibold leading-tight text-white lg:text-[#0f172a]">Your identity & background</h1>
+                    <p className="mt-2 text-sm text-white/70 lg:text-slate-500">Help us understand who you&apos;re from.</p>
 
                     <div className="mt-8 space-y-5">
                       <div>
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Gender *</p>
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-slate-500">Gender *</p>
                         <div className="grid grid-cols-2 gap-3">
                           {genderOptions.map((option) => {
                             const selected = form.gender === option
@@ -284,8 +284,8 @@ const OnboardingRoute = () => {
                                 onClick={() => updateField('gender', option)}
                                 className={`rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-all ${
                                   selected
-                                    ? 'border-[#3b82f6] bg-[#3b82f6]/10 text-[#1d4ed8] shadow-[0_8px_20px_rgba(59,130,246,0.18)]'
-                                    : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#3b82f6]/40 hover:shadow-md'
+                                    ? 'border-white/70 bg-white/25 text-white shadow-[0_8px_20px_rgba(0,0,0,0.25)] lg:border-[#3b82f6] lg:bg-[#3b82f6]/10 lg:text-[#1d4ed8] lg:shadow-[0_8px_20px_rgba(59,130,246,0.18)]'
+                                    : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-700 lg:hover:-translate-y-0.5 lg:hover:border-[#3b82f6]/40 lg:hover:shadow-md'
                                 }`}
                               >
                                 {option}
@@ -311,12 +311,12 @@ const OnboardingRoute = () => {
 
                 {step === 2 && (
                   <div>
-                    <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">Your travel style</h1>
-                    <p className="mt-2 text-sm text-slate-500">How do you like to travel? Tell us about your style.</p>
+                    <h1 className="text-3xl font-semibold leading-tight text-white lg:text-[#0f172a]">Your travel style</h1>
+                    <p className="mt-2 text-sm text-white/70 lg:text-slate-500">How do you like to travel? Tell us about your style.</p>
 
                     <div className="mt-8 space-y-5">
                       <div>
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Travel Style *</p>
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-slate-500">Travel Style *</p>
                         <div className="grid grid-cols-2 gap-3">
                           {travelStyleOptions.map((option) => {
                             const selected = form.travelStyle === option
@@ -327,8 +327,8 @@ const OnboardingRoute = () => {
                                 onClick={() => updateField('travelStyle', option)}
                                 className={`rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-all ${
                                   selected
-                                    ? 'border-[#3b82f6] bg-[#3b82f6]/10 text-[#1d4ed8] shadow-[0_8px_20px_rgba(59,130,246,0.18)]'
-                                    : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#3b82f6]/40 hover:shadow-md'
+                                    ? 'border-white/70 bg-white/25 text-white shadow-[0_8px_20px_rgba(0,0,0,0.25)] lg:border-[#3b82f6] lg:bg-[#3b82f6]/10 lg:text-[#1d4ed8] lg:shadow-[0_8px_20px_rgba(59,130,246,0.18)]'
+                                    : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-700 lg:hover:-translate-y-0.5 lg:hover:border-[#3b82f6]/40 lg:hover:shadow-md'
                                 }`}
                               >
                                 {option}
@@ -339,7 +339,7 @@ const OnboardingRoute = () => {
                       </div>
 
                       <div>
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Languages you speak</p>
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-slate-500">Languages you speak</p>
                         <div className="flex flex-wrap gap-2">
                           {languageOptions.map((lang) => {
                             const selected = form.languages.includes(lang)
@@ -350,8 +350,8 @@ const OnboardingRoute = () => {
                                 onClick={() => toggleItem('languages', lang)}
                                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
                                   selected
-                                    ? 'border-[#3b82f6] bg-[#3b82f6] text-white shadow-[0_4px_12px_rgba(59,130,246,0.3)]'
-                                    : 'border-slate-200 bg-white text-slate-600 hover:border-[#3b82f6]/40 hover:text-[#1d4ed8]'
+                                    ? 'border-white/70 bg-white/25 text-white shadow-[0_4px_12px_rgba(0,0,0,0.25)] lg:border-[#3b82f6] lg:bg-[#3b82f6] lg:text-white lg:shadow-[0_4px_12px_rgba(59,130,246,0.3)]'
+                                    : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-600 lg:hover:border-[#3b82f6]/40 lg:hover:text-[#1d4ed8]'
                                 }`}
                               >
                                 {lang}
@@ -362,14 +362,14 @@ const OnboardingRoute = () => {
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-slate-500">
                           Short Bio
                         </label>
                         <textarea
                           value={form.bio}
                           onChange={(e) => updateField('bio', e.target.value)}
                           rows={3}
-                          className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#3b82f6] focus:ring-4 focus:ring-[#3b82f6]/15"
+                          className="w-full rounded-2xl border border-white/35 bg-white/15 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/70 focus:border-white/70 focus:ring-4 focus:ring-white/30 lg:border-slate-200 lg:bg-white lg:text-slate-900 lg:focus:border-[#3b82f6] lg:focus:ring-[#3b82f6]/15"
                           placeholder="Tell travelers what makes your trips unforgettable..."
                         />
                       </div>
@@ -379,8 +379,8 @@ const OnboardingRoute = () => {
 
                 {step === 3 && (
                   <div>
-                    <h1 className="text-3xl font-bold leading-tight text-[#0f172a]">Choose your Vibe</h1>
-                    <p className="mt-2 text-sm text-slate-500">Pick one or more interests so we can tailor your feed.</p>
+                    <h1 className="text-3xl font-semibold leading-tight text-white lg:text-[#0f172a]">Choose your Vibe</h1>
+                    <p className="mt-2 text-sm text-white/70 lg:text-slate-500">Pick one or more interests so we can tailor your feed.</p>
 
                     <div className="mt-8 flex flex-wrap gap-2.5">
                       {vibeOptions.map((option) => {
@@ -392,8 +392,8 @@ const OnboardingRoute = () => {
                             onClick={() => toggleItem('tags', option)}
                             className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
                               selected
-                                ? 'border-[#3b82f6] bg-[#3b82f6] text-white shadow-[0_8px_18px_rgba(59,130,246,0.35)]'
-                                : 'border-slate-200 bg-white text-slate-600 hover:border-[#3b82f6]/40 hover:text-[#1d4ed8]'
+                                ? 'border-white/70 bg-white/25 text-white shadow-[0_8px_18px_rgba(0,0,0,0.25)] lg:border-[#3b82f6] lg:bg-[#3b82f6] lg:text-white lg:shadow-[0_8px_18px_rgba(59,130,246,0.35)]'
+                                : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-600 lg:hover:border-[#3b82f6]/40 lg:hover:text-[#1d4ed8]'
                             }`}
                           >
                             {option}
@@ -407,7 +407,7 @@ const OnboardingRoute = () => {
             </AnimatePresence>
 
             {submitError && (
-              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              <div className="mt-4 rounded-xl border border-red-300/40 bg-red-500/15 px-4 py-3 text-sm font-medium text-red-100 lg:border-red-200 lg:bg-red-50 lg:text-red-700">
                 {submitError}
               </div>
             )}
@@ -418,7 +418,7 @@ const OnboardingRoute = () => {
                   type="button"
                   whileTap={{ scale: 0.94 }}
                   onClick={goBack}
-                  className="h-12 flex-1 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="h-12 flex-1 rounded-xl border border-white/40 text-sm font-semibold text-white/90 transition hover:bg-white/10 lg:border-slate-200 lg:text-slate-700 lg:hover:bg-slate-50"
                 >
                   Back
                 </motion.button>
@@ -429,7 +429,7 @@ const OnboardingRoute = () => {
                 whileTap={{ scale: 0.94 }}
                 onClick={goNext}
                 disabled={!canContinue || isSubmitting}
-                className="h-12 flex-1 rounded-xl bg-blue-600 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45"
+                className="h-12 flex-1 rounded-xl border border-white/50 bg-white/15 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(0,0,0,0.35)] transition hover:bg-white/25 disabled:cursor-not-allowed disabled:opacity-45 lg:border-none lg:bg-blue-600 lg:hover:bg-blue-700"
               >
                 {isSubmitting ? 'Saving...' : step === 3 ? 'Finish Onboarding' : 'Continue'}
               </motion.button>
@@ -439,11 +439,11 @@ const OnboardingRoute = () => {
               <button
                 type="button"
                 onClick={() => navigate('/home')}
-                className="text-slate-500 transition hover:text-slate-700"
+                className="text-white/70 transition hover:text-white lg:text-slate-500 lg:hover:text-slate-700"
               >
                 Skip for now
               </button>
-              <a href="#" className="text-slate-500 transition hover:text-slate-700">
+              <a href="#" className="text-white/70 transition hover:text-white lg:text-slate-500 lg:hover:text-slate-700">
                 Privacy Policy
               </a>
             </div>
