@@ -70,14 +70,14 @@ const AuthForm = ({
           <div className="mb-4 flex justify-center lg:hidden">
             <img src={logoBlack} alt="Alpine" className="h-15 w-auto" />
           </div>
-          <h1 className="mb-4 text-center text-6xl font-medium font-display leading-tight text-white lg:text-left lg:text-slate-900">
+          <h1 className="mb-4 text-center text-4xl font-medium font-display leading-tight text-white sm:text-5xl lg:text-left lg:text-slate-900">
             {isLogin ? (
               <>
-                Hey, <br /> Login now!
+                Hey, <br /> <span className="whitespace-nowrap">Login now!</span>
               </>
             ) : (
               <>
-                Hey, <br /> Create your account!
+                Hey, <br /> <span className="whitespace-nowrap">Create account!</span>
               </>
             )}
           </h1>

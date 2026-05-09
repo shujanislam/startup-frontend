@@ -55,6 +55,7 @@ const HomePage = () => {
   const [maxBudget, setMaxBudget] = useState(10000)
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
+  const [showAllDesktopTrips, setShowAllDesktopTrips] = useState(false)
 
   const isAdmin = currentUser?.isAdmin === true
 
@@ -127,6 +128,10 @@ const HomePage = () => {
 
     return () => clearTimeout(timer)
   }, [searchQuery, season, maxBudget, sortBy, fetchTrips, authLoading])
+
+  useEffect(() => {
+    setShowAllDesktopTrips(false)
+  }, [searchQuery, season, maxBudget, sortBy])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -269,6 +274,9 @@ const HomePage = () => {
       : null
 
   const remainingTrips = isAdmin || hasActiveFilters ? trips : featured ? trips.slice(1) : trips
+  const desktopTrips = showAllDesktopTrips ? remainingTrips : remainingTrips.slice(0, 6)
+  const shouldShowDesktopToggle = !showAllDesktopTrips && remainingTrips.length > 6
+  const canLoadMore = Boolean(meta && page < meta.totalPages)
 
   if (authLoading) {
     return (
@@ -306,7 +314,7 @@ const HomePage = () => {
             {(isAdmin || banner) && (
               <div className="w-full px-6 pt-6 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
                 {isAdmin && (
-                <div className="mb-6 rounded-[24px] border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 px-5 py-4 shadow-sm">
+                <div className="mb-6 rounded-3xl border border-amber-200 bg-linear-to-r from-amber-50 via-white to-orange-50 px-5 py-4 shadow-sm">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
                     Admin User Active
                   </p>
@@ -318,7 +326,7 @@ const HomePage = () => {
 
                 {banner && (
                 <div
-                  className={`mb-6 rounded-[24px] border px-5 py-4 shadow-sm ${
+                  className={`mb-6 rounded-3xl border px-5 py-4 shadow-sm ${
                     banner.tone === 'success'
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                       : 'border-red-200 bg-red-50 text-red-700'
@@ -336,7 +344,7 @@ const HomePage = () => {
             {isAdmin && (
               <section className="w-full px-6 pb-2 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
                 <div className="overflow-hidden rounded-[28px] border border-amber-200 bg-white shadow-sm">
-                  <div className="border-b border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 px-6 py-5">
+                  <div className="border-b border-amber-200 bg-linear-to-r from-amber-50 via-white to-orange-50 px-6 py-5">
                     <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">
@@ -368,7 +376,7 @@ const HomePage = () => {
                     )}
 
                     {!isPendingLoading && pendingTrips.length === 0 && !pendingError && (
-                      <div className="rounded-[24px] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
+                      <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
                         <h3 className="text-lg font-semibold text-slate-800">No pending trips right now</h3>
                         <p className="mt-2 text-sm text-slate-500">
                           New submissions will appear here for review before they go public.
@@ -459,24 +467,54 @@ const HomePage = () => {
               )}
 
               {remainingTrips.length > 0 && (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                  {remainingTrips.map((trip) => (
-                    <TripCard
-                      key={trip.id}
-                      trip={trip}
-                      onClick={() => navigate(`/trip/${trip.id}`)}
-                      secondaryActionLabel={isAdmin ? 'Unapprove' : undefined}
-                      onSecondaryAction={
-                        isAdmin ? () => void handleUnapproveTrip(trip.id) : undefined
-                      }
-                      isSecondaryActionLoading={unapprovingTripId === trip.id}
-                    />
-                  ))}
+                <>
+                  <div className="flex gap-5 overflow-x-auto pb-2 md:hidden">
+                    {remainingTrips.map((trip) => (
+                      <div key={trip.id} className="min-w-[80%] max-w-80 shrink-0">
+                        <TripCard
+                          trip={trip}
+                          onClick={() => navigate(`/trip/${trip.id}`)}
+                          secondaryActionLabel={isAdmin ? 'Unapprove' : undefined}
+                          onSecondaryAction={
+                            isAdmin ? () => void handleUnapproveTrip(trip.id) : undefined
+                          }
+                          isSecondaryActionLoading={unapprovingTripId === trip.id}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="hidden gap-5 md:grid md:grid-cols-2 lg:grid-cols-3">
+                    {desktopTrips.map((trip) => (
+                      <TripCard
+                        key={trip.id}
+                        trip={trip}
+                        onClick={() => navigate(`/trip/${trip.id}`)}
+                        secondaryActionLabel={isAdmin ? 'Unapprove' : undefined}
+                        onSecondaryAction={
+                          isAdmin ? () => void handleUnapproveTrip(trip.id) : undefined
+                        }
+                        isSecondaryActionLoading={unapprovingTripId === trip.id}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {shouldShowDesktopToggle && (
+                <div className="mt-8 hidden justify-center md:flex">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllDesktopTrips(true)}
+                    className="rounded-lg border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50"
+                  >
+                    Show more
+                  </button>
                 </div>
               )}
 
-              {meta && page < meta.totalPages && (
-                <div className="mt-8 flex justify-center">
+              {canLoadMore && (
+                <div className={`mt-8 flex justify-center ${showAllDesktopTrips ? 'md:flex' : 'md:hidden'}`}>
                   <button
                     type="button"
                     onClick={handleLoadMore}
