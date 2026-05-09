@@ -63,7 +63,7 @@ const HomeHeader = ({
 
           <button
             type="button"
-            className="inline-flex h-12 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white px-3 text-sm font-semibold text-slate-950 shadow-[0_12px_34px_rgba(15,23,42,0.08)] ring-1 ring-white/80 transition hover:border-slate-900 hover:bg-slate-950 hover:text-white hover:shadow-[0_16px_40px_rgba(15,23,42,0.14)] active:scale-[0.98] sm:px-5"
+            className="inline-flex h-12 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-black px-3 text-sm font-semibold text-white shadow-[0_12px_34px_rgba(15,23,42,0.08)] ring-1 ring-white/80 transition hover:border-slate-900 hover:bg-slate-950 hover:text-white hover:shadow-[0_16px_40px_rgba(15,23,42,0.14)] active:scale-[0.98] sm:px-5"
             onClick={onSubmitTrip}
           >
             <span className="hidden sm:inline">Create Plan</span>
