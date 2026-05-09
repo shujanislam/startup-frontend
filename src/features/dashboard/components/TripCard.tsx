@@ -37,19 +37,12 @@ const TripCard = ({
 
   const hasUsableImage = trip.imageUrl.trim().length > 0 && !imageFailed
 
-  const displayTags = trip.tags.slice(0, 3)
   const showSecondaryAction = Boolean(secondaryActionLabel && onSecondaryAction)
-  const seasonLabel = trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)
-  const seasonEmoji =
-    trip.season === 'summer'
-      ? '☀️'
-      : trip.season === 'winter'
-        ? '❄️'
-        : trip.season === 'monsoon'
-          ? '🌧️'
-          : trip.season === 'autumn'
-            ? '🍂'
-            : '🌍'
+  const nights = Math.max(trip.duration - 1, 0)
+  const durationText =
+    nights > 0
+      ? `${trip.duration} ${trip.duration === 1 ? 'Day' : 'Days'}, ${nights} ${nights === 1 ? 'Night' : 'Nights'}`
+      : `${trip.duration} ${trip.duration === 1 ? 'Day' : 'Days'}`
 
   const handleSecondaryActionClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
@@ -58,7 +51,7 @@ const TripCard = ({
 
   return (
     <div
-      className="group relative h-72 cursor-pointer overflow-hidden rounded-xl border border-slate-200 shadow-sm transition-all duration-300 hover:shadow-lg"
+      className="group relative h-87.5 cursor-pointer overflow-hidden rounded-3xl bg-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:h-95"
       onClick={onClick}
     >
       {hasUsableImage ? (
@@ -66,49 +59,44 @@ const TripCard = ({
           src={trip.imageUrl}
           alt={trip.name}
           onError={() => setImageFailed(true)}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
       ) : (
-        <div className={`h-full w-full bg-linear-to-br ${fallbackBackground} flex items-center justify-center`}>
+        <div className={`flex h-full w-full items-center justify-center bg-linear-to-br ${fallbackBackground}`}>
           <span className="px-3 text-center text-sm font-semibold text-white/90">{trip.destination}</span>
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-transparent via-black/20 to-black/85" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/0 via-black/10 to-black/80" />
+
+      <div className="absolute left-4 top-4 z-10 max-w-[62%] rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow-sm backdrop-blur">
+        <span className="line-clamp-1">{trip.destination}</span>
+      </div>
 
       {showSecondaryAction && (
         <button
           type="button"
           onClick={handleSecondaryActionClick}
           disabled={isSecondaryActionLoading}
-          className="absolute right-3 top-3 z-10 rounded-lg border border-amber-200 bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
+          className="absolute right-4 top-4 z-20 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800 shadow-sm transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSecondaryActionLoading ? 'Updating...' : secondaryActionLabel}
         </button>
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 z-10 p-3 text-white">
-        <div className="flex items-end justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h3 className="mt-2 line-clamp-1 text-base font-semibold leading-snug">{trip.name}</h3>
-          </div>
-          <span className="text-sm font-medium">⭐ {trip.rating}</span>
-        </div>
-        <span className="text-sm font-semibold text-emerald-200">{formatPrice(trip.price)}</span>
-        
-        {displayTags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {displayTags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-white/25 bg-white/15 px-2 py-0.5 text-[11px] font-medium text-white"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-5 text-white">
+        <h3 className="line-clamp-2 text-xl font-semibold leading-tight">{trip.name}</h3>
+        <p className="mt-3 text-sm font-medium text-white/75">Starting at {formatPrice(trip.price)}</p>
 
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <span className="text-xs font-medium text-white/65">{durationText}</span>
+          <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-white/90">
+            Learn More
+            <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-5-5 5 5-5 5" />
+            </svg>
+          </span>
+        </div>
       </div>
     </div>
   )
