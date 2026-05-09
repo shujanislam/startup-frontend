@@ -1,19 +1,27 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { TripFilterButton } from '../components/Sidebar'
 import { HomeHeader } from '../components/HomeHeader'
 import { TripCard } from '../components/TripCard'
 import { FeaturedTripCard } from '../components/FeaturedTripCard'
 import { CreateTripModal } from '../components/CreateTripModal'
 import { PendingApprovalCard } from '../components/PendingApprovalCard'
-import type { PackageSummary, SortType, SeasonType, Trip } from '../types/trip'
+import type { DraftPackageSummary, PackageSummary, SortType, SeasonType, Trip } from '../types/trip'
 import {
+  type ApiPackage,
   approvePackage,
   createPackage,
+  createPackageDraft,
   discoverPackages,
+  fetchDraftPackages,
+  fetchEditablePackage,
   fetchPendingPackages,
+  rejectPackage,
+  submitPackageForApproval,
   unapprovePackage,
+  updatePackageDraft,
   type CreatePackagePayload,
+  type DraftPackagePayload,
   type DiscoverMeta,
 } from '../services/packageApi'
 import { fetchCurrentUser, type CurrentUser } from '../services/dashboardApi.ts'
@@ -32,18 +40,23 @@ const getErrorMessage = (error: unknown, fallback: string) =>
 
 const HomePage = () => {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { user, loading: authLoading } = useAuth()
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [trips, setTrips] = useState<Trip[]>([])
   const [pendingTrips, setPendingTrips] = useState<PackageSummary[]>([])
+  const [draftTrips, setDraftTrips] = useState<DraftPackageSummary[]>([])
+  const [editingPackage, setEditingPackage] = useState<ApiPackage | null>(null)
   const [meta, setMeta] = useState<DiscoverMeta | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isPendingLoading, setIsPendingLoading] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isSubmittingTrip, setIsSubmittingTrip] = useState(false)
+  const [isSavingDraft, setIsSavingDraft] = useState(false)
   const [approvingTripId, setApprovingTripId] = useState<string | null>(null)
   const [unapprovingTripId, setUnapprovingTripId] = useState<string | null>(null)
+  const [rejectingTripId, setRejectingTripId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pendingError, setPendingError] = useState<string | null>(null)
   const [createTripError, setCreateTripError] = useState<string | null>(null)
@@ -106,6 +119,20 @@ const HomePage = () => {
     }
   }, [isAdmin])
 
+  const fetchDraftTrips = useCallback(async () => {
+    if (!user) {
+      setDraftTrips([])
+      return
+    }
+
+    try {
+      const data = await fetchDraftPackages()
+      setDraftTrips(data)
+    } catch {
+      setDraftTrips([])
+    }
+  }, [user])
+
   const loadCurrentUser = useCallback(async () => {
     try {
       const response = await fetchCurrentUser()
@@ -160,6 +187,37 @@ const HomePage = () => {
     void fetchPendingTrips()
   }, [fetchPendingTrips])
 
+  useEffect(() => {
+    void fetchDraftTrips()
+  }, [fetchDraftTrips])
+
+  useEffect(() => {
+    const draftId = searchParams.get('draft')
+
+    if (!draftId || !user) {
+      return
+    }
+
+    const loadEditableDraft = async () => {
+      setCreateTripError(null)
+      setBanner(null)
+
+      try {
+        const data = await fetchEditablePackage(draftId)
+        setEditingPackage(data)
+        setIsCreateModalOpen(true)
+      } catch (err: unknown) {
+        setBanner({
+          tone: 'error',
+          message: getErrorMessage(err, 'Failed to open this draft'),
+        })
+        setSearchParams({}, { replace: true })
+      }
+    }
+
+    void loadEditableDraft()
+  }, [searchParams, setSearchParams, user])
+
   const handleSearch = (query: string) => {
     setSearchQuery(query)
   }
@@ -192,20 +250,58 @@ const HomePage = () => {
   const handleSubmitTrip = () => {
     setBanner(null)
     setCreateTripError(null)
+    setEditingPackage(null)
+    setSearchParams({}, { replace: true })
     setIsCreateModalOpen(true)
   }
 
-  const handleCreateTrip = async (payload: CreatePackagePayload) => {
+  const handleSaveDraft = async (
+    payload: DraftPackagePayload,
+    packageId?: string,
+  ): Promise<ApiPackage> => {
+    setCreateTripError(null)
+    setBanner(null)
+    setIsSavingDraft(true)
+
+    try {
+      const savedPackage = packageId
+        ? await updatePackageDraft(packageId, payload)
+        : await createPackageDraft(payload)
+
+      setEditingPackage(savedPackage)
+      setSearchParams({ draft: savedPackage._id }, { replace: true })
+      await fetchDraftTrips()
+
+      return savedPackage
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Failed to save your draft')
+      setCreateTripError(message)
+      throw new Error(message)
+    } finally {
+      setIsSavingDraft(false)
+    }
+  }
+
+  const handleCreateTrip = async (payload: CreatePackagePayload, packageId?: string) => {
     setCreateTripError(null)
     setIsSubmittingTrip(true)
 
     try {
-      await createPackage(payload)
+      if (packageId) {
+        await submitPackageForApproval(packageId, payload)
+      } else {
+        await createPackage(payload)
+      }
+
       setIsCreateModalOpen(false)
+      setEditingPackage(null)
+      setSearchParams({}, { replace: true })
       setBanner({
         tone: 'success',
         message: 'Trip submitted successfully. It is now waiting for admin approval.',
       })
+
+      await fetchDraftTrips()
 
       if (isAdmin) {
         await fetchPendingTrips()
@@ -215,6 +311,10 @@ const HomePage = () => {
     } finally {
       setIsSubmittingTrip(false)
     }
+  }
+
+  const handleDraftsClick = () => {
+    navigate('/drafts')
   }
 
   const handleApproveTrip = async (tripId: string) => {
@@ -256,6 +356,26 @@ const HomePage = () => {
       })
     } finally {
       setUnapprovingTripId(null)
+    }
+  }
+
+  const handleRejectTrip = async (tripId: string) => {
+    setRejectingTripId(tripId)
+    setPendingError(null)
+    setBanner(null)
+
+    try {
+      await rejectPackage(tripId)
+      setBanner({
+        tone: 'success',
+        message: 'Trip rejected and removed from the pending approval queue.',
+      })
+
+      await fetchPendingTrips()
+    } catch (err: unknown) {
+      setPendingError(getErrorMessage(err, 'Failed to reject this trip'))
+    } finally {
+      setRejectingTripId(null)
     }
   }
 
@@ -304,10 +424,12 @@ const HomePage = () => {
               searchQuery={searchQuery}
               onSearch={handleSearch}
               onSubmitTrip={handleSubmitTrip}
+              onDraftsClick={handleDraftsClick}
               onLogout={handleLogout}
               onProfileClick={() => navigate('/profile')}
               isLoggingOut={isLoggingOut}
               isAdmin={isAdmin}
+              draftCount={draftTrips.length}
               profilePhotoURL={currentUser?.profilePicture}
             />
 
@@ -391,8 +513,10 @@ const HomePage = () => {
                             key={trip.id}
                             trip={trip}
                             isApproving={approvingTripId === trip.id}
+                            isRejecting={rejectingTripId === trip.id}
                             onView={() => navigate(`/trip/${trip.id}`)}
                             onApprove={() => void handleApproveTrip(trip.id)}
+                            onReject={() => void handleRejectTrip(trip.id)}
                           />
                         ))}
                       </div>
@@ -531,9 +655,16 @@ const HomePage = () => {
 
       <CreateTripModal
         open={isCreateModalOpen}
+        initialPackage={editingPackage}
+        isSavingDraft={isSavingDraft}
         isSubmitting={isSubmittingTrip}
         errorMessage={createTripError}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false)
+          setEditingPackage(null)
+          setSearchParams({}, { replace: true })
+        }}
+        onSaveDraft={handleSaveDraft}
         onSubmit={handleCreateTrip}
       />
     </>
