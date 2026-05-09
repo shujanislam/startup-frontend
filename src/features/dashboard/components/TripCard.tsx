@@ -51,7 +51,7 @@ const TripCard = ({
 
   return (
     <div
-      className="group relative h-[350px] cursor-pointer overflow-hidden rounded-[8px] bg-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:h-[380px]"
+      className="group relative h-87.5 cursor-pointer overflow-hidden rounded-3xl bg-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:h-95"
       onClick={onClick}
     >
       {hasUsableImage ? (

@@ -8,13 +8,9 @@ import {
   revealPackage,
 } from '../../services/packageApi'
 import { TripDetailHero } from './TripDetailHero'
-import { TripDetailTitle } from './TripDetailTitle'
-import { TripDetailOverview } from './TripDetailOverview'
-import { TripDetailSpots } from './TripDetailSpots'
 import { TripDetailHotels } from './TripDetailHotels'
 import { TripDetailVehicles } from './TripDetailVehicles'
 import { TripDetailLinks } from './TripDetailLinks'
-import { TripDetailAdditional } from './TripDetailAdditional'
 import { TripDetailCreator } from './TripDetailCreator'
 import { TripDetailReviews } from './TripDetailReviews'
 import { TripDetailBottomBar } from './TripDetailBottomBar'
@@ -25,7 +21,6 @@ interface TripDetailPageProps {
 
 const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   const navigate = useNavigate()
-  const [activeDesktopTab, setActiveDesktopTab] = useState<'overview' | 'places' | 'contact'>('overview')
   const [trip, setTrip] = useState<TripDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -140,8 +135,30 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
     )
   }
 
+  const formatPrice = (price: number) => `₹${price.toLocaleString()}`
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  }
+
+  const dateRange = trip.endDate
+    ? `${formatDate(trip.startDate)} - ${formatDate(trip.endDate)}`
+    : formatDate(trip.startDate)
+
+  const facilities = [
+    trip.hotels.length > 0
+      ? `${trip.hotels.length} accommodation option${trip.hotels.length === 1 ? '' : 's'}`
+      : null,
+    trip.vehicles.length > 0
+      ? `${trip.vehicles.length} transport option${trip.vehicles.length === 1 ? '' : 's'}`
+      : null,
+    trip.identification ? 'Government ID required' : 'No ID required',
+    trip.permit ? `Permit: ${trip.permit}` : null,
+  ].filter(Boolean)
+
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 pb-24 lg:pb-8">
+    <div className="flex min-h-screen flex-col bg-white pb-24">
       <TripDetailHero
         trip={trip}
         onBack={handleBack}
@@ -150,93 +167,117 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
         onLikeTrip={handleLikeTrip}
       />
 
-      <div className="relative z-10 -mt-6 rounded-t-3xl bg-gray-50 pt-4 md:mx-auto md:mt-0 md:max-w-4xl md:rounded-none md:bg-transparent md:pt-0 lg:-mt-10 lg:w-[1200px] lg:max-w-[1200px] lg:rounded-3xl lg:border lg:border-slate-200 lg:bg-white lg:px-8 lg:pt-8 lg:shadow-sm">
-        <div className="mx-auto w-full max-w-3xl px-4 pb-8 md:px-6 lg:max-w-none lg:px-0 lg:pb-10">
-          <div className="lg:hidden">
-            <TripDetailTitle trip={trip} />
-            <div className="my-6 h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
-            <TripDetailOverview trip={trip} />
-            <TripDetailSpots trip={trip} />
-            <TripDetailAdditional trip={trip} />
-            <TripDetailHotels trip={trip} isRevealed={isRevealed} />
-            <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
-            <TripDetailLinks trip={trip} />
-            <TripDetailCreator trip={trip} />
-            <TripDetailReviews packageId={trip.id} isRevealed={isRevealed} />
-
-            {unlockError && (
-              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {unlockError}
-              </p>
-            )}
-            {likeError && (
-              <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
-                {likeError}
-              </p>
-            )}
+      <main className="w-full px-6 pb-16 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
+        {likeError && (
+          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            {likeError}
           </div>
+        )}
 
-          <div className="hidden lg:grid lg:grid-cols-[680px_424px] lg:gap-8">
-            <section className="w-[680px] rounded-2xl border border-slate-200 bg-white p-6">
-              <div className="mb-6 border-b border-slate-200">
-                <div className="grid grid-cols-3">
-                  <button
-                    type="button"
-                    onClick={() => setActiveDesktopTab('overview')}
-                    className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
-                      activeDesktopTab === 'overview'
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
-                    Overview
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveDesktopTab('places')}
-                    className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
-                      activeDesktopTab === 'places'
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
-                    Places
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveDesktopTab('contact')}
-                    className={`w-full border-b-2 px-4 py-3 text-sm font-semibold transition ${
-                      activeDesktopTab === 'contact'
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
-                    Contact
-                  </button>
+        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <section className="space-y-10">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Description</p>
+              <p className="mt-3 text-base leading-7 text-slate-600">{trip.description}</p>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Activities</p>
+              {trip.spots.length > 0 ? (
+                <div className="mt-4 space-y-4">
+                  {trip.spots.map((spot) => (
+                    <div key={spot} className="flex gap-3">
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-slate-900" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{spot}</p>
+                        {!isRevealed && (
+                          <p className="mt-1 text-sm text-slate-500">Details will be shared after unlock.</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-slate-500">Activities will be shared soon.</p>
+              )}
+            </div>
+
+            {trip.additional && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Additional</p>
+                <p className="mt-3 text-base leading-7 text-slate-600">{trip.additional}</p>
+              </div>
+            )}
+
+            <div className="space-y-6">
+              <TripDetailHotels trip={trip} isRevealed={isRevealed} />
+              <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
+              <TripDetailLinks trip={trip} />
+              <TripDetailCreator trip={trip} />
+            </div>
+
+            <TripDetailReviews packageId={trip.id} isRevealed={isRevealed} />
+          </section>
+
+          <aside className="space-y-6">
+            <div className="sticky top-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Starting at</p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-3xl font-semibold text-slate-950">{formatPrice(trip.price)}</span>
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+                <div className="flex gap-1 text-amber-400">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <span key={i} aria-hidden="true">★</span>
+                  ))}
+                </div>
+                <span>{trip.rating > 0 ? `${trip.rating.toFixed(1)}/5 Reviews` : 'New trip'}</span>
+              </div>
+
+              <div className="mt-6 border-t border-slate-200 pt-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Dates</p>
+                <div className="mt-3 grid gap-2">
+                  <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                    {dateRange}
+                  </span>
                 </div>
               </div>
 
-              {activeDesktopTab === 'overview' && (
-                <>
-                  <TripDetailTitle trip={trip} />
-                  <TripDetailOverview trip={trip} />
-                </>
-              )}
+              <div className="mt-6 border-t border-slate-200 pt-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Facilities</p>
+                <div className="mt-3 space-y-2 text-sm text-slate-600">
+                  {facilities.length > 0 ? (
+                    facilities.map((facility) => (
+                      <div key={facility} className="flex items-start gap-2">
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-slate-400" />
+                        <span>{facility}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-500">Facilities will be shared after unlock.</p>
+                  )}
+                </div>
+              </div>
 
-              {activeDesktopTab === 'places' && (
-                <>
-                  <TripDetailSpots trip={trip} />
-                  <TripDetailAdditional trip={trip} />
-                </>
-              )}
+              <button
+                type="button"
+                onClick={handleUnlockTrip}
+                disabled={isRevealed || isUnlocking}
+                className={`mt-6 w-full rounded-xl px-4 py-3 text-sm font-semibold text-white transition ${
+                  isRevealed
+                    ? 'bg-emerald-600'
+                    : isUnlocking
+                      ? 'bg-slate-600'
+                      : 'bg-slate-900 hover:bg-slate-800'
+                } disabled:cursor-not-allowed`}
+              >
+                {isRevealed ? 'Trip Unlocked' : isUnlocking ? 'Unlocking...' : 'Unlock Trip'}
+              </button>
 
-              {activeDesktopTab === 'contact' && (
-                <>
-                  <TripDetailHotels trip={trip} isRevealed={isRevealed} />
-                  <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
-                  <TripDetailLinks trip={trip} />
-                  <TripDetailCreator trip={trip} />
-                </>
+              {!isRevealed && (
+                <p className="mt-3 text-xs text-slate-500">
+                  Unlock to view accommodation, transport, and contact details.
+                </p>
               )}
 
               {unlockError && (
@@ -244,19 +285,10 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
                   {unlockError}
                 </p>
               )}
-              {likeError && (
-                <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
-                  {likeError}
-                </p>
-              )}
-            </section>
-
-            <section className="w-[424px] rounded-2xl border border-slate-200 bg-white p-6">
-              <TripDetailReviews packageId={trip.id} isRevealed={isRevealed} />
-            </section>
-          </div>
+            </div>
+          </aside>
         </div>
-      </div>
+      </main>
 
       <TripDetailBottomBar
         isRevealed={isRevealed}

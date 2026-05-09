@@ -35,7 +35,7 @@ const FeaturedTripCard = ({ trip, onClick }: FeaturedTripCardProps) => {
   return (
     <button
       type="button"
-      className="group relative block h-[320px] w-full cursor-pointer overflow-hidden rounded-[10px] bg-slate-100 text-left sm:h-[460px] lg:h-[60vh] lg:min-h-[500px] xl:h-[62vh] 2xl:h-[64vh]"
+      className="group relative block h-80 w-full cursor-pointer overflow-hidden rounded-3xl bg-slate-100 text-left sm:h-115 lg:h-[60vh] lg:min-h-125 xl:h-[62vh] 2xl:h-[64vh]"
       onClick={onClick}
       aria-label={`View featured trip ${trip.name}`}
     >
