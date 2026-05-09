@@ -1,12 +1,13 @@
-import { useState, type ChangeEvent, type ReactNode } from 'react'
+import { useEffect, useState, type ChangeEvent, type ReactNode } from 'react'
 import type { SortType, SeasonType } from '../types/trip'
-import logoBlack from '../../../assets/logo-black.png'
-import favicon from '../../../assets/favicon.png'
 
-interface SidebarProps {
-  onSortChange?: (sortType: SortType) => void
-  onSeasonChange?: (season: SeasonType) => void
-  onBudgetChange?: (maxBudget: number) => void
+interface TripFilterButtonProps {
+  sortBy: SortType
+  season: SeasonType
+  maxBudget: number
+  onSortChange: (sortType: SortType) => void
+  onSeasonChange: (season: SeasonType) => void
+  onBudgetChange: (maxBudget: number) => void
 }
 
 interface FilterOption<T extends string> {
@@ -92,12 +93,24 @@ const GlobeIcon = () => (
   </svg>
 )
 
+const FilterIcon = () => (
+  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M7 12h10m-7 6h4" />
+  </svg>
+)
+
+const CloseIcon = () => (
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18 18 6M6 6l12 12" />
+  </svg>
+)
+
 const sortOptions: Array<FilterOption<SortType>> = [
   { id: 'all', label: 'All Trips', icon: <CompassIcon /> },
   { id: 'popular', label: 'Most Popular', icon: <FlameIcon /> },
   { id: 'cheapest', label: 'Cheapest First', icon: <WalletIcon /> },
   { id: 'newest', label: 'Newest', icon: <SparkIcon /> },
-  { id: 'myTrips', label: 'My Trips', icon: <ClockIcon /> },
+  { id: 'shortest', label: 'Shortest First', icon: <ClockIcon /> },
 ]
 
 const seasonOptions: Array<FilterOption<SeasonType>> = [
@@ -118,26 +131,22 @@ const FilterContent = ({
 }: FilterContentProps) => (
   <>
     <div>
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-          Sort By
-        </h3>
-      </div>
-      <div className="flex flex-col gap-1 my-3">
+      <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Sort By</h3>
+      <div className="mt-3 grid gap-2">
         {sortOptions.map((option) => (
           <button
             key={option.id}
             type="button"
-            className={`flex w-full items-center gap-2.5 rounded-xl border px-2.5 py-1.5 text-sm font-semibold transition-all ${
+            className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
               activeSort === option.id
-                ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
-                : 'border-transparent bg-white text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950'
+                ? 'border-slate-950 bg-slate-950 text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
             }`}
             onClick={() => onSortClick(option.id)}
           >
             <span
-              className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${
-                activeSort === option.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
+                activeSort === option.id ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'
               }`}
             >
               {option.icon}
@@ -148,25 +157,23 @@ const FilterContent = ({
       </div>
     </div>
 
-    <div className="mt-6">
-      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-        Season
-      </h3>
-      <div className="flex flex-col gap-1 my-3">
+    <div className="mt-7">
+      <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Season</h3>
+      <div className="mt-3 grid gap-2">
         {seasonOptions.map((option) => (
           <button
             key={option.id}
             type="button"
-            className={`flex w-full items-center gap-2.5 rounded-xl border px-2.5 py-1.5 text-sm font-semibold transition-all ${
+            className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-sm font-semibold transition ${
               activeSeason === option.id
-                ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm'
-                : 'border-transparent bg-white text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950'
+                ? 'border-slate-950 bg-slate-950 text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400'
             }`}
             onClick={() => onSeasonClick(option.id)}
           >
             <span
-              className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${
-                activeSeason === option.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
+                activeSeason === option.id ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'
               }`}
             >
               {option.icon}
@@ -177,25 +184,23 @@ const FilterContent = ({
       </div>
     </div>
 
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 mt-6">
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-          Max Budget
-        </h3>
-        <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-blue-700 shadow-sm">
+    <div className="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Max Budget</h3>
+        <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-950 shadow-sm">
           ₹{maxBudget.toLocaleString()}
         </span>
       </div>
       <input
         type="range"
-        className="w-full cursor-pointer accent-blue-600"
+        className="w-full cursor-pointer accent-slate-950"
         min="500"
         max="10000"
         step="500"
         value={maxBudget}
         onChange={onBudgetChange}
       />
-      <div className="mt-1.5 flex justify-between text-xs font-medium text-slate-400">
+      <div className="mt-2 flex justify-between text-xs font-medium text-slate-400">
         <span>₹500</span>
         <span>₹10,000</span>
       </div>
@@ -203,100 +208,87 @@ const FilterContent = ({
   </>
 )
 
-const Sidebar = ({
+const TripFilterButton = ({
+  sortBy,
+  season,
+  maxBudget,
   onSortChange,
   onSeasonChange,
   onBudgetChange,
-}: SidebarProps) => {
-  const [activeSort, setActiveSort] = useState<SortType>('all')
-  const [activeSeason, setActiveSeason] = useState<SeasonType>('all')
-  const [maxBudget, setMaxBudget] = useState(10000)
-  const [mobileOpen, setMobileOpen] = useState(false)
+}: TripFilterButtonProps) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const activeFilterCount =
+    (sortBy !== 'all' ? 1 : 0) + (season !== 'all' ? 1 : 0) + (maxBudget < 10000 ? 1 : 0)
 
-  const handleSortClick = (id: SortType) => {
-    setActiveSort(id)
-    onSortChange?.(id)
-  }
+  useEffect(() => {
+    if (!isOpen) return
 
-  const handleSeasonClick = (id: SeasonType) => {
-    setActiveSeason(id)
-    onSeasonChange?.(id)
-  }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
 
-  const handleBudgetChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value)
-    setMaxBudget(value)
-    onBudgetChange?.(value)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
+
+  const handleBudgetChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onBudgetChange(Number(event.target.value))
   }
 
   return (
-    <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden h-screen w-72 shrink-0 overflow-hidden border-r border-slate-200 bg-white/95 shadow-sm backdrop-blur lg:block">
-        <div className="border-slate-200 px-5">
-          <div className="flex items-center gap-2 rounded-full pr-2">
-            <img src={logoBlack} alt="Alpine" className="h-22 w-auto" />
-          </div>
-        </div>
-        <div className="px-3 py-3">
-          <FilterContent
-            activeSort={activeSort}
-            activeSeason={activeSeason}
-            maxBudget={maxBudget}
-            onSortClick={handleSortClick}
-            onSeasonClick={handleSeasonClick}
-            onBudgetChange={handleBudgetChange}
-          />
-        </div>
-      </aside>
-
-      {/* Mobile Floating Toggle */}
+    <div className="relative flex justify-end">
       <button
         type="button"
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-white text-white shadow-lg transition hover:bg-slate-100 active:scale-95 lg:hidden"
-        aria-label="Toggle filters"
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-950 shadow-sm transition hover:border-slate-900"
+        onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isOpen}
       >
-        <img src={favicon} alt="Open filters" className="h-7 w-7" />
+        <FilterIcon />
+        <span>Filter</span>
+        {activeFilterCount > 0 && (
+          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-slate-950 px-1.5 text-[11px] font-bold text-white">
+            {activeFilterCount}
+          </span>
+        )}
       </button>
 
-      {/* Mobile Drawer */}
-      {mobileOpen && (
+      {isOpen && (
         <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
-            onClick={() => setMobileOpen(false)}
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none"
+            aria-label="Close filters"
+            onClick={() => setIsOpen(false)}
           />
-          {/* Drawer panel */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[76vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl lg:hidden">
-            <div className="flex items-center justify-between  border-slate-200 px-5 py-4">
+
+          <div className="fixed inset-x-3 bottom-3 z-50 max-h-[82vh] overflow-y-auto rounded-3xl bg-white p-4 text-left shadow-2xl md:absolute md:inset-auto md:right-0 md:top-12 md:w-80 md:rounded-2xl md:border md:border-slate-200">
+            <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <h2 className="text-base font-semibold text-slate-950">Filters</h2>
               <button
                 type="button"
-                onClick={() => setMobileOpen(false)}
-                className="grid h-9 w-9 place-items-center rounded-full hover:bg-slate-100"
+                className="grid h-9 w-9 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
+                onClick={() => setIsOpen(false)}
                 aria-label="Close filters"
               >
-                <svg className="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <CloseIcon />
               </button>
             </div>
-            <div className="px-4 py-5 pb-10">
-              <FilterContent
-                activeSort={activeSort}
-                activeSeason={activeSeason}
-                maxBudget={maxBudget}
-                onSortClick={handleSortClick}
-                onSeasonClick={handleSeasonClick}
-                onBudgetChange={handleBudgetChange}
-              />
-            </div>
+
+            <FilterContent
+              activeSort={sortBy}
+              activeSeason={season}
+              maxBudget={maxBudget}
+              onSortClick={onSortChange}
+              onSeasonClick={onSeasonChange}
+              onBudgetChange={handleBudgetChange}
+            />
           </div>
         </>
       )}
-    </>
+    </div>
   )
 }
 
-export { Sidebar }
+export { TripFilterButton }

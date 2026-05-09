@@ -174,16 +174,18 @@ const OnboardingRoute = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-transparent text-slate-900 lg:bg-[#f8fbfb]">
+    <div className="relative isolate min-h-screen overflow-hidden bg-slate-950 text-slate-900 lg:bg-[#f8fbfb]">
       <div
-        className="fixed inset-0 -z-10 lg:hidden"
+        className="absolute inset-0 z-0 lg:hidden"
         style={{
           backgroundImage: `url(${onboard})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       />
-      <div className="mx-auto flex min-h-screen max-w-[1520px]">
+      <div className="absolute inset-0 z-0 bg-slate-950/20 lg:hidden" />
+
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-[1520px] items-center justify-center px-3 py-4 sm:px-5 sm:py-7 lg:items-stretch lg:justify-start lg:p-0">
         <section className="relative hidden flex-1 overflow-hidden lg:block">
           <img
             src={onboard}
@@ -202,7 +204,7 @@ const OnboardingRoute = () => {
           </div>
         </section>
 
-        <section className="mx-4 my-6 flex w-full items-center justify-center rounded-[28px] border border-white/60 bg-white/70 px-6 py-10 shadow-[0_30px_80px_rgba(15,23,42,0.16)] backdrop-blur-sm lg:mx-0 lg:my-0 lg:w-[620px] lg:rounded-none lg:border-none lg:bg-white lg:px-12 lg:shadow-none lg:backdrop-blur-none">
+        <section className="flex w-full max-w-[430px] items-center justify-center rounded-[22px] border border-white/60 bg-white/65 px-6 py-8 shadow-[0_30px_80px_rgba(15,23,42,0.20)] backdrop-blur-md sm:px-8 sm:py-10 lg:max-w-none lg:w-[620px] lg:rounded-none lg:border-none lg:bg-white lg:px-12 lg:py-10 lg:shadow-none lg:backdrop-blur-none">
           <div className="w-full max-w-[430px]">
             <div className="mb-4 text-center text-lg font-bold font-display uppercase tracking-[0.45em] text-blue-700/80 lg:hidden">
               <img src={Logo} className="h-22 w-auto" /> 
