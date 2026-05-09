@@ -39,17 +39,6 @@ const TripCard = ({
 
   const displayTags = trip.tags.slice(0, 3)
   const showSecondaryAction = Boolean(secondaryActionLabel && onSecondaryAction)
-  const seasonLabel = trip.season === 'all' ? 'All' : trip.season.charAt(0).toUpperCase() + trip.season.slice(1)
-  const seasonEmoji =
-    trip.season === 'summer'
-      ? '☀️'
-      : trip.season === 'winter'
-        ? '❄️'
-        : trip.season === 'monsoon'
-          ? '🌧️'
-          : trip.season === 'autumn'
-            ? '🍂'
-            : '🌍'
 
   const handleSecondaryActionClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()

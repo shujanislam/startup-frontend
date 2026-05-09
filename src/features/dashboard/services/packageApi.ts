@@ -284,6 +284,16 @@ export const fetchAllPackages = async (): Promise<Trip[]> => {
   return data.map(mapApiPackageToTrip)
 }
 
+export const fetchFeaturedPackage = async (): Promise<Trip | null> => {
+  const { data } = await apiClient.get<{ message: string; data: ApiPackage }>('/packages/get-featured-package')
+
+  if (!data?.data) {
+    return null
+  }
+
+  return mapApiPackageToTrip(data.data)
+}
+
 export const fetchPendingPackages = async (): Promise<PackageSummary[]> => {
   const { data } = await apiClient.get<ApiPackage[]>('/packages/pending-packages')
   return data.map(mapApiPackageToPackageSummary)

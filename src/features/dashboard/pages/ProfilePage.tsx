@@ -19,7 +19,7 @@ const getDisplayName = (name?: string | null, email?: string | null) => {
   const fallback = email?.split('@')[0]?.replace(/[._-]+/g, ' ')
 
   if (!fallback) {
-    return 'BudgetYatra User'
+    return 'Alpine User'
   }
 
   return fallback.replace(/\b\w/g, (letter) => letter.toUpperCase())
