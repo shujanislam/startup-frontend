@@ -26,53 +26,58 @@ const FeaturedTripCard = ({ trip, onClick }: FeaturedTripCardProps) => {
   }, [trip.name])
 
   const hasUsableImage = trip.imageUrl.trim().length > 0 && !imageFailed
+  const nights = Math.max(trip.duration - 1, 0)
+  const durationText =
+    nights > 0
+      ? `${trip.duration} ${trip.duration === 1 ? 'Day' : 'Days'}, ${nights} ${nights === 1 ? 'Night' : 'Nights'}`
+      : `${trip.duration} ${trip.duration === 1 ? 'Day' : 'Days'}`
 
   return (
-    <div
-      className="relative mb-6 h-64 w-full cursor-pointer overflow-hidden rounded-lg sm:h-72 md:mb-8 md:h-72"
+    <button
+      type="button"
+      className="group relative block h-80 w-full cursor-pointer overflow-hidden rounded-3xl bg-slate-100 text-left sm:h-115 lg:h-[60vh] lg:min-h-125 xl:h-[62vh] 2xl:h-[64vh]"
       onClick={onClick}
+      aria-label={`View featured trip ${trip.name}`}
     >
-      {/* Background Image */}
       {hasUsableImage ? (
         <img
           src={trip.imageUrl}
           alt={trip.name}
           onError={() => setImageFailed(true)}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
         />
       ) : (
-        <div className={`absolute inset-0 bg-linear-to-br ${fallbackBackground} flex items-center justify-center`}>
-          <span className="text-white/90 text-sm md:text-base font-semibold px-4 text-center">{trip.destination}</span>
+        <div className={`absolute inset-0 flex items-center justify-center bg-linear-to-br ${fallbackBackground}`}>
+          <span className="px-4 text-center text-base font-semibold text-white/90 md:text-lg">{trip.destination}</span>
         </div>
       )}
 
-      {/* Readability overlays */}
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/5 via-transparent to-black/45" />
-      <div className="pointer-events-none absolute inset-0 backdrop-blur-[2px] [mask-image:linear-gradient(to_top,black_0%,black_34%,transparent_100%)]" />
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-48 md:h-44"
-        style={{
-          background:
-            'linear-gradient(to top, rgba(0,0,0,0.74) 0%, rgba(0,0,0,0.56) 30%, rgba(0,0,0,0.34) 58%, rgba(0,0,0,0.14) 80%, rgba(0,0,0,0) 100%)',
-        }}
-      />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/10 via-black/20 to-black/90" />
+      <div className="absolute left-4 top-4 flex max-w-[calc(100%-2rem)] flex-wrap gap-2 sm:left-5 sm:top-5">
+        <span className="rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold text-white shadow-sm">
+          Featured Trip
+        </span>
+      </div>
 
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 text-white z-20">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 md:mb-2">{trip.name}</h2>
+      <div className="absolute bottom-0 left-0 right-0 z-10 p-5 text-white sm:p-7">
+        <div>
+          <h2 className="line-clamp-2 text-2xl font-semibold leading-tight sm:text-4xl">
+            {trip.name}
+          </h2>
+          <p className="mt-3 text-md text-gray-300 font-semibold sm:text-xl">Starting at {formatPrice(trip.price)}</p>
 
-        <div className="flex items-start justify-between gap-4 mb-3 md:mb-4">
-          <div>
-            <div className="text-lg sm:text-xl font-bold text-green-500">{formatPrice(trip.price)}</div>
-            <div className="flex flex-col gap-0.5 md:gap-1 text-xs text-gray-300 mt-1 md:mt-2">
-              <span className="flex items-center gap-1.5">
-                ⭐ {trip.rating}
-              </span>
-            </div>
+          <div className="mt-3 flex w-full items-center justify-between gap-4 text-sm font-normal text-gray-400 sm:text-base">
+            <span>{durationText}</span>
+            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+              Learn More
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14m-5-5 5 5-5 5" />
+              </svg>
+            </span>
           </div>
         </div>
       </div>
-    </div>
+    </button>
   )
 }
 

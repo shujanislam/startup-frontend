@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import heroImage from '../../../assets/Instagram.jpeg'
+import heroImage from '../../../assets/pikachu.jpg'
+import logoBlack from '../../../assets/logo-black.png'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -23,10 +24,10 @@ const AuthForm = ({
   const isLogin = mode === 'login'
 
   const inputClassName =
-    'w-full rounded-md border border-slate-200 bg-white px-4 py-3.5 mt-2 mb-2 text-md text-slate-900 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100'
+    'w-full rounded-2xl border border-white/35 bg-white/15 px-4 py-3.5 mt-2 mb-2 text-md text-white shadow-inner outline-none transition placeholder:text-white/70 focus:border-white/70 focus:ring-4 focus:ring-white/30 lg:rounded-md lg:border-slate-200 lg:bg-white lg:text-slate-900 lg:placeholder:text-slate-400 lg:focus:border-blue-600 lg:focus:ring-blue-100'
 
   const buttonClassName =
-    'w-full rounded-md px-4 py-4 text-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-60'
+    'w-full rounded-2xl px-4 py-4 text-md font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 lg:rounded-md'
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -38,18 +39,19 @@ const AuthForm = ({
 
       {/* 🔥 MOBILE BACKGROUND IMAGE ONLY */}
       <div
-        className="fixed inset-0 -z-10 lg:hidden"
+        className="fixed inset-0 -z-20 scale-105 blur-[5px] lg:hidden"
         style={{
           backgroundImage: `url(${heroImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       />
+      <div className="fixed inset-0 -z-10 bg-black/40 lg:hidden" />
 
-      <div className="grid w-full max-w-6xl overflow-hidden rounded-[22px] border border-slate-200/70 shadow-[0_30px_80px_rgba(15,23,42,0.12)] lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:rounded-[30px]">
+      <div className="grid w-full max-w-6xl overflow-hidden lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:rounded-[30px] lg:border lg:border-slate-200/70 lg:shadow-[0_30px_80px_rgba(15,23,42,0.12)]">
 
         {/* 🔥 LEFT IMAGE (DESKTOP ONLY) */}
-        <aside className="relative hidden min-h-[620px] overflow-hidden bg-slate-900 lg:block">
+        <aside className="relative hidden min-h-155 overflow-hidden bg-slate-900 lg:block">
           <img
             className="absolute inset-0 h-full w-full object-cover"
             src={heroImage}
@@ -60,19 +62,22 @@ const AuthForm = ({
         {/* 🔥 FORM */}
         <div
           className="
-            grid content-center p-6 sm:p-8 lg:p-14
-            bg-white/60 backdrop-blur-md border border-white/50 shadow-lg
-            lg:bg-white/95 lg:backdrop-blur-none lg:border-none lg:shadow-none
+            grid -translate-y-4 content-center p-6 sm:p-8 lg:translate-y-0 lg:p-14
+            bg-transparent text-white
+            lg:bg-white/95 lg:text-slate-900
           "
         >
-          <h1 className="mb-4 text-6xl font-semibold font-display leading-tight text-slate-900">
+          <div className="mb-4 flex justify-center lg:hidden">
+            <img src={logoBlack} alt="Alpine" className="h-15 w-auto" />
+          </div>
+          <h1 className="mb-4 text-center text-4xl font-medium font-display leading-tight text-white sm:text-5xl lg:text-left lg:text-slate-900">
             {isLogin ? (
               <>
-                Hey, <br /> Login now!
+                Hey, <br /> <span className="whitespace-nowrap">Login now!</span>
               </>
             ) : (
               <>
-                Hey, <br /> Create your account!
+                Hey, <br /> <span className="whitespace-nowrap">Create account!</span>
               </>
             )}
           </h1>
@@ -100,10 +105,10 @@ const AuthForm = ({
             />
 
             {errorMessage && (
-              <p className="text-sm text-red-600">{errorMessage}</p>
+              <p className="text-sm text-red-200 lg:text-red-600">{errorMessage}</p>
             )}
 
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-white/80 lg:text-gray-500">
               Forgot Password? /{' '}
               <span className="underline cursor-pointer">Reset</span>
             </div>
@@ -111,7 +116,7 @@ const AuthForm = ({
             <button
               type="submit"
               disabled={isLoading}
-              className={`${buttonClassName} bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg hover:scale-[1.01]`}
+              className={`${buttonClassName} bg-linear-to-r from-gray-950 to-gray-700 text-white shadow-lg hover:scale-[1.01]`}
             >
               {isLoading
                 ? 'Please wait...'
@@ -121,25 +126,25 @@ const AuthForm = ({
             </button>
           </form>
 
-          <div className="my-5 flex items-center gap-3 text-center text-xs text-slate-400">
-            <span className="h-px flex-1 bg-slate-200" />
+          <div className="my-5 flex items-center gap-3 text-center text-xs text-white/70 lg:text-slate-400">
+            <span className="h-px flex-1 bg-white/30 lg:bg-slate-200" />
             <span>or</span>
-            <span className="h-px flex-1 bg-slate-200" />
+            <span className="h-px flex-1 bg-white/30 lg:bg-slate-200" />
           </div>
 
           <button
             type="button"
             onClick={onGoogleSignIn}
             disabled={isLoading}
-            className={`${buttonClassName} border border-slate-200 bg-white text-slate-900 hover:bg-slate-50`}
+            className={`${buttonClassName} border border-white/40 bg-white/15 text-white hover:bg-white/25 lg:border-slate-200 lg:bg-white lg:text-slate-900 lg:hover:bg-slate-50`}
           >
             Continue with Google
           </button>
 
-          <p className="mt-5 text-center text-sm text-slate-500">
+          <p className="mt-5 text-center text-sm text-white/80 lg:text-slate-500">
             {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
             <Link
-              className="font-semibold text-blue-600 hover:text-blue-700"
+              className="font-semibold text-white hover:text-white lg:text-gray-950 lg:hover:text-gray-950"
               to={isLogin ? '/signup' : '/login'}
             >
               {isLogin ? 'Sign up' : 'Log in'}

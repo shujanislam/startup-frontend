@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @font-face {
@@ -9,10 +10,15 @@
 }
 
 @theme {
-  --font-display: "Josefin Slab", Georgia, "Times New Roman", Times, serif;
+  --font-display: "Poppins", "Josefin Slab", Georgia, "Times New Roman", Times, serif;
+  --font-sans: "Poppins", "Helvetica Neue", Arial, sans-serif;
 }
 
 @layer base {
+  body {
+    font-family: var(--font-sans);
+  }
+
   input,
   textarea,
   select,
