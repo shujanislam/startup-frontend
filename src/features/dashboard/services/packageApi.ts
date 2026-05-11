@@ -41,6 +41,34 @@ export interface DiscoverResponse {
   meta: DiscoverMeta
 }
 
+const userNameCache = new Map<string, string>()
+
+const isObjectId = (value: string): boolean => /^[a-f\d]{24}$/i.test(value)
+
+const resolveUserNameByProfileId = async (userId: string): Promise<string | null> => {
+  if (!isObjectId(userId)) {
+    return null
+  }
+
+  if (userNameCache.has(userId)) {
+    return userNameCache.get(userId) || null
+  }
+
+  try {
+    const { data } = await apiClient.get<{ name?: string }>(`/profile/show-profile/${userId}`)
+    const name = data?.name?.trim()
+
+    if (name) {
+      userNameCache.set(userId, name)
+      return name
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
 // ─────────────────────────────────────────────
 // Raw API Shapes (what the backend actually returns)
 // ─────────────────────────────────────────────
@@ -97,6 +125,7 @@ export interface ApiPackage {
   affiliateLinks?: string[]
   additional?: string
   createdBy: string
+  createdByName?: string
   approved: boolean
   createdAt: string
   updatedAt: string
@@ -206,7 +235,7 @@ export function mapApiPackageToPackageSummary(pkg: ApiPackage): PackageSummary {
   return {
     ...mapApiPackageBase(pkg),
     approved: pkg.approved,
-    createdBy: pkg.createdBy,
+    createdBy: pkg.createdByName ?? pkg.createdBy,
     createdAt: pkg.createdAt,
     updatedAt: pkg.updatedAt,
   }
@@ -223,7 +252,7 @@ export function mapApiPackageToTripDetail(pkg: ApiPackage): TripDetail {
     permit:         pkg.permit,
     affiliateLinks: mapApiAffiliateLinks(pkg.affiliateLinks),
     additional:     pkg.additional ?? '',
-    createdBy:      pkg.createdBy,
+    createdBy:      pkg.createdByName ?? pkg.createdBy,
     createdAt:      pkg.createdAt,
   }
 }
@@ -276,6 +305,14 @@ export const discoverPackages = async (query: DiscoverQuery): Promise<DiscoverRe
 export const fetchPackageById = async (id: string): Promise<TripDetail> => {
   // Throws on non-2xx; let the caller decide how to handle errors.
   const { data } = await apiClient.get<ApiPackage>(`/packages/view-package/${id}`)
+
+  if (!data.createdByName) {
+    const creatorName = await resolveUserNameByProfileId(data.createdBy)
+    if (creatorName) {
+      data.createdByName = creatorName
+    }
+  }
+
   return mapApiPackageToTripDetail(data)
 }
 
@@ -431,7 +468,51 @@ export const fetchPackageReviews = async (packageId: string): Promise<Review[]> 
   const { data } = await apiClient.get<{ message: string; data: Review[] }>(
     `/packages/get-package-reviews/${packageId}`
   )
-  return data.data ?? []
+
+  const reviews = data.data ?? []
+
+  const reviewUserIdsToResolve = [
+    ...new Set(
+      reviews
+        .filter((review) => (review.userName || '').trim().toLowerCase() === 'anonymous')
+        .map((review) => review.userId)
+        .filter((userId) => isObjectId(userId))
+    ),
+  ]
+
+  if (reviewUserIdsToResolve.length === 0) {
+    return reviews
+  }
+
+  const resolvedEntries = await Promise.all(
+    reviewUserIdsToResolve.map(async (userId) => {
+      const userName = await resolveUserNameByProfileId(userId)
+      return [userId, userName] as const
+    })
+  )
+
+  const resolvedNameMap = new Map<string, string>()
+  for (const [userId, userName] of resolvedEntries) {
+    if (userName) {
+      resolvedNameMap.set(userId, userName)
+    }
+  }
+
+  return reviews.map((review) => {
+    if ((review.userName || '').trim().toLowerCase() !== 'anonymous') {
+      return review
+    }
+
+    const resolvedName = resolvedNameMap.get(review.userId)
+    if (!resolvedName) {
+      return review
+    }
+
+    return {
+      ...review,
+      userName: resolvedName,
+    }
+  })
 }
 
 export const fetchReviewEligibility = async (packageId: string): Promise<ReviewEligibility> => {
