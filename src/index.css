@@ -35,6 +35,15 @@
   .sidebar-fade {
     animation: sidebar-fade 420ms ease-out both;
   }
+
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes sidebar-rise {
