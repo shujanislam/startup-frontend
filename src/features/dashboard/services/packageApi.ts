@@ -3,7 +3,9 @@ import type {
   Hotel,
   Vehicle,
   Link,
+  DraftPackageSummary,
   PackageSummary,
+  PackageStatus,
   Trip,
   TripDetail,
   SeasonType,
@@ -78,6 +80,7 @@ export interface ApiHotel {
   name: string
   address: string
   phoneNumber?: string
+  photos?: string[]
   budget: number
 }
 
@@ -87,7 +90,25 @@ export interface ApiVehicle {
   carNumber: string
   driverName?: string
   driverPhoneNumber: string
+  vehicleType?: string
   budget: number
+}
+
+export interface DraftHotelPayload {
+  name?: string
+  phoneNumber?: string
+  address?: string
+  photos?: string[]
+  budget?: number
+}
+
+export interface DraftVehiclePayload {
+  car?: string
+  carNumber?: string
+  driverName?: string
+  driverPhoneNumber?: string
+  vehicleType?: string
+  budget?: number
 }
 
 export interface CreateHotelPayload {
@@ -127,10 +148,17 @@ export interface ApiPackage {
   createdBy: string
   createdByName?: string
   approved: boolean
+  status?: PackageStatus
+  submittedAt?: string
+  reviewedAt?: string
+  reviewedBy?: string
+  rejectionReason?: string
   createdAt: string
   updatedAt: string
   hotels?: ApiHotel[] | string[]
   vehicles?: ApiVehicle[] | string[]
+  draftHotels?: DraftHotelPayload[]
+  draftVehicles?: DraftVehiclePayload[]
   // NOTE: Backend does not yet expose a real rating or popularity metric.
   // rating and popularity-based sorting are approximated until the API supports them.
 }
@@ -139,10 +167,20 @@ export interface ApiPackage {
 // Omit server-generated fields the client should never send.
 export type CreatePackagePayload = Omit<
   ApiPackage,
-  '_id' | 'createdBy' | 'approved' | 'createdAt' | 'updatedAt'
+  | '_id'
+  | 'createdBy'
+  | 'approved'
+  | 'status'
+  | 'submittedAt'
+  | 'reviewedAt'
+  | 'reviewedBy'
+  | 'rejectionReason'
+  | 'createdAt'
+  | 'updatedAt'
 >
 
 export type UpdatePackagePayload = Partial<CreatePackagePayload>
+export type DraftPackagePayload = Partial<CreatePackagePayload>
 
 // ─────────────────────────────────────────────
 // Sort Mapping
@@ -211,15 +249,15 @@ function mapApiAffiliateLinks(links?: string[]): Link[] {
 function mapApiPackageBase(pkg: ApiPackage) {
   return {
     id:          pkg._id,
-    name:        pkg.name,
-    description: pkg.description,
-    destination: pkg.destination,
-    duration:    pkg.duration,
-    startDate:   pkg.startDate,
-    price:       pkg.budget,
-    season:      pkg.season as SeasonType,
+    name:        pkg.name || 'Untitled trip',
+    description: pkg.description || '',
+    destination: pkg.destination || 'Destination pending',
+    duration:    pkg.duration || 0,
+    startDate:   pkg.startDate || '',
+    price:       pkg.budget || 0,
+    season:      (pkg.season || 'all') as SeasonType,
     tags:        pkg.tags ?? [],
-    imageUrl:    pkg.coverImage,
+    imageUrl:    pkg.coverImage || '',
     isFeatured:  false,
     // Rating is hardcoded until the API returns a real aggregate.
     // TODO: replace with `pkg.rating` once available.
@@ -235,9 +273,24 @@ export function mapApiPackageToPackageSummary(pkg: ApiPackage): PackageSummary {
   return {
     ...mapApiPackageBase(pkg),
     approved: pkg.approved,
-    createdBy: pkg.createdByName ?? pkg.createdBy,
+    status: pkg.status ?? (pkg.approved ? 'approved' : 'pending_approval'),
+    createdBy: pkg.createdBy,
     createdAt: pkg.createdAt,
     updatedAt: pkg.updatedAt,
+    submittedAt: pkg.submittedAt,
+    reviewedAt: pkg.reviewedAt,
+    rejectionReason: pkg.rejectionReason,
+  }
+}
+
+export function mapApiPackageToDraftSummary(pkg: ApiPackage): DraftPackageSummary {
+  return {
+    id: pkg._id,
+    name: pkg.name?.trim() || 'Untitled draft',
+    destination: pkg.destination?.trim() || 'Destination not set',
+    imageUrl: pkg.coverImage?.trim() || '',
+    updatedAt: pkg.updatedAt,
+    status: pkg.status ?? 'draft',
   }
 }
 
@@ -304,16 +357,10 @@ export const discoverPackages = async (query: DiscoverQuery): Promise<DiscoverRe
 
 export const fetchPackageById = async (id: string): Promise<TripDetail> => {
   // Throws on non-2xx; let the caller decide how to handle errors.
-  const { data } = await apiClient.get<ApiPackage>(`/packages/view-package/${id}`)
-
-  if (!data.createdByName) {
-    const creatorName = await resolveUserNameByProfileId(data.createdBy)
-    if (creatorName) {
-      data.createdByName = creatorName
-    }
-  }
-
-  return mapApiPackageToTripDetail(data)
+  const { data } = await apiClient.get<{ message: string; data: ApiPackage }>(
+    `/packages/package-details/${id}`
+  )
+  return mapApiPackageToTripDetail(data.data)
 }
 
 export const fetchAllPackages = async (): Promise<Trip[]> => {
@@ -336,9 +383,53 @@ export const fetchPendingPackages = async (): Promise<PackageSummary[]> => {
   return data.map(mapApiPackageToPackageSummary)
 }
 
+export const fetchDraftPackages = async (): Promise<DraftPackageSummary[]> => {
+  const { data } = await apiClient.get<{ message: string; data: ApiPackage[] }>(
+    '/packages/my-draft-packages'
+  )
+  return (data.data ?? []).map(mapApiPackageToDraftSummary)
+}
+
+export const fetchEditablePackage = async (id: string): Promise<ApiPackage> => {
+  const { data } = await apiClient.get<{ message: string; data: ApiPackage }>(
+    `/packages/edit-package/${id}`
+  )
+  return data.data
+}
+
 export const createPackage = async (payload: CreatePackagePayload): Promise<TripDetail> => {
   const { data } = await apiClient.post<{ message: string; data: ApiPackage }>(
     '/packages/post-package',
+    payload
+  )
+  return mapApiPackageToTripDetail(data.data)
+}
+
+export const createPackageDraft = async (payload: DraftPackagePayload): Promise<ApiPackage> => {
+  const { data } = await apiClient.post<{ message: string; data: ApiPackage }>(
+    '/packages/draft-package',
+    payload
+  )
+  return data.data
+}
+
+export const updatePackageDraft = async (
+  id: string,
+  payload: DraftPackagePayload
+): Promise<ApiPackage> => {
+  const { data } = await apiClient.patch<{ message: string; data: ApiPackage }>(
+    `/packages/draft-package/${id}`,
+    payload
+  )
+  return data.data
+}
+
+export const submitPackageForApproval = async (
+  id: string,
+  payload: CreatePackagePayload
+): Promise<TripDetail> => {
+  const { data } = await apiClient.patch<{ message: string; data: ApiPackage }>(
+    `/packages/submit-package/${id}`,
     payload
   )
   return mapApiPackageToTripDetail(data.data)
@@ -370,6 +461,14 @@ export const approvePackage = async (id: string): Promise<PackageSummary> => {
 export const unapprovePackage = async (id: string): Promise<PackageSummary> => {
   const { data } = await apiClient.patch<{ message: string; data: ApiPackage }>(
     `/packages/unapprove-package/${id}`,
+    {}
+  )
+  return mapApiPackageToPackageSummary(data.data)
+}
+
+export const rejectPackage = async (id: string): Promise<PackageSummary> => {
+  const { data } = await apiClient.patch<{ message: string; data: ApiPackage }>(
+    `/packages/reject-package/${id}`,
     {}
   )
   return mapApiPackageToPackageSummary(data.data)

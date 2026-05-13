@@ -7,10 +7,12 @@ interface HomeHeaderProps {
   searchQuery: string
   onSearch: (query: string) => void
   onSubmitTrip: () => void
+  onDraftsClick: () => void
   onLogout: () => void
   onProfileClick: () => void
   isLoggingOut: boolean
   isAdmin: boolean
+  draftCount: number
   profilePhotoURL?: string
 }
 
@@ -26,10 +28,12 @@ const HomeHeader = ({
   searchQuery,
   onSearch,
   onSubmitTrip,
+  onDraftsClick,
   onLogout,
   onProfileClick,
   isLoggingOut,
   isAdmin,
+  draftCount,
   profilePhotoURL,
 }: HomeHeaderProps) => {
   const profileImage = profilePhotoURL || userPhotoURL
@@ -70,6 +74,23 @@ const HomeHeader = ({
             <svg className="h-5 w-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14m-7-7h14" />
             </svg>
+          </button>
+
+          <button
+            type="button"
+            className="relative inline-flex h-12 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white px-3 text-sm font-semibold text-slate-800 shadow-[0_12px_34px_rgba(15,23,42,0.08)] ring-1 ring-white/80 transition hover:border-slate-300 hover:bg-slate-50 active:scale-[0.98] sm:px-4"
+            onClick={onDraftsClick}
+            aria-label="View saved drafts"
+          >
+            <span className="hidden sm:inline">Drafts</span>
+            <svg className="h-5 w-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4h10a2 2 0 0 1 2 2v14l-7-3-7 3V6a2 2 0 0 1 2-2Z" />
+            </svg>
+            {draftCount > 0 && (
+              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-blue-600 px-1 text-[11px] font-bold text-white">
+                {draftCount}
+              </span>
+            )}
           </button>
 
           <div className="group/profile relative z-50">
