@@ -45,6 +45,7 @@ const HomePage = () => {
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [trips, setTrips] = useState<Trip[]>([])
+  const [featuredTrip, setFeaturedTrip] = useState<Trip | null>(null)
   const [pendingTrips, setPendingTrips] = useState<PackageSummary[]>([])
   const [draftTrips, setDraftTrips] = useState<DraftPackageSummary[]>([])
   const [editingPackage, setEditingPackage] = useState<ApiPackage | null>(null)
@@ -388,12 +389,18 @@ const HomePage = () => {
   const hasActiveFilters =
     searchQuery.trim().length > 0 || season !== 'all' || sortBy !== 'all' || maxBudget < 10000
 
-  const featured =
-    !isAdmin && !hasActiveFilters && trips.length > 0
-      ? { ...trips[0], badge: 'Featured', isFeatured: true }
-      : null
+  const featuredCandidate = !isAdmin && !hasActiveFilters
+    ? featuredTrip ?? (trips.length > 0 ? trips[0] : null)
+    : null
 
-  const remainingTrips = isAdmin || hasActiveFilters ? trips : featured ? trips.slice(1) : trips
+  const featured = featuredCandidate
+    ? { ...featuredCandidate, badge: 'Featured', isFeatured: true }
+    : null
+
+  const remainingTrips = isAdmin || hasActiveFilters || !featured
+    ? trips
+    : trips.filter((trip) => trip.id !== featured.id)
+
   const desktopTrips = showAllDesktopTrips ? remainingTrips : remainingTrips.slice(0, 6)
   const shouldShowDesktopToggle = !showAllDesktopTrips && remainingTrips.length > 6
   const canLoadMore = Boolean(meta && page < meta.totalPages)
