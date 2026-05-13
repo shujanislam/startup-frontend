@@ -494,7 +494,7 @@ const HomePage = () => {
 
               {remainingTrips.length > 0 && (
                 <>
-                  <div className="flex gap-5 overflow-x-auto pb-2 md:hidden">
+                  <div className="scrollbar-hidden flex gap-5 overflow-x-auto pb-2 md:hidden">
                     {remainingTrips.map((trip) => (
                       <div key={trip.id} className="min-w-[80%] max-w-80 shrink-0">
                         <TripCard
