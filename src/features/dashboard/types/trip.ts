@@ -1,5 +1,6 @@
 export type SortType = 'all' | 'popular' | 'cheapest' | 'newest' | 'shortest'
 export type SeasonType = 'all' | 'summer' | 'winter' | 'monsoon' | 'autumn'
+export type PackageStatus = 'draft' | 'pending_approval' | 'approved' | 'rejected'
 
 export interface Hotel {
   id: string
@@ -54,9 +55,22 @@ export interface TripDetail extends Trip {
 
 export interface PackageSummary extends Trip {
   approved: boolean
+  status: PackageStatus
   createdBy: string
   createdAt: string
   updatedAt: string
+  submittedAt?: string
+  reviewedAt?: string
+  rejectionReason?: string
+}
+
+export interface DraftPackageSummary {
+  id: string
+  name: string
+  destination: string
+  imageUrl: string
+  updatedAt: string
+  status: PackageStatus
 }
 
 export interface FeaturedTrip extends Trip {

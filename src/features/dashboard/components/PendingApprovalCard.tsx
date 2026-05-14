@@ -4,14 +4,18 @@ import type { PackageSummary } from '../types/trip.ts'
 interface PendingApprovalCardProps {
   trip: PackageSummary
   isApproving: boolean
+  isRejecting: boolean
   onApprove: () => void
+  onReject: () => void
   onView: () => void
 }
 
 const PendingApprovalCard = ({
   trip,
   isApproving,
+  isRejecting,
   onApprove,
+  onReject,
   onView,
 }: PendingApprovalCardProps) => {
   const [imageFailed, setImageFailed] = useState(false)
@@ -83,19 +87,27 @@ const PendingApprovalCard = ({
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           <button
             type="button"
             onClick={onView}
-            className="flex-1 rounded-full border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            className="rounded-full border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
           >
             View details
           </button>
           <button
             type="button"
+            onClick={onReject}
+            disabled={isRejecting || isApproving}
+            className="rounded-full border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isRejecting ? 'Rejecting...' : 'Reject'}
+          </button>
+          <button
+            type="button"
             onClick={onApprove}
-            disabled={isApproving}
-            className="flex-1 rounded-full bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isApproving || isRejecting}
+            className="rounded-full bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isApproving ? 'Approving...' : 'Approve trip'}
           </button>

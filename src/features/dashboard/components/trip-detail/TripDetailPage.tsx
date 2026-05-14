@@ -40,10 +40,8 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
       setIsLoading(true)
       setError(null)
       try {
-        const [data, revealedIds] = await Promise.all([
-          fetchPackageById(tripId),
-          fetchRevealedPackageIds(),
-        ])
+        const data = await fetchPackageById(tripId)
+        const revealedIds = await fetchRevealedPackageIds().catch((): string[] => [])
 
         if (!data) {
           setError('Trip not found')

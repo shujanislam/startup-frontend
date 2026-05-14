@@ -24,4 +24,20 @@ apiClient.interceptors.request.use(
   },
 )
 
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data as { message?: unknown } | undefined
+      const message = responseData?.message
+
+      if (typeof message === 'string' && message.trim()) {
+        return Promise.reject(new Error(message))
+      }
+    }
+
+    return Promise.reject(error)
+  },
+)
+
 export default apiClient
