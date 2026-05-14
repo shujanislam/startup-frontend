@@ -21,23 +21,6 @@ const travelStyleOptions = [
   'Family',
   'Eco-friendly',
 ] as const
-const languageOptions = [
-  'English',
-  'Hindi',
-  'Bengali',
-  'Tamil',
-  'Telugu',
-  'Marathi',
-  'Gujarati',
-  'Kannada',
-  'Urdu',
-  'Punjabi',
-  'Spanish',
-  'French',
-  'German',
-  'Japanese',
-  'Mandarin',
-] as const
 const vibeOptions = [
   'Mountains',
   'Beaches',
@@ -89,11 +72,7 @@ const OnboardingRoute = () => {
   const [form, setForm] = useState({
     name: '',
     phone: '',
-    dateOfBirth: '',
     gender: '',
-    location: '',
-    occupation: '',
-    languages: [] as string[],
     travelStyle: '',
     bio: '',
     tags: [] as string[],
@@ -103,7 +82,7 @@ const OnboardingRoute = () => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  const toggleItem = (key: 'languages' | 'tags', value: string) => {
+  const toggleItem = (key: 'tags', value: string) => {
     setForm((prev) => ({
       ...prev,
       [key]: prev[key].includes(value)
@@ -141,11 +120,7 @@ const OnboardingRoute = () => {
       await updateProfile(userId, {
         name: form.name.trim(),
         phone: form.phone.trim() || undefined,
-        dateOfBirth: form.dateOfBirth || undefined,
         gender: genderValue,
-        location: form.location.trim() || undefined,
-        occupation: form.occupation.trim() || undefined,
-        languages: form.languages.length > 0 ? form.languages : undefined,
         travelStyle: form.travelStyle,
         bio: form.bio.trim() || undefined,
         tags: form.tags,
@@ -251,17 +226,6 @@ const OnboardingRoute = () => {
                         label="Phone Number"
                         type="tel"
                       />
-                      <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-slate-500">
-                          Date of Birth
-                        </label>
-                        <input
-                          type="date"
-                          value={form.dateOfBirth}
-                          onChange={(e) => updateField('dateOfBirth', e.target.value)}
-                          className="h-14 w-full rounded-2xl border border-white/35 bg-white/15 px-4 text-sm text-white outline-none transition focus:border-white/70 focus:ring-4 focus:ring-white/30 lg:border-slate-200 lg:bg-white lg:text-slate-900 lg:focus:border-[#3b82f6] lg:focus:ring-[#3b82f6]/15"
-                        />
-                      </div>
                     </div>
                   </div>
                 )}
@@ -269,7 +233,7 @@ const OnboardingRoute = () => {
                 {step === 1 && (
                   <div>
                     <h1 className="text-3xl font-semibold leading-tight text-white lg:text-[#0f172a]">Your identity & background</h1>
-                    <p className="mt-2 text-sm text-white/70 lg:text-slate-500">Help us understand who you&apos;re from.</p>
+                    <p className="mt-2 text-sm text-white/70 lg:text-slate-500">Choose how you want your profile to appear.</p>
 
                     <div className="mt-8 space-y-5">
                       <div>
@@ -294,17 +258,6 @@ const OnboardingRoute = () => {
                           })}
                         </div>
                       </div>
-
-                      <FloatingLabelInput
-                        value={form.location}
-                        onChange={(v) => updateField('location', v)}
-                        label="City / Country"
-                      />
-                      <FloatingLabelInput
-                        value={form.occupation}
-                        onChange={(v) => updateField('occupation', v)}
-                        label="Occupation"
-                      />
                     </div>
                   </div>
                 )}
@@ -332,29 +285,6 @@ const OnboardingRoute = () => {
                                 }`}
                               >
                                 {option}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-
-                      <div>
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 lg:text-slate-500">Languages you speak</p>
-                        <div className="flex flex-wrap gap-2">
-                          {languageOptions.map((lang) => {
-                            const selected = form.languages.includes(lang)
-                            return (
-                              <button
-                                key={lang}
-                                type="button"
-                                onClick={() => toggleItem('languages', lang)}
-                                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                                  selected
-                                    ? 'border-white/70 bg-white/25 text-white shadow-[0_4px_12px_rgba(0,0,0,0.25)] lg:border-[#3b82f6] lg:bg-[#3b82f6] lg:text-white lg:shadow-[0_4px_12px_rgba(59,130,246,0.3)]'
-                                    : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-600 lg:hover:border-[#3b82f6]/40 lg:hover:text-[#1d4ed8]'
-                                }`}
-                              >
-                                {lang}
                               </button>
                             )
                           })}

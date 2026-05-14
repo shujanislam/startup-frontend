@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import heroImage from '../../../assets/pikachu.jpg'
+import heroImage from '../../../assets/auth-hero.png'
 import logoBlack from '../../../assets/logo-black.png'
 
 interface AuthFormProps {
