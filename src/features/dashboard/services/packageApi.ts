@@ -57,8 +57,8 @@ const resolveUserNameByProfileId = async (userId: string): Promise<string | null
   }
 
   try {
-    const { data } = await apiClient.get<{ name?: string }>(`/profile/show-profile/${userId}`)
-    const name = data?.name?.trim()
+    const { data } = await apiClient.get<{ profile?: { name?: string } }>(`/profile/show-profile/${userId}`)
+    const name = data?.profile?.name?.trim()
 
     if (name) {
       userNameCache.set(userId, name)
@@ -358,10 +358,16 @@ export const discoverPackages = async (query: DiscoverQuery): Promise<DiscoverRe
 
 export const fetchPackageById = async (id: string): Promise<TripDetail> => {
   // Throws on non-2xx; let the caller decide how to handle errors.
-  const { data } = await apiClient.get<{ message: string; data: ApiPackage }>(
-    `/packages/package-details/${id}`
-  )
-  return mapApiPackageToTripDetail(data.data)
+  const { data } = await apiClient.get<ApiPackage>(`/packages/view-package/${id}`)
+
+  if (!data.createdByName) {
+    const creatorName = await resolveUserNameByProfileId(data.createdBy)
+    if (creatorName) {
+      data.createdByName = creatorName
+    }
+  }
+
+  return mapApiPackageToTripDetail(data)
 }
 
 export const fetchAllPackages = async (): Promise<Trip[]> => {
