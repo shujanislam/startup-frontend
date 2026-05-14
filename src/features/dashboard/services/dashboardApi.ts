@@ -26,6 +26,11 @@ interface CurrentUserResponse {
   user: CurrentUser
 }
 
+export interface ShowProfileResponse {
+  profile: CurrentUser
+  ownProfile: boolean
+}
+
 export interface UpdateProfilePayload {
   name?: string
   gender?: string
@@ -65,4 +70,9 @@ const updateProfile = async (
   return response.data.data
 }
 
-export { fetchCurrentUser, updateProfile }
+const fetchProfile = async (profileId: string): Promise<ShowProfileResponse> => {
+  const response = await apiClient.get<ShowProfileResponse>(`/profile/show-profile/${profileId}`)
+  return response.data
+}
+
+export { fetchCurrentUser, fetchProfile, updateProfile }

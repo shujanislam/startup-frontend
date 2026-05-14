@@ -1,9 +1,10 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useEffect, useState } from 'react'
-import { fetchCurrentUser, updateProfile, type CurrentUser } from '../services/dashboardApi'
+import { fetchCurrentUser, fetchProfile, updateProfile, type CurrentUser } from '../services/dashboardApi'
 import {
   fetchCreatedPackagesCount,
+  fetchCreatedTripsByOwner,
   fetchCreatedTrips,
   fetchLikedTrips,
   type CreatedTripSummary,
@@ -33,12 +34,14 @@ const getInitials = (name: string) => {
 
 const ProfilePage = () => {
   const navigate = useNavigate()
+  const { id: profileId } = useParams<{ id?: string }>()
   const { user } = useAuth()
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [createdCount, setCreatedCount] = useState(0)
   const [createdTrips, setCreatedTrips] = useState<CreatedTripSummary[]>([])
   const [likedTrips, setLikedTrips] = useState<LikedTripSummary[]>([])
+  const [ownProfile, setOwnProfile] = useState(true)
 
   const [activeTab, setActiveTab] = useState<ProfileTab>('myTrips')
   const [isEditing, setIsEditing] = useState(false)
@@ -55,25 +58,41 @@ const ProfilePage = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [userData, tripsCount, created, liked] = await Promise.all([
-          fetchCurrentUser(),
-          fetchCreatedPackagesCount(),
-          fetchCreatedTrips(),
-          fetchLikedTrips(),
+        const profileResponse = profileId
+          ? await fetchProfile(profileId)
+          : await fetchCurrentUser().then((userData) => ({
+              profile: userData.user,
+              ownProfile: true,
+            }))
+
+        setCurrentUser(profileResponse.profile)
+        setOwnProfile(profileResponse.ownProfile)
+
+        const ownerId = profileResponse.profile._id
+
+        const [created, liked, tripsCount] = await Promise.all([
+          profileResponse.ownProfile
+            ? fetchCreatedTrips()
+            : (ownerId ? fetchCreatedTripsByOwner(ownerId) : Promise.resolve([])),
+          profileResponse.ownProfile ? fetchLikedTrips() : Promise.resolve([]),
+          profileResponse.ownProfile ? fetchCreatedPackagesCount() : Promise.resolve(0),
         ])
 
-        setCurrentUser(userData.user)
-        setCreatedCount(tripsCount)
         setCreatedTrips(created)
         setLikedTrips(liked)
+        setCreatedCount(profileResponse.ownProfile ? tripsCount : created.length)
+
+        if (!profileResponse.ownProfile) {
+          setActiveTab('myTrips')
+        }
 
         setEditState({
-          name: userData.user.name ?? '',
-          bio: userData.user.bio ?? '',
-          occupation: userData.user.occupation ?? '',
-          location: userData.user.location ?? '',
-          travelStyle: userData.user.travelStyle ?? '',
-          profilePicture: userData.user.profilePicture ?? '',
+          name: profileResponse.profile.name ?? '',
+          bio: profileResponse.profile.bio ?? '',
+          occupation: profileResponse.profile.occupation ?? '',
+          location: profileResponse.profile.location ?? '',
+          travelStyle: profileResponse.profile.travelStyle ?? '',
+          profilePicture: profileResponse.profile.profilePicture ?? '',
         })
       } catch (err) {
         console.error(err)
@@ -81,7 +100,7 @@ const ProfilePage = () => {
     }
 
     void loadData()
-  }, [])
+  }, [profileId])
 
   const displayName = getDisplayName(
     currentUser?.name || user?.displayName,
@@ -90,8 +109,9 @@ const ProfilePage = () => {
 
   const initials = getInitials(displayName)
 
-  const profileImage =
-    currentUser?.profilePicture || user?.photoURL
+  const profileImage = ownProfile
+    ? (currentUser?.profilePicture || user?.photoURL)
+    : currentUser?.profilePicture
 
   const handleEditChange = (
     key: keyof typeof editState,
@@ -173,12 +193,14 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => setIsEditing(true)}
-              className="text-sm font-semibold text-slate-900 transition hover:text-slate-600"
-            >
-              Edit Profile
-            </button>
+            {ownProfile && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-sm font-semibold text-slate-900 transition hover:text-slate-600"
+              >
+                Edit Profile
+              </button>
+            )}
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-slate-500">
@@ -189,12 +211,14 @@ const ProfilePage = () => {
               Trips
             </div>
 
-            <div>
-              <span className="font-semibold text-slate-900">
-                {likedTrips.length}
-              </span>{' '}
-              Liked
-            </div>
+            {ownProfile && (
+              <div>
+                <span className="font-semibold text-slate-900">
+                  {likedTrips.length}
+                </span>{' '}
+                Liked
+              </div>
+            )}
           </div>
         </header>
 
@@ -211,16 +235,18 @@ const ProfilePage = () => {
             My Trips
           </button>
 
-          <button
-            onClick={() => setActiveTab('liked')}
-            className={`pb-3 font-semibold transition ${
-              activeTab === 'liked'
-                ? 'border-b-2 border-slate-950 text-slate-950'
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            Liked Trips
-          </button>
+          {ownProfile && (
+            <button
+              onClick={() => setActiveTab('liked')}
+              className={`pb-3 font-semibold transition ${
+                activeTab === 'liked'
+                  ? 'border-b-2 border-slate-950 text-slate-950'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              Liked Trips
+            </button>
+          )}
         </div>
 
         {/* MY TRIPS */}
@@ -247,7 +273,7 @@ const ProfilePage = () => {
         )}
 
         {/* LIKED TRIPS */}
-        {activeTab === 'liked' && (
+        {ownProfile && activeTab === 'liked' && (
           <div className="mt-8">
             {likedTrips.length === 0 ? (
               <p className="text-sm text-slate-600">

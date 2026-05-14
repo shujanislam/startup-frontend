@@ -253,6 +253,7 @@ export function mapApiPackageToTripDetail(pkg: ApiPackage): TripDetail {
     affiliateLinks: mapApiAffiliateLinks(pkg.affiliateLinks),
     additional:     pkg.additional ?? '',
     createdBy:      pkg.createdByName ?? pkg.createdBy,
+    createdById:    pkg.createdBy,
     createdAt:      pkg.createdAt,
   }
 }
@@ -426,6 +427,42 @@ export const fetchCreatedTrips = async (): Promise<CreatedTripSummary[]> => {
       name: pkg.name?.trim() ?? '',
     }))
     .filter((trip): trip is CreatedTripSummary => Boolean(trip.id && trip.name))
+}
+
+export const fetchCreatedTripsByOwner = async (ownerId: string): Promise<CreatedTripSummary[]> => {
+  const limit = 100
+  let page = 1
+  let totalPages = 1
+  const createdTrips: CreatedTripSummary[] = []
+
+  do {
+    const { data } = await apiClient.get<{
+      message: string
+      data: ApiPackage[]
+      meta: DiscoverMeta
+    }>('/packages/discover-package', {
+      params: {
+        page,
+        limit,
+        sortBy: 'createdAt',
+        order: 'desc',
+      },
+    })
+
+    for (const pkg of data.data ?? []) {
+      if (pkg.createdBy === ownerId) {
+        const name = pkg.name?.trim() ?? ''
+        if (pkg._id && name) {
+          createdTrips.push({ id: pkg._id, name })
+        }
+      }
+    }
+
+    totalPages = data.meta?.totalPages ?? 1
+    page += 1
+  } while (page <= totalPages)
+
+  return createdTrips
 }
 
 export const fetchCreatedPackagesCount = async (): Promise<number> => {
