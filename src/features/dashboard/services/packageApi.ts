@@ -57,8 +57,8 @@ const resolveUserNameByProfileId = async (userId: string): Promise<string | null
   }
 
   try {
-    const { data } = await apiClient.get<{ name?: string }>(`/profile/show-profile/${userId}`)
-    const name = data?.name?.trim()
+    const { data } = await apiClient.get<{ profile?: { name?: string } }>(`/profile/show-profile/${userId}`)
+    const name = data?.profile?.name?.trim()
 
     if (name) {
       userNameCache.set(userId, name)
@@ -306,6 +306,7 @@ export function mapApiPackageToTripDetail(pkg: ApiPackage): TripDetail {
     affiliateLinks: mapApiAffiliateLinks(pkg.affiliateLinks),
     additional:     pkg.additional ?? '',
     createdBy:      pkg.createdByName ?? pkg.createdBy,
+    createdById:    pkg.createdBy,
     createdAt:      pkg.createdAt,
   }
 }
@@ -357,10 +358,16 @@ export const discoverPackages = async (query: DiscoverQuery): Promise<DiscoverRe
 
 export const fetchPackageById = async (id: string): Promise<TripDetail> => {
   // Throws on non-2xx; let the caller decide how to handle errors.
-  const { data } = await apiClient.get<{ message: string; data: ApiPackage }>(
-    `/packages/package-details/${id}`
-  )
-  return mapApiPackageToTripDetail(data.data)
+  const { data } = await apiClient.get<ApiPackage>(`/packages/view-package/${id}`)
+
+  if (!data.createdByName) {
+    const creatorName = await resolveUserNameByProfileId(data.createdBy)
+    if (creatorName) {
+      data.createdByName = creatorName
+    }
+  }
+
+  return mapApiPackageToTripDetail(data)
 }
 
 export const fetchAllPackages = async (): Promise<Trip[]> => {
@@ -498,6 +505,11 @@ export interface LikedTripSummary {
   name: string
 }
 
+export interface CreatedTripSummary {
+  id: string
+  name: string
+}
+
 export const fetchLikedTrips = async (): Promise<LikedTripSummary[]> => {
   const { data } = await apiClient.get<{ data?: Array<{ _id: string; name?: string }> }>('/packages/get-liked-packages')
 
@@ -507,6 +519,55 @@ export const fetchLikedTrips = async (): Promise<LikedTripSummary[]> => {
       name: pkg.name?.trim() ?? '',
     }))
     .filter((trip): trip is LikedTripSummary => Boolean(trip.id && trip.name))
+}
+
+export const fetchCreatedTrips = async (): Promise<CreatedTripSummary[]> => {
+  const { data } = await apiClient.get<{ createdPackages?: Array<{ _id: string; name?: string }> }>(
+    '/profile/get-created-packages'
+  )
+
+  return (data.createdPackages ?? [])
+    .map((pkg) => ({
+      id: pkg._id,
+      name: pkg.name?.trim() ?? '',
+    }))
+    .filter((trip): trip is CreatedTripSummary => Boolean(trip.id && trip.name))
+}
+
+export const fetchCreatedTripsByOwner = async (ownerId: string): Promise<CreatedTripSummary[]> => {
+  const limit = 100
+  let page = 1
+  let totalPages = 1
+  const createdTrips: CreatedTripSummary[] = []
+
+  do {
+    const { data } = await apiClient.get<{
+      message: string
+      data: ApiPackage[]
+      meta: DiscoverMeta
+    }>('/packages/discover-package', {
+      params: {
+        page,
+        limit,
+        sortBy: 'createdAt',
+        order: 'desc',
+      },
+    })
+
+    for (const pkg of data.data ?? []) {
+      if (pkg.createdBy === ownerId) {
+        const name = pkg.name?.trim() ?? ''
+        if (pkg._id && name) {
+          createdTrips.push({ id: pkg._id, name })
+        }
+      }
+    }
+
+    totalPages = data.meta?.totalPages ?? 1
+    page += 1
+  } while (page <= totalPages)
+
+  return createdTrips
 }
 
 export const fetchCreatedPackagesCount = async (): Promise<number> => {

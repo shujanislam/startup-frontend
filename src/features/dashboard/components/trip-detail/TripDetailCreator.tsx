@@ -1,5 +1,7 @@
 import type { TripDetail } from '../../types/trip'
 
+import { Link } from 'react-router-dom'
+
 interface TripDetailCreatorProps {
   trip: TripDetail
 }
@@ -15,7 +17,16 @@ const TripDetailCreator = ({ trip }: TripDetailCreatorProps) => {
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Submitted by</p>
-          <p className="mt-1 text-sm font-semibold text-gray-900">{trip.createdBy}</p>
+          {trip.createdById ? (
+            <Link
+              to={`/profile/${trip.createdById}`}
+              className="mt-1 inline-block text-sm font-semibold text-gray-900 underline decoration-gray-300 underline-offset-4 transition hover:text-blue-700 hover:decoration-blue-500"
+            >
+              {trip.createdBy}
+            </Link>
+          ) : (
+            <p className="mt-1 text-sm font-semibold text-gray-900">{trip.createdBy}</p>
+          )}
         </div>
 
         <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 py-3">

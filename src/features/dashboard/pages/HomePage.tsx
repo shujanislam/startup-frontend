@@ -13,6 +13,7 @@ import {
   createPackage,
   createPackageDraft,
   discoverPackages,
+  fetchFeaturedPackage,
   fetchDraftPackages,
   fetchEditablePackage,
   fetchPendingPackages,
@@ -134,6 +135,20 @@ const HomePage = () => {
     }
   }, [user])
 
+  const fetchFeaturedTrip = useCallback(async () => {
+    if (isAdmin) {
+      setFeaturedTrip(null)
+      return
+    }
+
+    try {
+      const featured = await fetchFeaturedPackage()
+      setFeaturedTrip(featured)
+    } catch {
+      setFeaturedTrip(null)
+    }
+  }, [isAdmin])
+
   const loadCurrentUser = useCallback(async () => {
     try {
       const response = await fetchCurrentUser()
@@ -191,6 +206,10 @@ const HomePage = () => {
   useEffect(() => {
     void fetchDraftTrips()
   }, [fetchDraftTrips])
+
+  useEffect(() => {
+    void fetchFeaturedTrip()
+  }, [fetchFeaturedTrip])
 
   useEffect(() => {
     const draftId = searchParams.get('draft')

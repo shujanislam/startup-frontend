@@ -1,14 +1,17 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useEffect, useState } from 'react'
-import { fetchCurrentUser, updateProfile, type CurrentUser } from '../services/dashboardApi'
+import { fetchCurrentUser, fetchProfile, updateProfile, type CurrentUser } from '../services/dashboardApi'
 import {
   fetchCreatedPackagesCount,
+  fetchCreatedTripsByOwner,
+  fetchCreatedTrips,
   fetchLikedTrips,
+  type CreatedTripSummary,
   type LikedTripSummary,
 } from '../services/packageApi'
 
-type ProfileTab = 'profile' | 'liked'
+type ProfileTab = 'myTrips' | 'liked'
 
 const getDisplayName = (name?: string | null, email?: string | null) => {
   if (name?.trim()) return name
@@ -31,13 +34,16 @@ const getInitials = (name: string) => {
 
 const ProfilePage = () => {
   const navigate = useNavigate()
+  const { id: profileId } = useParams<{ id?: string }>()
   const { user } = useAuth()
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [createdCount, setCreatedCount] = useState(0)
+  const [createdTrips, setCreatedTrips] = useState<CreatedTripSummary[]>([])
   const [likedTrips, setLikedTrips] = useState<LikedTripSummary[]>([])
+  const [ownProfile, setOwnProfile] = useState(true)
 
-  const [activeTab, setActiveTab] = useState<ProfileTab>('profile')
+  const [activeTab, setActiveTab] = useState<ProfileTab>('myTrips')
   const [isEditing, setIsEditing] = useState(false)
 
   const [editState, setEditState] = useState({
@@ -52,23 +58,41 @@ const ProfilePage = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [userData, tripsCount, liked] = await Promise.all([
-          fetchCurrentUser(),
-          fetchCreatedPackagesCount(),
-          fetchLikedTrips(),
+        const profileResponse = profileId
+          ? await fetchProfile(profileId)
+          : await fetchCurrentUser().then((userData) => ({
+              profile: userData.user,
+              ownProfile: true,
+            }))
+
+        setCurrentUser(profileResponse.profile)
+        setOwnProfile(profileResponse.ownProfile)
+
+        const ownerId = profileResponse.profile._id
+
+        const [created, liked, tripsCount] = await Promise.all([
+          profileResponse.ownProfile
+            ? fetchCreatedTrips()
+            : (ownerId ? fetchCreatedTripsByOwner(ownerId) : Promise.resolve([])),
+          profileResponse.ownProfile ? fetchLikedTrips() : Promise.resolve([]),
+          profileResponse.ownProfile ? fetchCreatedPackagesCount() : Promise.resolve(0),
         ])
 
-        setCurrentUser(userData.user)
-        setCreatedCount(tripsCount)
+        setCreatedTrips(created)
         setLikedTrips(liked)
+        setCreatedCount(profileResponse.ownProfile ? tripsCount : created.length)
+
+        if (!profileResponse.ownProfile) {
+          setActiveTab('myTrips')
+        }
 
         setEditState({
-          name: userData.user.name ?? '',
-          bio: userData.user.bio ?? '',
-          occupation: userData.user.occupation ?? '',
-          location: userData.user.location ?? '',
-          travelStyle: userData.user.travelStyle ?? '',
-          profilePicture: userData.user.profilePicture ?? '',
+          name: profileResponse.profile.name ?? '',
+          bio: profileResponse.profile.bio ?? '',
+          occupation: profileResponse.profile.occupation ?? '',
+          location: profileResponse.profile.location ?? '',
+          travelStyle: profileResponse.profile.travelStyle ?? '',
+          profilePicture: profileResponse.profile.profilePicture ?? '',
         })
       } catch (err) {
         console.error(err)
@@ -76,7 +100,7 @@ const ProfilePage = () => {
     }
 
     void loadData()
-  }, [])
+  }, [profileId])
 
   const displayName = getDisplayName(
     currentUser?.name || user?.displayName,
@@ -85,8 +109,9 @@ const ProfilePage = () => {
 
   const initials = getInitials(displayName)
 
-  const profileImage =
-    currentUser?.profilePicture || user?.photoURL
+  const profileImage = ownProfile
+    ? (currentUser?.profilePicture || user?.photoURL)
+    : currentUser?.profilePicture
 
   const handleEditChange = (
     key: keyof typeof editState,
@@ -168,12 +193,14 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => setIsEditing(true)}
-              className="text-sm font-semibold text-slate-900 transition hover:text-slate-600"
-            >
-              Edit Profile
-            </button>
+            {ownProfile && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-sm font-semibold text-slate-900 transition hover:text-slate-600"
+              >
+                Edit Profile
+              </button>
+            )}
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-slate-500">
@@ -184,87 +211,69 @@ const ProfilePage = () => {
               Trips
             </div>
 
-            <div>
-              <span className="font-semibold text-slate-900">
-                {likedTrips.length}
-              </span>{' '}
-              Liked
-            </div>
+            {ownProfile && (
+              <div>
+                <span className="font-semibold text-slate-900">
+                  {likedTrips.length}
+                </span>{' '}
+                Liked
+              </div>
+            )}
           </div>
         </header>
 
         {/* TABS */}
         <div className="mt-8 flex gap-6 border-b border-slate-100 text-sm">
           <button
-            onClick={() => setActiveTab('profile')}
+            onClick={() => setActiveTab('myTrips')}
             className={`pb-3 font-semibold transition ${
-              activeTab === 'profile'
+              activeTab === 'myTrips'
                 ? 'border-b-2 border-slate-950 text-slate-950'
                 : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            Profile
+            My Trips
           </button>
 
-          <button
-            onClick={() => setActiveTab('liked')}
-            className={`pb-3 font-semibold transition ${
-              activeTab === 'liked'
-                ? 'border-b-2 border-slate-950 text-slate-950'
-                : 'text-slate-400 hover:text-slate-600'
-            }`}
-          >
-            Liked Trips
-          </button>
+          {ownProfile && (
+            <button
+              onClick={() => setActiveTab('liked')}
+              className={`pb-3 font-semibold transition ${
+                activeTab === 'liked'
+                  ? 'border-b-2 border-slate-950 text-slate-950'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              Liked Trips
+            </button>
+          )}
         </div>
 
-        {/* PROFILE CONTENT */}
-        {activeTab === 'profile' && (
-          <div className="mt-8 grid gap-10 md:grid-cols-[1.2fr_0.8fr]">
-            <section>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                About
-              </p>
-
-              <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                {currentUser?.bio ||
-                  'Add a short bio to share your travel style and favorite experiences.'}
-              </p>
-            </section>
-
-            <section>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                Details
-              </p>
-
-              <dl className="mt-4 space-y-4 text-sm">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <dt className="text-slate-500">Travel style</dt>
-                  <dd className="font-semibold text-slate-900">
-                    {currentUser?.travelStyle || 'Not set'}
-                  </dd>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <dt className="text-slate-500">Location</dt>
-                  <dd className="font-semibold text-slate-900">
-                    {currentUser?.location || 'Not set'}
-                  </dd>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <dt className="text-slate-500">Occupation</dt>
-                  <dd className="font-semibold text-slate-900">
-                    {currentUser?.occupation || 'Not set'}
-                  </dd>
-                </div>
-              </dl>
-            </section>
+        {/* MY TRIPS */}
+        {activeTab === 'myTrips' && (
+          <div className="mt-8">
+            {createdTrips.length === 0 ? (
+              <p className="text-sm text-slate-600">No trips created yet.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {createdTrips.map((trip) => (
+                  <li key={trip.id}>
+                    <button
+                      onClick={() => navigate(`/trip/${trip.id}`)}
+                      className="flex w-full items-center justify-between py-4 text-left text-slate-900 transition hover:text-slate-600"
+                    >
+                      <span className="font-medium">{trip.name}</span>
+                      <span className="text-sm text-slate-400">View →</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
         {/* LIKED TRIPS */}
-        {activeTab === 'liked' && (
+        {ownProfile && activeTab === 'liked' && (
           <div className="mt-8">
             {likedTrips.length === 0 ? (
               <p className="text-sm text-slate-600">

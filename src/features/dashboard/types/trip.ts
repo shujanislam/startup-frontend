@@ -49,6 +49,7 @@ export interface TripDetail extends Trip {
   affiliateLinks: Link[]
   additional: string
   createdBy: string
+  createdById?: string
   createdAt: string
 }
 
