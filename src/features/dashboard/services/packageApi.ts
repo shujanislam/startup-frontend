@@ -399,6 +399,11 @@ export interface LikedTripSummary {
   name: string
 }
 
+export interface CreatedTripSummary {
+  id: string
+  name: string
+}
+
 export const fetchLikedTrips = async (): Promise<LikedTripSummary[]> => {
   const { data } = await apiClient.get<{ data?: Array<{ _id: string; name?: string }> }>('/packages/get-liked-packages')
 
@@ -408,6 +413,19 @@ export const fetchLikedTrips = async (): Promise<LikedTripSummary[]> => {
       name: pkg.name?.trim() ?? '',
     }))
     .filter((trip): trip is LikedTripSummary => Boolean(trip.id && trip.name))
+}
+
+export const fetchCreatedTrips = async (): Promise<CreatedTripSummary[]> => {
+  const { data } = await apiClient.get<{ createdPackages?: Array<{ _id: string; name?: string }> }>(
+    '/profile/get-created-packages'
+  )
+
+  return (data.createdPackages ?? [])
+    .map((pkg) => ({
+      id: pkg._id,
+      name: pkg.name?.trim() ?? '',
+    }))
+    .filter((trip): trip is CreatedTripSummary => Boolean(trip.id && trip.name))
 }
 
 export const fetchCreatedPackagesCount = async (): Promise<number> => {

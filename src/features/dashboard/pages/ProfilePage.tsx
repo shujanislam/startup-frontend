@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react'
 import { fetchCurrentUser, updateProfile, type CurrentUser } from '../services/dashboardApi'
 import {
   fetchCreatedPackagesCount,
+  fetchCreatedTrips,
   fetchLikedTrips,
+  type CreatedTripSummary,
   type LikedTripSummary,
 } from '../services/packageApi'
 
-type ProfileTab = 'profile' | 'liked'
+type ProfileTab = 'myTrips' | 'liked'
 
 const getDisplayName = (name?: string | null, email?: string | null) => {
   if (name?.trim()) return name
@@ -35,9 +37,10 @@ const ProfilePage = () => {
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [createdCount, setCreatedCount] = useState(0)
+  const [createdTrips, setCreatedTrips] = useState<CreatedTripSummary[]>([])
   const [likedTrips, setLikedTrips] = useState<LikedTripSummary[]>([])
 
-  const [activeTab, setActiveTab] = useState<ProfileTab>('profile')
+  const [activeTab, setActiveTab] = useState<ProfileTab>('myTrips')
   const [isEditing, setIsEditing] = useState(false)
 
   const [editState, setEditState] = useState({
@@ -52,14 +55,16 @@ const ProfilePage = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [userData, tripsCount, liked] = await Promise.all([
+        const [userData, tripsCount, created, liked] = await Promise.all([
           fetchCurrentUser(),
           fetchCreatedPackagesCount(),
+          fetchCreatedTrips(),
           fetchLikedTrips(),
         ])
 
         setCurrentUser(userData.user)
         setCreatedCount(tripsCount)
+        setCreatedTrips(created)
         setLikedTrips(liked)
 
         setEditState({
@@ -196,14 +201,14 @@ const ProfilePage = () => {
         {/* TABS */}
         <div className="mt-8 flex gap-6 border-b border-slate-100 text-sm">
           <button
-            onClick={() => setActiveTab('profile')}
+            onClick={() => setActiveTab('myTrips')}
             className={`pb-3 font-semibold transition ${
-              activeTab === 'profile'
+              activeTab === 'myTrips'
                 ? 'border-b-2 border-slate-950 text-slate-950'
                 : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            Profile
+            My Trips
           </button>
 
           <button
@@ -218,48 +223,26 @@ const ProfilePage = () => {
           </button>
         </div>
 
-        {/* PROFILE CONTENT */}
-        {activeTab === 'profile' && (
-          <div className="mt-8 grid gap-10 md:grid-cols-[1.2fr_0.8fr]">
-            <section>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                About
-              </p>
-
-              <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                {currentUser?.bio ||
-                  'Add a short bio to share your travel style and favorite experiences.'}
-              </p>
-            </section>
-
-            <section>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                Details
-              </p>
-
-              <dl className="mt-4 space-y-4 text-sm">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <dt className="text-slate-500">Travel style</dt>
-                  <dd className="font-semibold text-slate-900">
-                    {currentUser?.travelStyle || 'Not set'}
-                  </dd>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <dt className="text-slate-500">Location</dt>
-                  <dd className="font-semibold text-slate-900">
-                    {currentUser?.location || 'Not set'}
-                  </dd>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <dt className="text-slate-500">Occupation</dt>
-                  <dd className="font-semibold text-slate-900">
-                    {currentUser?.occupation || 'Not set'}
-                  </dd>
-                </div>
-              </dl>
-            </section>
+        {/* MY TRIPS */}
+        {activeTab === 'myTrips' && (
+          <div className="mt-8">
+            {createdTrips.length === 0 ? (
+              <p className="text-sm text-slate-600">No trips created yet.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {createdTrips.map((trip) => (
+                  <li key={trip.id}>
+                    <button
+                      onClick={() => navigate(`/trip/${trip.id}`)}
+                      className="flex w-full items-center justify-between py-4 text-left text-slate-900 transition hover:text-slate-600"
+                    >
+                      <span className="font-medium">{trip.name}</span>
+                      <span className="text-sm text-slate-400">View →</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 
