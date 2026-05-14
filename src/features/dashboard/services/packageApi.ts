@@ -334,11 +334,6 @@ export const fetchPackageById = async (id: string): Promise<TripDetail> => {
   return mapApiPackageToTripDetail(data.data)
 }
 
-export const fetchAllPackages = async (): Promise<Trip[]> => {
-  const { data } = await apiClient.get<ApiPackage[]>('/packages/get-packages')
-  return data.map(mapApiPackageToTrip)
-}
-
 export const fetchPendingPackages = async (): Promise<PackageSummary[]> => {
   const { data } = await apiClient.get<ApiPackage[]>('/packages/pending-packages')
   return data.map(mapApiPackageToPackageSummary)
