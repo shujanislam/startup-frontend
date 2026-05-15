@@ -39,6 +39,8 @@ type BannerState =
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback
 
+const DISCOVER_PAGE_LIMIT = 12
+
 const HomePage = () => {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -70,7 +72,7 @@ const HomePage = () => {
   const [maxBudget, setMaxBudget] = useState(10000)
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
-  const [showAllDesktopTrips, setShowAllDesktopTrips] = useState(false)
+  const [hasMoreTrips, setHasMoreTrips] = useState(false)
 
   const isAdmin = currentUser?.isAdmin === true
 
@@ -86,14 +88,19 @@ const HomePage = () => {
           maxBudget: maxBudget < 10000 ? maxBudget : undefined,
           sortBy,
           page: pageNum,
-          limit: 12,
+          limit: DISCOVER_PAGE_LIMIT,
         })
 
         setTrips((prev) => (append ? [...prev, ...response.data] : response.data))
         setMeta(response.meta)
         setPage(pageNum)
+
+        const hasNextByMeta = response.meta.page < response.meta.totalPages
+        const hasNextByPageFill = response.data.length === DISCOVER_PAGE_LIMIT
+        setHasMoreTrips(hasNextByMeta || hasNextByPageFill)
       } catch (err: unknown) {
         setError(getErrorMessage(err, 'Failed to load trips'))
+        setHasMoreTrips(false)
       } finally {
         setIsLoading(false)
       }
@@ -171,10 +178,6 @@ const HomePage = () => {
 
     return () => clearTimeout(timer)
   }, [searchQuery, season, maxBudget, sortBy, fetchTrips, authLoading])
-
-  useEffect(() => {
-    setShowAllDesktopTrips(false)
-  }, [searchQuery, season, maxBudget, sortBy])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -400,7 +403,7 @@ const HomePage = () => {
   }
 
   const handleLoadMore = () => {
-    if (meta && page < meta.totalPages) {
+    if (meta && hasMoreTrips) {
       void fetchTrips(page + 1, true)
     }
   }
@@ -420,9 +423,7 @@ const HomePage = () => {
     ? trips
     : trips.filter((trip) => trip.id !== featured.id)
 
-  const desktopTrips = showAllDesktopTrips ? remainingTrips : remainingTrips.slice(0, 6)
-  const shouldShowDesktopToggle = !showAllDesktopTrips && remainingTrips.length > 6
-  const canLoadMore = Boolean(meta && page < meta.totalPages)
+  const canLoadMore = Boolean(meta && hasMoreTrips)
 
   if (authLoading) {
     return (
@@ -635,7 +636,7 @@ const HomePage = () => {
                   </div>
 
                   <div className="hidden gap-5 md:grid md:grid-cols-2 lg:grid-cols-3">
-                    {desktopTrips.map((trip) => (
+                    {remainingTrips.map((trip) => (
                       <TripCard
                         key={trip.id}
                         trip={trip}
@@ -651,20 +652,8 @@ const HomePage = () => {
                 </>
               )}
 
-              {shouldShowDesktopToggle && (
-                <div className="mt-8 hidden justify-center md:flex">
-                  <button
-                    type="button"
-                    onClick={() => setShowAllDesktopTrips(true)}
-                    className="rounded-lg border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50"
-                  >
-                    Show more
-                  </button>
-                </div>
-              )}
-
               {canLoadMore && (
-                <div className={`mt-8 flex justify-center ${showAllDesktopTrips ? 'md:flex' : 'md:hidden'}`}>
+                <div className="mt-8 flex justify-center">
                   <button
                     type="button"
                     onClick={handleLoadMore}
