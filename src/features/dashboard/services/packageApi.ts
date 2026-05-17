@@ -521,45 +521,25 @@ export const fetchLikedPackagesCount = async (): Promise<number> => {
   return (data.data ?? []).length
 }
 
-export interface LikedTripSummary {
-  id: string
-  name: string
-}
-
-export interface CreatedTripSummary {
-  id: string
-  name: string
-}
-
-export const fetchLikedTrips = async (): Promise<LikedTripSummary[]> => {
+export const fetchLikedTrips = async (): Promise<Trip[]> => {
   const { data } = await apiClient.get<{ data?: Array<{ _id: string; name?: string }> }>('/packages/get-liked-packages')
 
-  return (data.data ?? [])
-    .map((pkg) => ({
-      id: pkg._id,
-      name: pkg.name?.trim() ?? '',
-    }))
-    .filter((trip): trip is LikedTripSummary => Boolean(trip.id && trip.name))
+  return (data.data ?? []).map((pkg) => mapApiPackageToTrip(pkg as ApiPackage))
 }
 
-export const fetchCreatedTrips = async (): Promise<CreatedTripSummary[]> => {
-  const { data } = await apiClient.get<{ createdPackages?: Array<{ _id: string; name?: string }> }>(
+export const fetchCreatedTrips = async (): Promise<Trip[]> => {
+  const { data } = await apiClient.get<{ createdPackages?: ApiPackage[] }>(
     '/profile/get-created-packages'
   )
 
-  return (data.createdPackages ?? [])
-    .map((pkg) => ({
-      id: pkg._id,
-      name: pkg.name?.trim() ?? '',
-    }))
-    .filter((trip): trip is CreatedTripSummary => Boolean(trip.id && trip.name))
+  return (data.createdPackages ?? []).map((pkg) => mapApiPackageToTrip(pkg))
 }
 
-export const fetchCreatedTripsByOwner = async (ownerId: string): Promise<CreatedTripSummary[]> => {
+export const fetchCreatedTripsByOwner = async (ownerId: string): Promise<Trip[]> => {
   const limit = 100
   let page = 1
   let totalPages = 1
-  const createdTrips: CreatedTripSummary[] = []
+  const createdTrips: Trip[] = []
 
   do {
     const { data } = await apiClient.get<{
@@ -577,10 +557,7 @@ export const fetchCreatedTripsByOwner = async (ownerId: string): Promise<Created
 
     for (const pkg of data.data ?? []) {
       if (pkg.createdBy === ownerId) {
-        const name = pkg.name?.trim() ?? ''
-        if (pkg._id && name) {
-          createdTrips.push({ id: pkg._id, name })
-        }
+        createdTrips.push(mapApiPackageToTrip(pkg))
       }
     }
 

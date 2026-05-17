@@ -8,9 +8,9 @@ import {
   fetchCreatedTripsByOwner,
   fetchCreatedTrips,
   fetchLikedTrips,
-  type CreatedTripSummary,
-  type LikedTripSummary,
 } from '../services/packageApi'
+import { TripCard } from '../components/TripCard'
+import type { Trip } from '../types/trip'
 
 type ProfileTab = 'myTrips' | 'liked'
 
@@ -40,8 +40,8 @@ const ProfilePage = () => {
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [createdCount, setCreatedCount] = useState(0)
-  const [createdTrips, setCreatedTrips] = useState<CreatedTripSummary[]>([])
-  const [likedTrips, setLikedTrips] = useState<LikedTripSummary[]>([])
+  const [createdTrips, setCreatedTrips] = useState<Trip[]>([])
+  const [likedTrips, setLikedTrips] = useState<Trip[]>([])
   const [ownProfile, setOwnProfile] = useState(true)
 
   const [activeTab, setActiveTab] = useState<ProfileTab>('myTrips')
@@ -341,19 +341,15 @@ const ProfilePage = () => {
             {createdTrips.length === 0 ? (
               <p className="text-sm text-slate-600">No trips created yet.</p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {createdTrips.map((trip) => (
-                  <li key={trip.id}>
-                    <button
-                      onClick={() => navigate(`/trip/${trip.id}`)}
-                      className="flex w-full items-center justify-between py-4 text-left text-slate-900 transition hover:text-slate-600"
-                    >
-                      <span className="font-medium">{trip.name}</span>
-                      <span className="text-sm text-slate-400">View →</span>
-                    </button>
-                  </li>
+                  <TripCard
+                    key={trip.id}
+                    trip={trip}
+                    onClick={() => navigate(`/trip/${trip.id}`)}
+                  />
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         )}
@@ -372,25 +368,15 @@ const ProfilePage = () => {
                 </button>
               </p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {likedTrips.map((trip) => (
-                  <li key={trip.id}>
-                    <button
-                      onClick={() =>
-                        navigate(`/trip/${trip.id}`)
-                      }
-                      className="flex w-full items-center justify-between py-4 text-left text-slate-900 transition hover:text-slate-600"
-                    >
-                      <span className="font-medium">
-                        {trip.name}
-                      </span>
-                      <span className="text-sm text-slate-400">
-                        View →
-                      </span>
-                    </button>
-                  </li>
+                  <TripCard
+                    key={trip.id}
+                    trip={trip}
+                    onClick={() => navigate(`/trip/${trip.id}`)}
+                  />
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         )}
