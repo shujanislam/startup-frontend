@@ -47,6 +47,27 @@ const userNameCache = new Map<string, string>()
 
 const isObjectId = (value: string): boolean => /^[a-f\d]{24}$/i.test(value)
 
+export const resolvePackageCoverImage = (coverImage?: string): string => {
+  const value = coverImage?.trim() || ''
+
+  if (!value) {
+    return ''
+  }
+
+  if (
+    value.startsWith('http://') ||
+    value.startsWith('https://') ||
+    value.startsWith('data:') ||
+    value.startsWith('blob:')
+  ) {
+    return value
+  }
+
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1/api'
+  const baseUrl = apiBaseUrl.replace('/v1/api', '')
+  return `${baseUrl}/uploads/packages/${value}`
+}
+
 const resolveUserNameByProfileId = async (userId: string): Promise<string | null> => {
   if (!isObjectId(userId)) {
     return null
@@ -257,7 +278,7 @@ function mapApiPackageBase(pkg: ApiPackage) {
     price:       pkg.budget || 0,
     season:      (pkg.season || 'all') as SeasonType,
     tags:        pkg.tags ?? [],
-    imageUrl:    pkg.coverImage || '',
+    imageUrl:    resolvePackageCoverImage(pkg.coverImage),
     isFeatured:  false,
     // Rating is hardcoded until the API returns a real aggregate.
     // TODO: replace with `pkg.rating` once available.
@@ -288,7 +309,7 @@ export function mapApiPackageToDraftSummary(pkg: ApiPackage): DraftPackageSummar
     id: pkg._id,
     name: pkg.name?.trim() || 'Untitled draft',
     destination: pkg.destination?.trim() || 'Destination not set',
-    imageUrl: pkg.coverImage?.trim() || '',
+    imageUrl: resolvePackageCoverImage(pkg.coverImage),
     updatedAt: pkg.updatedAt,
     status: pkg.status ?? 'draft',
   }

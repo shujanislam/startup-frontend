@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import apiClient from '../../../lib/apiClient'
 import {
   type ApiHotel,
   type ApiPackage,
@@ -7,6 +8,7 @@ import {
   type DraftHotelPayload,
   type DraftPackagePayload,
   type DraftVehiclePayload,
+  resolvePackageCoverImage,
 } from '../services/packageApi.ts'
 import type { SeasonType } from '../types/trip.ts'
 
@@ -278,6 +280,8 @@ const CreateTripModal = ({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [localError, setLocalError] = useState<string | null>(null)
   const [localSuccess, setLocalSuccess] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [uploadImageError, setUploadImageError] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -312,6 +316,52 @@ const CreateTripModal = ({
 
   const isBusy = isSavingDraft || isSubmitting
   const isEditingDraft = Boolean(currentPackageId)
+
+  const handleCoverImageUpload = async (file: File) => {
+    setIsUploadingImage(true)
+    setUploadImageError(null)
+
+    try {
+      const formData = new FormData()
+      if (formState.coverImage.trim()) {
+        formData.append('previousCoverImage', formState.coverImage.trim())
+      }
+      formData.append('coverImage', file)
+
+      const response = await apiClient.post<{
+        success: boolean
+        data: { imagePath?: string; imageUrl?: string }
+      }>(
+        '/packages/upload-cover-image',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+
+      if (response.data.success) {
+        const uploadedImage = response.data.data.imagePath || response.data.data.imageUrl || ''
+
+        if (!uploadedImage) {
+          throw new Error('Upload completed but image path is missing in response.')
+        }
+
+        setFormState((current) => ({
+          ...current,
+          coverImage: uploadedImage,
+        }))
+        setLocalSuccess('Image uploaded successfully!')
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to upload image. Please try again.'
+      setUploadImageError(errorMessage)
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
 
   const handleChange = <K extends keyof CreateTripFormState>(
     key: K,
@@ -681,10 +731,49 @@ const CreateTripModal = ({
 
                   <div>
                     <label htmlFor="trip-cover-image" className={labelClassName}>
-                      Cover image URL
+                      Cover image
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="trip-cover-image"
+                        type="file"
+                        accept="image/*"
+                        className={inputClassName}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0]
+                          if (file) {
+                            handleCoverImageUpload(file)
+                          }
+                        }}
+                        disabled={isBusy || isUploadingImage}
+                      />
+                      {formState.coverImage && (
+                        <img
+                          src={resolvePackageCoverImage(formState.coverImage)}
+                          alt="Cover preview"
+                          className="h-12 w-12 rounded-lg border border-slate-200 object-cover shadow-sm"
+                        />
+                      )}
+                    </div>
+                    {uploadImageError && (
+                      <ErrorText message={uploadImageError} />
+                    )}
+                    {isUploadingImage && (
+                      <p className="mt-2 text-xs font-medium text-blue-600">Uploading image...</p>
+                    )}
+                    {!formState.coverImage && !uploadImageError && (
+                      <p className="mt-2 text-xs text-slate-500">
+                        Upload a cover image or enter URL below
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="trip-cover-image-url" className={labelClassName}>
+                      Cover image URL (optional)
                     </label>
                     <input
-                      id="trip-cover-image"
+                      id="trip-cover-image-url"
                       type="url"
                       className={inputClassName}
                       value={formState.coverImage}
