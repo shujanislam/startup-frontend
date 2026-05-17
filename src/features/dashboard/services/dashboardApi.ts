@@ -8,6 +8,7 @@ export interface CurrentUser {
   isAdmin: boolean
   name?: string
   profilePicture?: string
+  profileImagePath?: string
   bio?: string
   gender?: string
   phone?: string
