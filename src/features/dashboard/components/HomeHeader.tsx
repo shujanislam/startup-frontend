@@ -14,6 +14,7 @@ interface HomeHeaderProps {
   isAdmin: boolean
   draftCount: number
   profilePhotoURL?: string
+  hideHeroCopy?: boolean
 }
 
 const getInitials = (email?: string | null) => {
@@ -35,6 +36,7 @@ const HomeHeader = ({
   isAdmin,
   draftCount,
   profilePhotoURL,
+  hideHeroCopy = false,
 }: HomeHeaderProps) => {
   const profileImage = profilePhotoURL || userPhotoURL
 
@@ -141,24 +143,18 @@ const HomeHeader = ({
         </div>
       </nav>
 
-      <section className="grid gap-5 py-4 sm:py-6 md:grid-cols-[minmax(0,1fr)_430px] md:items-end md:gap-12 lg:py-5">
-        <div className="max-w-[760px]">
-          {/* <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm font-semibold text-slate-800 shadow-sm">
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-slate-950 text-[10px] font-bold text-white">
-              {getInitials(userEmail)}
-            </span>
-            <span>
-              <span className="font-light text-slate-500">Hi</span> {userName},
-            </span>
-          </div> */}
-          <h1 className="text-5xl font-semibold leading-[0.98] tracking-normal pb-3 text-slate-950 sm:text-6xl md:text-6xl xl:text-7xl">
-            Find Your Perfect Journey
-          </h1>
-        </div>
-        <p className="max-w-sm text-base leading-7 text-slate-500 md:pb-3 md:text-lg">
-          Explore curated trips across the globe, designed for every type of traveler.
-        </p>
-      </section>
+      {!hideHeroCopy && (
+        <section className="grid gap-5 py-4 sm:py-6 md:grid-cols-[minmax(0,1fr)_430px] md:items-end md:gap-12 lg:py-5">
+          <div className="max-w-[760px]">
+            <h1 className="text-5xl font-semibold leading-[0.98] tracking-normal pb-3 text-slate-950 sm:text-6xl md:text-6xl xl:text-7xl">
+              Find Your Perfect Journey
+            </h1>
+          </div>
+          <p className="max-w-sm text-base leading-7 text-slate-500 md:pb-3 md:text-lg">
+            Explore curated trips across the globe, designed for every type of traveler.
+          </p>
+        </section>
+      )}
     </header>
   )
 }

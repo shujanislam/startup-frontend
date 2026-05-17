@@ -468,6 +468,7 @@ const HomePage = () => {
               isLoggingOut={isLoggingOut}
               isAdmin={isAdmin}
               draftCount={draftTrips.length}
+              hideHeroCopy={hasActiveFilters}
               profilePhotoURL={
                 currentUser?.profileImagePath
                   ? getImageUrl(currentUser.profileImagePath)
@@ -634,20 +635,40 @@ const HomePage = () => {
 
               {remainingTrips.length > 0 && (
                 <>
-                  <div className="scrollbar-hidden flex gap-5 overflow-x-auto pb-2 md:hidden">
-                    {remainingTrips.map((trip) => (
-                      <div key={trip.id} className="min-w-[80%] max-w-80 shrink-0">
-                        <TripCard
-                          trip={trip}
-                          onClick={() => navigate(`/trip/${trip.id}`)}
-                          secondaryActionLabel={isAdmin ? 'Unapprove' : undefined}
-                          onSecondaryAction={
-                            isAdmin ? () => void handleUnapproveTrip(trip.id) : undefined
-                          }
-                          isSecondaryActionLoading={unapprovingTripId === trip.id}
-                        />
-                      </div>
-                    ))}
+                  <div className="relative md:hidden">
+                    <div className="scrollbar-hidden flex gap-5 overflow-x-auto pb-2">
+                      {remainingTrips.map((trip) => (
+                        <div key={trip.id} className="min-w-[80%] max-w-80 shrink-0">
+                          <TripCard
+                            trip={trip}
+                            onClick={() => navigate(`/trip/${trip.id}`)}
+                            secondaryActionLabel={isAdmin ? 'Unapprove' : undefined}
+                            onSecondaryAction={
+                              isAdmin ? () => void handleUnapproveTrip(trip.id) : undefined
+                            }
+                            isSecondaryActionLoading={unapprovingTripId === trip.id}
+                          />
+                        </div>
+                      ))}
+
+                      {canLoadMore && (
+                        <div className="flex min-w-[72px] shrink-0 items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={handleLoadMore}
+                            disabled={isLoading}
+                            aria-label="Load more trips"
+                            className="grid h-12 w-12 place-items-center rounded-full border border-gray-200 bg-white text-xl font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            {isLoading ? (
+                              <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-500 border-t-transparent" />
+                            ) : (
+                              '>'
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="hidden gap-5 md:grid md:grid-cols-2 lg:grid-cols-3">
@@ -668,7 +689,7 @@ const HomePage = () => {
               )}
 
               {canLoadMore && (
-                <div className="mt-8 flex justify-center">
+                <div className="mt-8 hidden justify-center md:flex">
                   <button
                     type="button"
                     onClick={handleLoadMore}
