@@ -1,7 +1,8 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useEffect, useState } from 'react'
-import { fetchCurrentUser, fetchProfile, updateProfile, type CurrentUser } from '../services/dashboardApi'
+import apiClient from '../../../lib/apiClient'
+import { fetchCurrentUser, fetchProfile, type CurrentUser } from '../services/dashboardApi'
 import {
   fetchCreatedPackagesCount,
   fetchCreatedTripsByOwner,
@@ -45,6 +46,8 @@ const ProfilePage = () => {
 
   const [activeTab, setActiveTab] = useState<ProfileTab>('myTrips')
   const [isEditing, setIsEditing] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [uploadImageError, setUploadImageError] = useState<string | null>(null)
 
   const [editState, setEditState] = useState({
     name: '',
@@ -52,7 +55,8 @@ const ProfilePage = () => {
     occupation: '',
     location: '',
     travelStyle: '',
-    profilePicture: '',
+    profileImagePath: '',
+    profileImageFile: null as File | null,
   })
 
   useEffect(() => {
@@ -92,7 +96,8 @@ const ProfilePage = () => {
           occupation: profileResponse.profile.occupation ?? '',
           location: profileResponse.profile.location ?? '',
           travelStyle: profileResponse.profile.travelStyle ?? '',
-          profilePicture: profileResponse.profile.profilePicture ?? '',
+          profileImagePath: profileResponse.profile.profileImagePath ?? '',
+          profileImageFile: null,
         })
       } catch (err) {
         console.error(err)
@@ -109,9 +114,22 @@ const ProfilePage = () => {
 
   const initials = getInitials(displayName)
 
-  const profileImage = ownProfile
+  const fallbackProfileImage = ownProfile
     ? (currentUser?.profilePicture || user?.photoURL)
     : currentUser?.profilePicture
+
+  // Get the base URL dynamically (remove /v1/api from the end)
+  const getImageUrl = (filename: string): string => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1/api'
+    const baseUrl = apiBaseUrl.replace('/v1/api', '')
+    return `${baseUrl}/uploads/profiles/${filename}`
+  }
+
+  const displayProfileImage = editState.profileImagePath
+    ? getImageUrl(editState.profileImagePath)
+    : (currentUser?.profileImagePath 
+        ? getImageUrl(currentUser.profileImagePath)
+        : fallbackProfileImage)
 
   const handleEditChange = (
     key: keyof typeof editState,
@@ -123,22 +141,90 @@ const ProfilePage = () => {
     }))
   }
 
+  const handleProfilePictureSelect = (file: File) => {
+    setIsUploadingImage(true)
+    setUploadImageError(null)
+
+    try {
+      // Validate file type by extension and size
+      const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase()
+      
+      if (!validExtensions.includes(fileExtension)) {
+        throw new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.')
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File is too large. Maximum size is 5MB.')
+      }
+
+      // Store the file for later submission
+      setEditState((current) => ({
+        ...current,
+        profileImageFile: file,
+      }))
+
+      setUploadImageError(null)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to select image'
+      setUploadImageError(errorMessage)
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
   const handleSave = async () => {
     if (!currentUser?._id) return
 
     try {
-      const updated = await updateProfile(
-        currentUser._id,
-        editState
+      setIsUploadingImage(true)
+
+      // Create FormData to send image + profile data
+      const formData = new FormData()
+
+      // Add profile fields
+      if (editState.name) formData.append('name', editState.name)
+      if (editState.bio) formData.append('bio', editState.bio)
+      if (editState.occupation) formData.append('occupation', editState.occupation)
+      if (editState.location) formData.append('location', editState.location)
+      if (editState.travelStyle) formData.append('travelStyle', editState.travelStyle)
+
+      // Add image file if selected
+      if (editState.profileImageFile) {
+        formData.append('profilePicture', editState.profileImageFile)
+      }
+
+      // Send FormData instead of JSON
+      const response = await apiClient.patch<{ message: string; data: CurrentUser }>(
+        `/profile/update-profile/${currentUser._id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
       )
 
-      setCurrentUser((prev) =>
-        prev ? { ...prev, ...updated } : updated
-      )
+      const updated = response.data.data
+      
+      // Update both currentUser and editState with the returned data
+      setCurrentUser((prev) => (prev ? { ...prev, ...updated } : updated))
+      
+      // Update editState with the returned profileImagePath so it displays
+      setEditState((prev) => ({
+        ...prev,
+        profileImagePath: updated.profileImagePath ?? '',
+        profileImageFile: null, // Clear the file after successful upload
+      }))
 
       setIsEditing(false)
+      setUploadImageError(null)
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save profile'
+      setUploadImageError(errorMessage)
       console.error(err)
+    } finally {
+      setIsUploadingImage(false)
     }
   }
 
@@ -157,9 +243,9 @@ const ProfilePage = () => {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-5">
               <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-200">
-                {profileImage ? (
+                {displayProfileImage ? (
                   <img
-                    src={profileImage}
+                    src={displayProfileImage}
                     alt={displayName}
                     className="h-full w-full object-cover"
                   />
@@ -379,17 +465,38 @@ const ProfilePage = () => {
                 className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
               />
 
-              <input
-                value={editState.profilePicture}
-                onChange={(e) =>
-                  handleEditChange(
-                    'profilePicture',
-                    e.target.value
-                  )
-                }
-                placeholder="Profile Image URL"
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
-              />
+              <div>
+                <label className="mb-2 block text-xs font-semibold uppercase text-slate-600">
+                  Profile Picture
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        handleProfilePictureSelect(file)
+                      }
+                    }}
+                    disabled={isUploadingImage}
+                    className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
+                  />
+                  {displayProfileImage && (
+                    <img
+                      src={displayProfileImage}
+                      alt="Profile preview"
+                      className="h-12 w-12 rounded-full border border-slate-200 object-cover shadow-sm"
+                    />
+                  )}
+                </div>
+                {uploadImageError && (
+                  <p className="mt-2 text-xs font-medium text-red-600">{uploadImageError}</p>
+                )}
+                {isUploadingImage && (
+                  <p className="mt-2 text-xs font-medium text-blue-600">Processing image...</p>
+                )}
+              </div>
 
               <textarea
                 value={editState.bio}
