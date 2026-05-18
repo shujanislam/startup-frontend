@@ -68,6 +68,27 @@ export const resolvePackageCoverImage = (coverImage?: string): string => {
   return `${baseUrl}/uploads/packages/${value}`
 }
 
+export const resolveHotelPhoto = (photo?: string): string => {
+  const value = photo?.trim() || ''
+
+  if (!value) {
+    return ''
+  }
+
+  if (
+    value.startsWith('http://') ||
+    value.startsWith('https://') ||
+    value.startsWith('data:') ||
+    value.startsWith('blob:')
+  ) {
+    return value
+  }
+
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1/api'
+  const baseUrl = apiBaseUrl.replace('/v1/api', '')
+  return `${baseUrl}/uploads/hotels/${value}`
+}
+
 const resolveUserNameByProfileId = async (userId: string): Promise<string | null> => {
   if (!isObjectId(userId)) {
     return null

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { Car, Hotel, Info, X } from 'lucide-react'
 import apiClient from '../../../lib/apiClient'
 import {
   type ApiHotel,
@@ -8,6 +9,7 @@ import {
   type DraftHotelPayload,
   type DraftPackagePayload,
   type DraftVehiclePayload,
+  resolveHotelPhoto,
   resolvePackageCoverImage,
 } from '../services/packageApi.ts'
 import type { SeasonType } from '../types/trip.ts'
@@ -61,6 +63,7 @@ interface VehicleFormState {
 }
 
 type FieldErrors = Record<string, string>
+type WizardStep = 1 | 2 | 3
 
 const DEFAULT_FORM_STATE: CreateTripFormState = {
   name: '',
@@ -85,10 +88,8 @@ const DEFAULT_FORM_STATE: CreateTripFormState = {
 const seasonOptions: Array<Exclude<SeasonType, 'all'>> = ['summer', 'winter', 'monsoon', 'autumn']
 
 const inputClassName =
-  'w-full rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 text-sm font-medium text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500'
-const labelClassName = 'mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500'
-const sectionClassName =
-  'rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)]'
+  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-700 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500'
+const labelClassName = 'mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-600'
 
 const createEmptyHotel = (): HotelFormState => ({
   name: '',
@@ -242,28 +243,64 @@ const buildFormState = (pkg?: ApiPackage | null): CreateTripFormState => {
 }
 
 const ErrorText = ({ message }: { message?: string }) =>
-  message ? <p className="mt-2 text-xs font-medium text-red-600">{message}</p> : null
+  message ? <p className="mt-1 text-xs font-medium text-red-600">{message}</p> : null
 
-const Section = ({
-  eyebrow,
-  title,
-  children,
-}: {
-  eyebrow: string
+interface EntityModalProps {
+  open: boolean
   title: string
+  subtitle: string
+  step: 1 | 2
+  onClose: () => void
   children: ReactNode
-}) => (
-  <section className={sectionClassName}>
-    <div className="mb-5 flex items-center gap-3">
-      <span className="h-9 w-1.5 rounded-full bg-linear-to-b from-blue-600 via-cyan-500 to-emerald-500" />
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">{eyebrow}</p>
-        <h3 className="mt-1 text-lg font-semibold text-slate-950">{title}</h3>
+  footer: ReactNode
+}
+
+const EntityModal = ({
+  open,
+  title,
+  subtitle,
+  step,
+  onClose,
+  children,
+  footer,
+}: EntityModalProps) => {
+  if (!open) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-70 flex items-center justify-center bg-slate-950/60 px-3 py-5 backdrop-blur-md"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose()
+        }
+      }}
+    >
+      <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
+              <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
+            </div>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+              Step {step} of 2
+            </span>
+          </div>
+          <div className="mt-3 flex gap-2">
+            {[1, 2].map((item) => (
+              <div
+                key={item}
+                className={`h-1 flex-1 rounded-full ${item <= step ? 'bg-slate-900' : 'bg-slate-200'}`}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="px-5 py-5">{children}</div>
+        <div className="border-t border-slate-200 bg-white px-5 py-4">{footer}</div>
       </div>
     </div>
-    {children}
-  </section>
-)
+  )
+}
 
 const CreateTripModal = ({
   open,
@@ -282,6 +319,18 @@ const CreateTripModal = ({
   const [localSuccess, setLocalSuccess] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [uploadImageError, setUploadImageError] = useState<string | null>(null)
+  const [isUploadingHotelPhoto, setIsUploadingHotelPhoto] = useState(false)
+  const [uploadHotelPhotoError, setUploadHotelPhotoError] = useState<string | null>(null)
+
+  const [currentWizardStep, setCurrentWizardStep] = useState<WizardStep>(1)
+  const [editingHotelIndex, setEditingHotelIndex] = useState<number | null>(null)
+  const [editingVehicleIndex, setEditingVehicleIndex] = useState<number | null>(null)
+  const [hotelModalOpen, setHotelModalOpen] = useState(false)
+  const [vehicleModalOpen, setVehicleModalOpen] = useState(false)
+  const [hotelModalStep, setHotelModalStep] = useState<1 | 2>(1)
+  const [vehicleModalStep, setVehicleModalStep] = useState<1 | 2>(1)
+  const [hotelDraft, setHotelDraft] = useState<HotelFormState>(createEmptyHotel())
+  const [vehicleDraft, setVehicleDraft] = useState<VehicleFormState>(createEmptyVehicle())
 
   useEffect(() => {
     if (open) {
@@ -290,25 +339,19 @@ const CreateTripModal = ({
       setFieldErrors({})
       setLocalError(null)
       setLocalSuccess(null)
+      setCurrentWizardStep(1)
+      setEditingHotelIndex(null)
+      setEditingVehicleIndex(null)
+      setHotelModalOpen(false)
+      setVehicleModalOpen(false)
+      setHotelModalStep(1)
+      setVehicleModalStep(1)
+      setHotelDraft(createEmptyHotel())
+      setVehicleDraft(createEmptyVehicle())
+      setIsUploadingHotelPhoto(false)
+      setUploadHotelPhotoError(null)
     }
   }, [initialPackage, open])
-
-  const requiredProgress = useMemo(() => {
-    const checks = [
-      formState.name.trim(),
-      formState.description.trim(),
-      formState.coverImage.trim(),
-      formState.season,
-      formState.budget.trim(),
-      formState.destination.trim(),
-      formState.duration.trim(),
-      formState.startDate.trim(),
-      formState.endDate.trim(),
-      formState.permit.trim(),
-    ]
-    const completed = checks.filter(Boolean).length
-    return Math.round((completed / checks.length) * 100)
-  }, [formState])
 
   if (!open) {
     return null
@@ -331,15 +374,11 @@ const CreateTripModal = ({
       const response = await apiClient.post<{
         success: boolean
         data: { imagePath?: string; imageUrl?: string }
-      }>(
-        '/packages/upload-cover-image',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      )
+      }>('/packages/upload-cover-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
 
       if (response.data.success) {
         const uploadedImage = response.data.data.imagePath || response.data.data.imageUrl || ''
@@ -355,18 +394,14 @@ const CreateTripModal = ({
         setLocalSuccess('Image uploaded successfully!')
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to upload image. Please try again.'
-      setUploadImageError(errorMessage)
+      const errMsg = error instanceof Error ? error.message : 'Failed to upload image. Please try again.'
+      setUploadImageError(errMsg)
     } finally {
       setIsUploadingImage(false)
     }
   }
 
-  const handleChange = <K extends keyof CreateTripFormState>(
-    key: K,
-    value: CreateTripFormState[K],
-  ) => {
+  const handleChange = <K extends keyof CreateTripFormState>(key: K, value: CreateTripFormState[K]) => {
     setFormState((current) => ({
       ...current,
       [key]: value,
@@ -374,58 +409,46 @@ const CreateTripModal = ({
     setLocalSuccess(null)
   }
 
-  const handleHotelChange = (
-    index: number,
-    key: keyof HotelFormState,
-    value: string,
-  ) => {
-    setFormState((current) => {
-      const hotels = [...current.hotels]
-      hotels[index] = { ...hotels[index], [key]: value }
-      return { ...current, hotels }
-    })
-    setLocalSuccess(null)
-  }
+  const handleHotelPhotoUpload = async (file: File) => {
+    setIsUploadingHotelPhoto(true)
+    setUploadHotelPhotoError(null)
 
-  const handleVehicleChange = (
-    index: number,
-    key: keyof VehicleFormState,
-    value: string,
-  ) => {
-    setFormState((current) => {
-      const vehicles = [...current.vehicles]
-      vehicles[index] = { ...vehicles[index], [key]: value }
-      return { ...current, vehicles }
-    })
-    setLocalSuccess(null)
-  }
+    try {
+      const formData = new FormData()
+      const previous = parseListInput(hotelDraft.photos)[0]
+      if (previous) {
+        formData.append('previousHotelPhoto', previous)
+      }
+      formData.append('hotelPhoto', file)
 
-  const addHotel = () => {
-    setFormState((current) => ({
-      ...current,
-      hotels: [...current.hotels, createEmptyHotel()],
-    }))
-  }
+      const response = await apiClient.post<{
+        success: boolean
+        data: { imagePath?: string; imageUrl?: string }
+      }>('/packages/upload-hotel-photo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
 
-  const removeHotel = (index: number) => {
-    setFormState((current) => ({
-      ...current,
-      hotels: current.hotels.filter((_, idx) => idx !== index),
-    }))
-  }
+      if (response.data.success) {
+        const uploadedImage = response.data.data.imagePath || response.data.data.imageUrl || ''
 
-  const addVehicle = () => {
-    setFormState((current) => ({
-      ...current,
-      vehicles: [...current.vehicles, createEmptyVehicle()],
-    }))
-  }
+        if (!uploadedImage) {
+          throw new Error('Upload completed but image path is missing in response.')
+        }
 
-  const removeVehicle = (index: number) => {
-    setFormState((current) => ({
-      ...current,
-      vehicles: current.vehicles.filter((_, idx) => idx !== index),
-    }))
+        setHotelDraft((current) => ({
+          ...current,
+          photos: uploadedImage,
+        }))
+      }
+    } catch (error) {
+      const errMsg =
+        error instanceof Error ? error.message : 'Failed to upload hotel photo. Please try again.'
+      setUploadHotelPhotoError(errMsg)
+    } finally {
+      setIsUploadingHotelPhoto(false)
+    }
   }
 
   const validateSharedFields = (errors: FieldErrors, allowMissing: boolean) => {
@@ -454,8 +477,8 @@ const CreateTripModal = ({
 
     formState.hotels.forEach((hotel, index) => {
       if (!hasHotelValue(hotel)) return
-
       const hotelBudget = parseOptionalNumber(hotel.budget)
+
       if (hotel.budget.trim() && hotelBudget === undefined) {
         errors[`hotel-${index}-budget`] = 'Budget must be a valid number.'
       }
@@ -470,8 +493,8 @@ const CreateTripModal = ({
 
     formState.vehicles.forEach((vehicle, index) => {
       if (!hasVehicleValue(vehicle)) return
-
       const vehicleBudget = parseOptionalNumber(vehicle.budget)
+
       if (vehicle.budget.trim() && vehicleBudget === undefined) {
         errors[`vehicle-${index}-budget`] = 'Budget must be a valid number.'
       }
@@ -524,6 +547,99 @@ const CreateTripModal = ({
         ? 'Complete the required fields before submitting for approval.'
         : null,
     )
+    return Object.keys(errors).length === 0
+  }
+
+  const validateStep = (step: WizardStep): boolean => {
+    const errors: FieldErrors = {}
+
+    if (step === 1) {
+      if (!formState.name.trim()) errors.name = 'Trip name is required.'
+      if (!formState.description.trim()) errors.description = 'Description is required.'
+      if (!formState.coverImage.trim()) errors.coverImage = 'Cover image is required.'
+      if (!formState.destination.trim()) errors.destination = 'Destination is required.'
+      if (!formState.season) errors.season = 'Season is required.'
+      if (!formState.budget.trim()) errors.budget = 'Budget is required.'
+      if (!formState.duration.trim()) errors.duration = 'Duration is required.'
+      if (!formState.startDate.trim()) errors.startDate = 'Start date is required.'
+      if (!formState.endDate.trim()) errors.endDate = 'End date is required.'
+      if (!formState.permit.trim()) errors.permit = 'Permit requirement is required.'
+
+      validateSharedFields(errors, true)
+    }
+
+    if (step === 2 || step === 3) {
+      validateSharedFields(errors, true)
+    }
+
+    setFieldErrors(errors)
+    setLocalError(Object.keys(errors).length > 0 ? 'Please fix the errors before proceeding.' : null)
+    return Object.keys(errors).length === 0
+  }
+
+  const validateHotelDraftStep = (step: 1 | 2, draft: HotelFormState) => {
+    const errors: FieldErrors = {}
+
+    if (step === 1) {
+      if (!draft.name.trim()) errors.hotelDraftName = 'Hotel name is required.'
+      if (!draft.phoneNumber.trim()) errors.hotelDraftPhone = 'Phone number is required.'
+      if (!draft.address.trim()) errors.hotelDraftAddress = 'Address is required.'
+    }
+
+    if (step === 2) {
+      if (!draft.budget.trim()) {
+        errors.hotelDraftBudget = 'Budget is required.'
+      } else {
+        const budget = parseOptionalNumber(draft.budget)
+        if (budget === undefined) errors.hotelDraftBudget = 'Budget must be a valid number.'
+        if (budget !== undefined && budget < 0) errors.hotelDraftBudget = 'Budget must be zero or greater.'
+      }
+    }
+
+    setFieldErrors((current) => {
+      const next = { ...current }
+      delete next.hotelDraftName
+      delete next.hotelDraftPhone
+      delete next.hotelDraftAddress
+      delete next.hotelDraftBudget
+      return { ...next, ...errors }
+    })
+
+    return Object.keys(errors).length === 0
+  }
+
+  const validateVehicleDraftStep = (step: 1 | 2, draft: VehicleFormState) => {
+    const errors: FieldErrors = {}
+
+    if (step === 1) {
+      if (!draft.car.trim()) errors.vehicleDraftCar = 'Vehicle name is required.'
+      if (!draft.carNumber.trim()) errors.vehicleDraftNumber = 'Car number is required.'
+      if (!draft.driverPhoneNumber.trim()) {
+        errors.vehicleDraftDriverPhone = 'Driver phone number is required.'
+      }
+    }
+
+    if (step === 2) {
+      if (!draft.budget.trim()) {
+        errors.vehicleDraftBudget = 'Budget is required.'
+      } else {
+        const budget = parseOptionalNumber(draft.budget)
+        if (budget === undefined) errors.vehicleDraftBudget = 'Budget must be a valid number.'
+        if (budget !== undefined && budget < 0) {
+          errors.vehicleDraftBudget = 'Budget must be zero or greater.'
+        }
+      }
+    }
+
+    setFieldErrors((current) => {
+      const next = { ...current }
+      delete next.vehicleDraftCar
+      delete next.vehicleDraftNumber
+      delete next.vehicleDraftDriverPhone
+      delete next.vehicleDraftBudget
+      return { ...next, ...errors }
+    })
+
     return Object.keys(errors).length === 0
   }
 
@@ -621,6 +737,110 @@ const CreateTripModal = ({
     }
   }
 
+  const handleNextStep = () => {
+    if (validateStep(currentWizardStep) && currentWizardStep < 3) {
+      setCurrentWizardStep((currentWizardStep + 1) as WizardStep)
+      setLocalError(null)
+    }
+  }
+
+  const handlePrevStep = () => {
+    if (currentWizardStep > 1) {
+      setCurrentWizardStep((currentWizardStep - 1) as WizardStep)
+      setLocalError(null)
+      setFieldErrors({})
+    }
+  }
+
+  const handleAddHotel = () => {
+    setEditingHotelIndex(null)
+    setHotelDraft(createEmptyHotel())
+    setHotelModalStep(1)
+    setHotelModalOpen(true)
+    setFieldErrors({})
+    setLocalError(null)
+    setUploadHotelPhotoError(null)
+  }
+
+  const handleEditHotel = (index: number) => {
+    setEditingHotelIndex(index)
+    setHotelDraft(formState.hotels[index] ?? createEmptyHotel())
+    setHotelModalStep(1)
+    setHotelModalOpen(true)
+    setFieldErrors({})
+    setLocalError(null)
+    setUploadHotelPhotoError(null)
+  }
+
+  const handleCloseHotelModal = () => {
+    setHotelModalOpen(false)
+    setEditingHotelIndex(null)
+    setHotelModalStep(1)
+    setUploadHotelPhotoError(null)
+  }
+
+  const handleSaveHotel = () => {
+    if (!validateHotelDraftStep(2, hotelDraft)) return
+
+    if (editingHotelIndex !== null) {
+      setFormState((current) => {
+        const hotels = [...current.hotels]
+        hotels[editingHotelIndex] = hotelDraft
+        return { ...current, hotels }
+      })
+    } else {
+      setFormState((current) => ({
+        ...current,
+        hotels: [...current.hotels, hotelDraft],
+      }))
+    }
+
+    handleCloseHotelModal()
+  }
+
+  const handleAddVehicle = () => {
+    setEditingVehicleIndex(null)
+    setVehicleDraft(createEmptyVehicle())
+    setVehicleModalStep(1)
+    setVehicleModalOpen(true)
+    setFieldErrors({})
+    setLocalError(null)
+  }
+
+  const handleEditVehicle = (index: number) => {
+    setEditingVehicleIndex(index)
+    setVehicleDraft(formState.vehicles[index] ?? createEmptyVehicle())
+    setVehicleModalStep(1)
+    setVehicleModalOpen(true)
+    setFieldErrors({})
+    setLocalError(null)
+  }
+
+  const handleCloseVehicleModal = () => {
+    setVehicleModalOpen(false)
+    setEditingVehicleIndex(null)
+    setVehicleModalStep(1)
+  }
+
+  const handleSaveVehicle = () => {
+    if (!validateVehicleDraftStep(2, vehicleDraft)) return
+
+    if (editingVehicleIndex !== null) {
+      setFormState((current) => {
+        const vehicles = [...current.vehicles]
+        vehicles[editingVehicleIndex] = vehicleDraft
+        return { ...current, vehicles }
+      })
+    } else {
+      setFormState((current) => ({
+        ...current,
+        vehicles: [...current.vehicles, vehicleDraft],
+      }))
+    }
+
+    handleCloseVehicleModal()
+  }
+
   const statusLabel = isEditingDraft ? 'Draft in progress' : 'New package'
 
   return (
@@ -632,283 +852,269 @@ const CreateTripModal = ({
         }
       }}
     >
-      <div className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-4xl border border-white/80 bg-white/95 shadow-2xl">
-        <div className="border-b border-slate-200/70 bg-linear-to-r from-white via-blue-50 to-amber-50 px-5 py-6 sm:px-6">
+      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/80 bg-white/95 shadow-2xl">
+        <div className="border-b border-slate-200/70 bg-white px-5 py-6 sm:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-blue-600/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
-                  {statusLabel}
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-700">
+                  Step {currentWizardStep} of 3
                 </span>
                 <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-600">
-                  {requiredProgress}% ready
+                  {statusLabel}
                 </span>
+                {/* <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-600"> */}
+                {/*   {requiredProgress}% ready */}
+                {/* </span> */}
               </div>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-950 sm:text-3xl font-display">
-                Create a travel package
+
+              <h2 className="mt-3 flex items-center gap-2 text-2xl font-semibold text-slate-950 sm:text-3xl font-display">
+                {currentWizardStep === 1 && <Info className="h-5 w-5 text-slate-700" />}
+                {currentWizardStep === 2 && <Hotel className="h-5 w-5 text-slate-700" />}
+                {currentWizardStep === 3 && <Car className="h-5 w-5 text-slate-700" />}
+                <span>
+                  {currentWizardStep === 1 && 'Trip Information'}
+                  {currentWizardStep === 2 && 'Hotels'}
+                  {currentWizardStep === 3 && 'Vehicles'}
+                </span>
               </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Save a partial draft anytime, then submit the completed package when it is ready for admin review.
-              </p>
+
+              {/* <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600"> */}
+              {/*   {currentWizardStep === 1 && 'Provide core trip details to continue.'} */}
+              {/*   {currentWizardStep === 2 && 'Accommodations are managed as a separate entity.'} */}
+              {/*   {currentWizardStep === 3 && 'Transportation is managed as a separate entity.'} */}
+              {/* </p> */}
             </div>
 
             <button
               type="button"
               onClick={onClose}
               disabled={isBusy}
-              className="self-start rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 lg:self-center"
+              className="self-end rounded-full border border-slate-300 bg-white p-2 text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 lg:self-center"
+              aria-label="Close modal"
             >
-              Close
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/80">
-            <div
-              className="h-full rounded-full bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 transition-all"
-              style={{ width: `${requiredProgress}%` }}
-            />
+          <div className="mt-5 flex gap-2">
+            {[1, 2, 3].map((step) => (
+              <div
+                key={step}
+                className={`h-1 flex-1 rounded-full transition ${
+                  step <= currentWizardStep
+                    ? 'bg-slate-900'
+                    : 'bg-slate-200'
+                }`}
+              />
+            ))}
           </div>
         </div>
 
-        <div className="grid min-h-0 flex-1 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="hidden border-r border-slate-200/70 bg-linear-to-b from-white to-slate-50 p-5 lg:block">
-            <div className="space-y-3">
-              {[
-                ['01', 'Essentials', 'Name, destination, story'],
-                ['02', 'Dates', 'Budget and schedule'],
-                ['03', 'Details', 'Spots, tags, links'],
-                ['04', 'Logistics', 'Hotels and vehicles'],
-                ['05', 'Review', 'Draft or approval'],
-              ].map(([number, title, subtitle]) => (
-                <div key={number} className="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-950 text-xs font-bold text-white shadow-sm">
-                      {number}
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-950">{title}</p>
-                      <p className="text-xs text-slate-500">{subtitle}</p>
-                    </div>
-                  </div>
+        <form onSubmit={handleSubmit} noValidate className="min-h-0 overflow-y-auto px-4 py-6 sm:px-6">
+          <div className="space-y-5">
+            {currentWizardStep === 1 && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <label htmlFor="trip-name" className={labelClassName}>
+                    Trip name <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="trip-name"
+                    className={inputClassName}
+                    value={formState.name}
+                    onChange={(event) => handleChange('name', event.target.value)}
+                    placeholder="Weekend in Coorg"
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.name} />
                 </div>
-              ))}
-            </div>
-          </aside>
 
-          <form onSubmit={handleSubmit} noValidate className="min-h-0 overflow-y-auto px-4 py-6 sm:px-6">
-            <div className="space-y-5">
-              <Section eyebrow="Essentials" title="Give travelers a clear first impression">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="md:col-span-2">
-                    <label htmlFor="trip-name" className={labelClassName}>
-                      Trip name
-                    </label>
+                <div className="md:col-span-2">
+                  <label htmlFor="trip-description" className={labelClassName}>
+                    Description <span className="text-red-600">*</span>
+                  </label>
+                  <textarea
+                    id="trip-description"
+                    className={`${inputClassName} min-h-28 resize-y`}
+                    value={formState.description}
+                    onChange={(event) => handleChange('description', event.target.value)}
+                    placeholder="What makes this trip worth booking?"
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.description} />
+                </div>
+
+                <div>
+                  <label htmlFor="trip-cover-image" className={labelClassName}>
+                    Cover image <span className="text-red-600">*</span>
+                  </label>
+                  <div className="flex gap-2">
                     <input
-                      id="trip-name"
+                      id="trip-cover-image"
+                      type="file"
+                      accept="image/*"
                       className={inputClassName}
-                      value={formState.name}
-                      onChange={(event) => handleChange('name', event.target.value)}
-                      placeholder="Weekend in Coorg"
-                      disabled={isBusy}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        if (file) {
+                          handleCoverImageUpload(file)
+                        }
+                      }}
+                      disabled={isBusy || isUploadingImage}
                     />
-                    <ErrorText message={fieldErrors.name} />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label htmlFor="trip-description" className={labelClassName}>
-                      Description
-                    </label>
-                    <textarea
-                      id="trip-description"
-                      className={`${inputClassName} min-h-28 resize-y`}
-                      value={formState.description}
-                      onChange={(event) => handleChange('description', event.target.value)}
-                      placeholder="What makes this trip worth booking?"
-                      disabled={isBusy}
-                    />
-                    <ErrorText message={fieldErrors.description} />
-                  </div>
-
-                  <div>
-                    <label htmlFor="trip-cover-image" className={labelClassName}>
-                      Cover image
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        id="trip-cover-image"
-                        type="file"
-                        accept="image/*"
-                        className={inputClassName}
-                        onChange={(event) => {
-                          const file = event.target.files?.[0]
-                          if (file) {
-                            handleCoverImageUpload(file)
-                          }
-                        }}
-                        disabled={isBusy || isUploadingImage}
+                    {formState.coverImage && (
+                      <img
+                        src={resolvePackageCoverImage(formState.coverImage)}
+                        alt="Cover preview"
+                        className="h-12 w-12 rounded-lg border border-slate-200 object-cover shadow-sm"
                       />
-                      {formState.coverImage && (
-                        <img
-                          src={resolvePackageCoverImage(formState.coverImage)}
-                          alt="Cover preview"
-                          className="h-12 w-12 rounded-lg border border-slate-200 object-cover shadow-sm"
-                        />
-                      )}
-                    </div>
-                    {uploadImageError && (
-                      <ErrorText message={uploadImageError} />
-                    )}
-                    {isUploadingImage && (
-                      <p className="mt-2 text-xs font-medium text-blue-600">Uploading image...</p>
-                    )}
-                    {!formState.coverImage && !uploadImageError && (
-                      <p className="mt-2 text-xs text-slate-500">
-                        Upload a cover image or enter URL below
-                      </p>
                     )}
                   </div>
-
-                  <div>
-                    <label htmlFor="trip-cover-image-url" className={labelClassName}>
-                      Cover image URL (optional)
-                    </label>
-                    <input
-                      id="trip-cover-image-url"
-                      type="url"
-                      className={inputClassName}
-                      value={formState.coverImage}
-                      onChange={(event) => handleChange('coverImage', event.target.value)}
-                      placeholder="https://example.com/cover.jpg"
-                      disabled={isBusy}
-                    />
-                    <ErrorText message={fieldErrors.coverImage} />
-                  </div>
-
-                  <div>
-                    <label htmlFor="trip-destination" className={labelClassName}>
-                      Destination
-                    </label>
-                    <input
-                      id="trip-destination"
-                      className={inputClassName}
-                      value={formState.destination}
-                      onChange={(event) => handleChange('destination', event.target.value)}
-                      placeholder="Coorg"
-                      disabled={isBusy}
-                    />
-                    <ErrorText message={fieldErrors.destination} />
-                  </div>
+                  {uploadImageError && <ErrorText message={uploadImageError} />}
+                  {isUploadingImage && (
+                    <p className="mt-2 text-xs font-medium text-slate-700">Uploading image...</p>
+                  )}
                 </div>
-              </Section>
 
-              <Section eyebrow="Dates and Budget" title="Set the commercial basics">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label htmlFor="trip-season" className={labelClassName}>
-                      Season
-                    </label>
-                    <select
-                      id="trip-season"
-                      className={inputClassName}
-                      value={formState.season}
-                      onChange={(event) =>
-                        handleChange('season', event.target.value as CreateTripFormState['season'])
-                      }
-                      disabled={isBusy}
-                    >
-                      <option value="">Choose season</option>
-                      {seasonOptions.map((season) => (
-                        <option key={season} value={season}>
-                          {formatSeasonLabel(season)}
-                        </option>
-                      ))}
-                    </select>
-                    <ErrorText message={fieldErrors.season} />
-                  </div>
+                <div>
+                  <label htmlFor="trip-cover-image-url" className={labelClassName}>
+                    Cover image URL (optional)
+                  </label>
+                  <input
+                    id="trip-cover-image-url"
+                    type="url"
+                    className={inputClassName}
+                    value={formState.coverImage}
+                    onChange={(event) => handleChange('coverImage', event.target.value)}
+                    placeholder="https://example.com/cover.jpg"
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.coverImage} />
+                </div>
 
-                  <div>
-                    <label htmlFor="trip-budget" className={labelClassName}>
-                      Budget
-                    </label>
-                    <input
-                      id="trip-budget"
-                      type="number"
-                      min="0"
-                      className={inputClassName}
-                      value={formState.budget}
-                      onChange={(event) => handleChange('budget', event.target.value)}
-                      placeholder="4500"
-                      disabled={isBusy}
-                    />
-                    <ErrorText message={fieldErrors.budget} />
-                  </div>
+                <div>
+                  <label htmlFor="trip-destination" className={labelClassName}>
+                    Destination <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="trip-destination"
+                    className={inputClassName}
+                    value={formState.destination}
+                    onChange={(event) => handleChange('destination', event.target.value)}
+                    placeholder="Coorg"
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.destination} />
+                </div>
 
-                  <div>
-                    <label htmlFor="trip-duration" className={labelClassName}>
-                      Duration (days)
-                    </label>
-                    <input
-                      id="trip-duration"
-                      type="number"
-                      min="1"
-                      className={inputClassName}
-                      value={formState.duration}
-                      onChange={(event) => handleChange('duration', event.target.value)}
-                      placeholder="3"
-                      disabled={isBusy}
-                    />
-                    <ErrorText message={fieldErrors.duration} />
-                  </div>
+                <div>
+                  <label htmlFor="trip-season" className={labelClassName}>
+                    Season <span className="text-red-600">*</span>
+                  </label>
+                  <select
+                    id="trip-season"
+                    className={inputClassName}
+                    value={formState.season}
+                    onChange={(event) =>
+                      handleChange('season', event.target.value as CreateTripFormState['season'])
+                    }
+                    disabled={isBusy}
+                  >
+                    <option value="">Choose season</option>
+                    {seasonOptions.map((season) => (
+                      <option key={season} value={season}>
+                        {formatSeasonLabel(season)}
+                      </option>
+                    ))}
+                  </select>
+                  <ErrorText message={fieldErrors.season} />
+                </div>
 
-                  <div>
-                    <label htmlFor="trip-permit" className={labelClassName}>
-                      Permit requirement
-                    </label>
-                    <input
-                      id="trip-permit"
-                      className={inputClassName}
-                      value={formState.permit}
-                      onChange={(event) => handleChange('permit', event.target.value)}
-                      placeholder="None"
-                      disabled={isBusy}
-                    />
-                    <ErrorText message={fieldErrors.permit} />
-                  </div>
+                <div>
+                  <label htmlFor="trip-budget" className={labelClassName}>
+                    Budget <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="trip-budget"
+                    type="number"
+                    min="0"
+                    className={inputClassName}
+                    value={formState.budget}
+                    onChange={(event) => handleChange('budget', event.target.value)}
+                    placeholder="4500"
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.budget} />
+                </div>
 
-                  <div>
-                    <label htmlFor="trip-start-date" className={labelClassName}>
-                      Start date
-                    </label>
-                    <input
-                      id="trip-start-date"
-                      type="date"
-                      className={inputClassName}
-                      value={formState.startDate}
-                      onChange={(event) => handleChange('startDate', event.target.value)}
-                      disabled={isBusy}
-                    />
-                    <ErrorText message={fieldErrors.startDate} />
-                  </div>
+                <div>
+                  <label htmlFor="trip-duration" className={labelClassName}>
+                    Duration (days) <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="trip-duration"
+                    type="number"
+                    min="1"
+                    className={inputClassName}
+                    value={formState.duration}
+                    onChange={(event) => handleChange('duration', event.target.value)}
+                    placeholder="3"
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.duration} />
+                </div>
 
-                  <div>
-                    <label htmlFor="trip-end-date" className={labelClassName}>
-                      End date
-                    </label>
-                    <input
-                      id="trip-end-date"
-                      type="date"
-                      className={inputClassName}
-                      value={formState.endDate}
-                      onChange={(event) => handleChange('endDate', event.target.value)}
-                      disabled={isBusy}
-                    />
-                    <ErrorText message={fieldErrors.endDate} />
-                  </div>
+                <div>
+                  <label htmlFor="trip-permit" className={labelClassName}>
+                    Permit requirement <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="trip-permit"
+                    className={inputClassName}
+                    value={formState.permit}
+                    onChange={(event) => handleChange('permit', event.target.value)}
+                    placeholder="None"
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.permit} />
+                </div>
 
-                  <label className="flex items-center rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 md:col-span-2">
+                <div>
+                  <label htmlFor="trip-start-date" className={labelClassName}>
+                    Start date <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="trip-start-date"
+                    type="date"
+                    className={inputClassName}
+                    value={formState.startDate}
+                    onChange={(event) => handleChange('startDate', event.target.value)}
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.startDate} />
+                </div>
+
+                <div>
+                  <label htmlFor="trip-end-date" className={labelClassName}>
+                    End date <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="trip-end-date"
+                    type="date"
+                    className={inputClassName}
+                    value={formState.endDate}
+                    onChange={(event) => handleChange('endDate', event.target.value)}
+                    disabled={isBusy}
+                  />
+                  <ErrorText message={fieldErrors.endDate} />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="flex items-center rounded-lg border border-slate-300 bg-white px-4 py-3">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
                       checked={formState.identification}
                       onChange={(event) => handleChange('identification', event.target.checked)}
                       disabled={isBusy}
@@ -918,363 +1124,519 @@ const CreateTripModal = ({
                     </span>
                   </label>
                 </div>
-              </Section>
+              </div>
+            )}
 
-              <Section eyebrow="Trip Details" title="Add activities, labels, and links">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="md:col-span-2">
-                    <label htmlFor="trip-spots" className={labelClassName}>
-                      Spots
-                    </label>
-                    <textarea
-                      id="trip-spots"
-                      className={`${inputClassName} min-h-24 resize-y`}
-                      value={formState.spots}
-                      onChange={(event) => handleChange('spots', event.target.value)}
-                      placeholder="Dubare, Abbey Falls, Raja's Seat"
-                      disabled={isBusy}
-                    />
-                    <p className="mt-2 text-xs text-slate-500">Use commas or new lines to separate spots.</p>
-                  </div>
-
+            {currentWizardStep === 2 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <label htmlFor="trip-tags" className={labelClassName}>
-                      Tags
-                    </label>
-                    <textarea
-                      id="trip-tags"
-                      className={`${inputClassName} min-h-24 resize-y`}
-                      value={formState.tags}
-                      onChange={(event) => handleChange('tags', event.target.value)}
-                      placeholder="nature, weekend, road trip"
-                      disabled={isBusy}
-                    />
-                    <p className="mt-2 text-xs text-slate-500">Use commas or new lines to separate tags.</p>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+                      <Hotel className="h-4 w-4 text-slate-700" />
+                      Accommodations
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Hotels are independent from trip information and vehicles.
+                    </p>
                   </div>
-
-                  <div>
-                    <label htmlFor="trip-links" className={labelClassName}>
-                      Affiliate links
-                    </label>
-                    <textarea
-                      id="trip-links"
-                      className={`${inputClassName} min-h-24 resize-y`}
-                      value={formState.affiliateLinks}
-                      onChange={(event) => handleChange('affiliateLinks', event.target.value)}
-                      placeholder="https://example.com/book"
-                      disabled={isBusy}
-                    />
-                    <p className="mt-2 text-xs text-slate-500">Use commas or new lines to separate links.</p>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label htmlFor="trip-additional" className={labelClassName}>
-                      Additional notes
-                    </label>
-                    <textarea
-                      id="trip-additional"
-                      className={`${inputClassName} min-h-28 resize-y`}
-                      value={formState.additional}
-                      onChange={(event) => handleChange('additional', event.target.value)}
-                      placeholder="Packing notes, travel caveats, or anything else travelers should know."
-                      disabled={isBusy}
-                    />
-                  </div>
-                </div>
-              </Section>
-
-              <Section eyebrow="Logistics" title="Keep accommodations and transport organized">
-                <div className="space-y-6">
-                  <div>
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-950">Hotels</p>
-                        <p className="mt-1 text-xs text-slate-500">Optional while drafting, complete when submitted.</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={addHotel}
-                        disabled={isBusy}
-                        className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        Add hotel
-                      </button>
-                    </div>
-
-                    {formState.hotels.length === 0 && (
-                      <p className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                        Add hotels if this package includes accommodations.
-                      </p>
-                    )}
-
-                    {formState.hotels.map((hotel, index) => (
-                      <div key={`hotel-${index}`} className="mt-4 rounded-3xl border border-slate-200/80 bg-slate-50/80 p-5 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between gap-3">
-                          <p className="text-sm font-semibold text-slate-800">Hotel {index + 1}</p>
-                          <button
-                            type="button"
-                            onClick={() => removeHotel(index)}
-                            disabled={isBusy}
-                            className="text-xs font-semibold text-red-600 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Remove
-                          </button>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div>
-                            <label htmlFor={`hotel-name-${index}`} className={labelClassName}>
-                              Hotel name
-                            </label>
-                            <input
-                              id={`hotel-name-${index}`}
-                              className={inputClassName}
-                              value={hotel.name}
-                              onChange={(event) => handleHotelChange(index, 'name', event.target.value)}
-                              placeholder="Lush Retreat"
-                              disabled={isBusy}
-                            />
-                            <ErrorText message={fieldErrors[`hotel-${index}-name`]} />
-                          </div>
-
-                          <div>
-                            <label htmlFor={`hotel-phone-${index}`} className={labelClassName}>
-                              Phone number
-                            </label>
-                            <input
-                              id={`hotel-phone-${index}`}
-                              className={inputClassName}
-                              value={hotel.phoneNumber}
-                              onChange={(event) => handleHotelChange(index, 'phoneNumber', event.target.value)}
-                              placeholder="+91 98765 43210"
-                              disabled={isBusy}
-                            />
-                            <ErrorText message={fieldErrors[`hotel-${index}-phoneNumber`]} />
-                          </div>
-
-                          <div>
-                            <label htmlFor={`hotel-budget-${index}`} className={labelClassName}>
-                              Budget
-                            </label>
-                            <input
-                              id={`hotel-budget-${index}`}
-                              type="number"
-                              min="0"
-                              className={inputClassName}
-                              value={hotel.budget}
-                              onChange={(event) => handleHotelChange(index, 'budget', event.target.value)}
-                              placeholder="3200"
-                              disabled={isBusy}
-                            />
-                            <ErrorText message={fieldErrors[`hotel-${index}-budget`]} />
-                          </div>
-
-                          <div className="md:col-span-2">
-                            <label htmlFor={`hotel-address-${index}`} className={labelClassName}>
-                              Address
-                            </label>
-                            <input
-                              id={`hotel-address-${index}`}
-                              className={inputClassName}
-                              value={hotel.address}
-                              onChange={(event) => handleHotelChange(index, 'address', event.target.value)}
-                              placeholder="Main Road, Coorg"
-                              disabled={isBusy}
-                            />
-                            <ErrorText message={fieldErrors[`hotel-${index}-address`]} />
-                          </div>
-
-                          <div className="md:col-span-2">
-                            <label htmlFor={`hotel-photos-${index}`} className={labelClassName}>
-                              Photo URLs
-                            </label>
-                            <textarea
-                              id={`hotel-photos-${index}`}
-                              className={`${inputClassName} min-h-20 resize-y`}
-                              value={hotel.photos}
-                              onChange={(event) => handleHotelChange(index, 'photos', event.target.value)}
-                              placeholder="https://example.com/hotel.jpg"
-                              disabled={isBusy}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-6">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-950">Vehicles</p>
-                        <p className="mt-1 text-xs text-slate-500">Optional while drafting, complete when submitted.</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={addVehicle}
-                        disabled={isBusy}
-                        className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        Add vehicle
-                      </button>
-                    </div>
-
-                    {formState.vehicles.length === 0 && (
-                      <p className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                        Add vehicles if transport is included in the package.
-                      </p>
-                    )}
-
-                    {formState.vehicles.map((vehicle, index) => (
-                      <div key={`vehicle-${index}`} className="mt-4 rounded-3xl border border-slate-200/80 bg-slate-50/80 p-5 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between gap-3">
-                          <p className="text-sm font-semibold text-slate-800">Vehicle {index + 1}</p>
-                          <button
-                            type="button"
-                            onClick={() => removeVehicle(index)}
-                            disabled={isBusy}
-                            className="text-xs font-semibold text-red-600 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Remove
-                          </button>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div>
-                            <label htmlFor={`vehicle-name-${index}`} className={labelClassName}>
-                              Vehicle name
-                            </label>
-                            <input
-                              id={`vehicle-name-${index}`}
-                              className={inputClassName}
-                              value={vehicle.car}
-                              onChange={(event) => handleVehicleChange(index, 'car', event.target.value)}
-                              placeholder="Innova"
-                              disabled={isBusy}
-                            />
-                            <ErrorText message={fieldErrors[`vehicle-${index}-car`]} />
-                          </div>
-
-                          <div>
-                            <label htmlFor={`vehicle-number-${index}`} className={labelClassName}>
-                              Car number
-                            </label>
-                            <input
-                              id={`vehicle-number-${index}`}
-                              className={inputClassName}
-                              value={vehicle.carNumber}
-                              onChange={(event) => handleVehicleChange(index, 'carNumber', event.target.value)}
-                              placeholder="KA 01 AB 1234"
-                              disabled={isBusy}
-                            />
-                            <ErrorText message={fieldErrors[`vehicle-${index}-carNumber`]} />
-                          </div>
-
-                          <div>
-                            <label htmlFor={`vehicle-driver-${index}`} className={labelClassName}>
-                              Driver name
-                            </label>
-                            <input
-                              id={`vehicle-driver-${index}`}
-                              className={inputClassName}
-                              value={vehicle.driverName}
-                              onChange={(event) => handleVehicleChange(index, 'driverName', event.target.value)}
-                              placeholder="Ravi"
-                              disabled={isBusy}
-                            />
-                          </div>
-
-                          <div>
-                            <label htmlFor={`vehicle-driver-phone-${index}`} className={labelClassName}>
-                              Driver phone number
-                            </label>
-                            <input
-                              id={`vehicle-driver-phone-${index}`}
-                              className={inputClassName}
-                              value={vehicle.driverPhoneNumber}
-                              onChange={(event) => handleVehicleChange(index, 'driverPhoneNumber', event.target.value)}
-                              placeholder="+91 90000 00000"
-                              disabled={isBusy}
-                            />
-                            <ErrorText message={fieldErrors[`vehicle-${index}-driverPhoneNumber`]} />
-                          </div>
-
-                          <div>
-                            <label htmlFor={`vehicle-type-${index}`} className={labelClassName}>
-                              Vehicle type
-                            </label>
-                            <input
-                              id={`vehicle-type-${index}`}
-                              className={inputClassName}
-                              value={vehicle.vehicleType}
-                              onChange={(event) => handleVehicleChange(index, 'vehicleType', event.target.value)}
-                              placeholder="SUV"
-                              disabled={isBusy}
-                            />
-                          </div>
-
-                          <div>
-                            <label htmlFor={`vehicle-budget-${index}`} className={labelClassName}>
-                              Budget
-                            </label>
-                            <input
-                              id={`vehicle-budget-${index}`}
-                              type="number"
-                              min="0"
-                              className={inputClassName}
-                              value={vehicle.budget}
-                              onChange={(event) => handleVehicleChange(index, 'budget', event.target.value)}
-                              placeholder="1800"
-                              disabled={isBusy}
-                            />
-                            <ErrorText message={fieldErrors[`vehicle-${index}-budget`]} />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Section>
-
-              {(localError || errorMessage || localSuccess) && (
-                <div
-                  className={`rounded-2xl border px-4 py-3 text-sm font-medium ${
-                    localSuccess && !localError && !errorMessage
-                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                      : 'border-red-200 bg-red-50 text-red-700'
-                  }`}
-                >
-                  {localError || errorMessage || localSuccess}
-                </div>
-              )}
-            </div>
-
-            <div className="sticky bottom-0 -mx-4 mt-6 border-t border-slate-200/70 bg-white/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6">
-              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-slate-500">
-                  Drafts can be incomplete. Approval submission checks all required fields.
-                </p>
-                <div className="flex flex-col gap-3 sm:flex-row">
                   <button
                     type="button"
-                    onClick={handleSaveDraft}
+                    onClick={handleAddHotel}
                     disabled={isBusy}
-                    className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isSavingDraft ? 'Saving draft...' : 'Save as Draft'}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isBusy}
-                    className="rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(37,99,235,0.24)] transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
+                    + Add hotel
                   </button>
                 </div>
+
+                {formState.hotels.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
+                    <p className="text-sm text-slate-500">No hotels added yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {formState.hotels.map((hotel, index) => (
+                      <div
+                        key={`hotel-card-${index}`}
+                        className="rounded-xl border border-slate-300 bg-white p-4"
+                      >
+                        <p className="truncate text-sm font-semibold text-slate-900">
+                          {hotel.name || `Hotel ${index + 1}`}
+                        </p>
+                        <p className="mt-1 truncate text-xs text-slate-500">{hotel.address || 'No address'}</p>
+                        <p className="mt-2 text-xs text-slate-600">
+                          Budget: {hotel.budget ? `₹${hotel.budget}` : 'Not set'}
+                        </p>
+
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditHotel(index)}
+                            disabled={isBusy}
+                            className="flex-1 rounded-md border border-slate-300 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-200 disabled:opacity-60"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormState((current) => ({
+                                ...current,
+                                hotels: current.hotels.filter((_, idx) => idx !== index),
+                              }))
+                            }
+                            disabled={isBusy}
+                            className="flex-1 rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                          >
+                            Remove
+                          </button>
+                        </div>
+
+                        <ErrorText message={fieldErrors[`hotel-${index}-name`]} />
+                        <ErrorText message={fieldErrors[`hotel-${index}-phoneNumber`]} />
+                        <ErrorText message={fieldErrors[`hotel-${index}-address`]} />
+                        <ErrorText message={fieldErrors[`hotel-${index}-budget`]} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {currentWizardStep === 3 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+                      <Car className="h-4 w-4 text-slate-700" />
+                      Transportation
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Vehicles are independent from trip information and hotels.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddVehicle}
+                    disabled={isBusy}
+                    className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    + Add vehicle
+                  </button>
+                </div>
+
+                {formState.vehicles.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
+                    <p className="text-sm text-slate-500">No vehicles added yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {formState.vehicles.map((vehicle, index) => (
+                      <div
+                        key={`vehicle-card-${index}`}
+                        className="rounded-xl border border-slate-300 bg-white p-4"
+                      >
+                        <p className="truncate text-sm font-semibold text-slate-900">
+                          {vehicle.car || `Vehicle ${index + 1}`}
+                        </p>
+                        <p className="mt-1 truncate text-xs text-slate-500">
+                          {vehicle.carNumber || 'No car number'}
+                        </p>
+                        <p className="mt-2 text-xs text-slate-600">
+                          Budget: {vehicle.budget ? `₹${vehicle.budget}` : 'Not set'}
+                        </p>
+
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditVehicle(index)}
+                            disabled={isBusy}
+                            className="flex-1 rounded-md border border-slate-300 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-200 disabled:opacity-60"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormState((current) => ({
+                                ...current,
+                                vehicles: current.vehicles.filter((_, idx) => idx !== index),
+                              }))
+                            }
+                            disabled={isBusy}
+                            className="flex-1 rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                          >
+                            Remove
+                          </button>
+                        </div>
+
+                        <ErrorText message={fieldErrors[`vehicle-${index}-car`]} />
+                        <ErrorText message={fieldErrors[`vehicle-${index}-carNumber`]} />
+                        <ErrorText message={fieldErrors[`vehicle-${index}-driverPhoneNumber`]} />
+                        <ErrorText message={fieldErrors[`vehicle-${index}-budget`]} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(localError || errorMessage || localSuccess) && (
+              <div
+                className={`rounded-lg border px-4 py-3 text-sm font-medium ${
+                  localSuccess && !localError && !errorMessage
+                    ? 'border-slate-300 bg-slate-100 text-slate-800'
+                    : 'border-red-200 bg-red-50 text-red-700'
+                }`}
+              >
+                {localError || errorMessage || localSuccess}
+              </div>
+            )}
+          </div>
+
+          <div className="sticky bottom-0 -mx-4 mt-6 border-t border-slate-200/70 bg-white/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              {/* <p className="text-xs text-slate-500"> */}
+              {/*   {currentWizardStep === 1 && 'Fill required fields to continue to Hotels.'} */}
+              {/*   {currentWizardStep === 2 && 'Add hotels or continue to Vehicles.'} */}
+              {/*   {currentWizardStep === 3 && 'Add vehicles, then save draft or submit.'} */}
+              {/* </p> */}
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {currentWizardStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={handlePrevStep}
+                    disabled={isBusy}
+                    className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:opacity-60"
+                  >
+                    Back
+                  </button>
+                )}
+
+                {currentWizardStep < 3 ? (
+                  <button
+                    type="button"
+                    onClick={handleNextStep}
+                    disabled={isBusy}
+                    className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-60"
+                  >
+                    Next
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleSaveDraft}
+                      disabled={isBusy}
+                      className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isSavingDraft ? 'Saving draft...' : 'Save as Draft'}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isBusy}
+                      className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
+
+      <EntityModal
+        open={hotelModalOpen}
+        title={editingHotelIndex === null ? 'Add Hotel' : `Edit Hotel ${editingHotelIndex + 1}`}
+        subtitle={hotelModalStep === 1 ? 'Basic hotel details' : 'Budget and photos'}
+        step={hotelModalStep}
+        onClose={handleCloseHotelModal}
+        footer={
+          <div className="flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseHotelModal}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            {hotelModalStep === 2 && (
+              <button
+                type="button"
+                onClick={() => setHotelModalStep(1)}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Back
+              </button>
+            )}
+            {hotelModalStep === 1 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (validateHotelDraftStep(1, hotelDraft)) {
+                    setHotelModalStep(2)
+                  }
+                }}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-black"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSaveHotel}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-black"
+              >
+                Save Hotel
+              </button>
+            )}
+          </div>
+        }
+      >
+        {hotelModalStep === 1 ? (
+          <div className="space-y-4">
+            <div>
+              <label className={labelClassName}>
+                Hotel name <span className="text-red-600">*</span>
+              </label>
+              <input
+                className={inputClassName}
+                value={hotelDraft.name}
+                onChange={(event) => setHotelDraft((current) => ({ ...current, name: event.target.value }))}
+                placeholder="Lush Retreat"
+              />
+              <ErrorText message={fieldErrors.hotelDraftName} />
+            </div>
+
+            <div>
+              <label className={labelClassName}>
+                Phone number <span className="text-red-600">*</span>
+              </label>
+              <input
+                className={inputClassName}
+                value={hotelDraft.phoneNumber}
+                onChange={(event) =>
+                  setHotelDraft((current) => ({ ...current, phoneNumber: event.target.value }))
+                }
+                placeholder="+91 98765 43210"
+              />
+              <ErrorText message={fieldErrors.hotelDraftPhone} />
+            </div>
+
+            <div>
+              <label className={labelClassName}>
+                Address <span className="text-red-600">*</span>
+              </label>
+              <input
+                className={inputClassName}
+                value={hotelDraft.address}
+                onChange={(event) =>
+                  setHotelDraft((current) => ({ ...current, address: event.target.value }))
+                }
+                placeholder="Main Road, Coorg"
+              />
+              <ErrorText message={fieldErrors.hotelDraftAddress} />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className={labelClassName}>
+                Budget <span className="text-red-600">*</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                className={inputClassName}
+                value={hotelDraft.budget}
+                onChange={(event) =>
+                  setHotelDraft((current) => ({ ...current, budget: event.target.value }))
+                }
+                placeholder="3200"
+              />
+              <ErrorText message={fieldErrors.hotelDraftBudget} />
+            </div>
+
+            <div>
+              <label className={labelClassName}>Photo URLs (optional)</label>
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className={inputClassName}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0]
+                    if (file) {
+                      void handleHotelPhotoUpload(file)
+                    }
+                  }}
+                  disabled={isUploadingHotelPhoto}
+                />
+                {hotelDraft.photos && (
+                  <img
+                    src={resolveHotelPhoto(parseListInput(hotelDraft.photos)[0])}
+                    alt="Hotel photo preview"
+                    className="h-12 w-12 rounded-lg border border-slate-200 object-cover shadow-sm"
+                  />
+                )}
+              </div>
+              {isUploadingHotelPhoto && (
+                <p className="mt-1 text-xs font-medium text-slate-700">Uploading hotel photo...</p>
+              )}
+              {uploadHotelPhotoError && <ErrorText message={uploadHotelPhotoError} />}
+              <textarea
+                className={`${inputClassName} min-h-24 resize-y`}
+                value={hotelDraft.photos}
+                onChange={(event) =>
+                  setHotelDraft((current) => ({ ...current, photos: event.target.value }))
+                }
+                placeholder="https://example.com/hotel.jpg"
+              />
+              <p className="mt-1 text-xs text-slate-500">Upload one photo or enter URL(s) manually.</p>
+            </div>
+          </div>
+        )}
+      </EntityModal>
+
+      <EntityModal
+        open={vehicleModalOpen}
+        title={editingVehicleIndex === null ? 'Add Vehicle' : `Edit Vehicle ${editingVehicleIndex + 1}`}
+        subtitle={vehicleModalStep === 1 ? 'Vehicle and driver details' : 'Budget details'}
+        step={vehicleModalStep}
+        onClose={handleCloseVehicleModal}
+        footer={
+          <div className="flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleCloseVehicleModal}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            {vehicleModalStep === 2 && (
+              <button
+                type="button"
+                onClick={() => setVehicleModalStep(1)}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Back
+              </button>
+            )}
+            {vehicleModalStep === 1 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (validateVehicleDraftStep(1, vehicleDraft)) {
+                    setVehicleModalStep(2)
+                  }
+                }}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-black"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSaveVehicle}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-black"
+              >
+                Save Vehicle
+              </button>
+            )}
+          </div>
+        }
+      >
+        {vehicleModalStep === 1 ? (
+          <div className="space-y-4">
+            <div>
+              <label className={labelClassName}>
+                Vehicle name <span className="text-red-600">*</span>
+              </label>
+              <input
+                className={inputClassName}
+                value={vehicleDraft.car}
+                onChange={(event) => setVehicleDraft((current) => ({ ...current, car: event.target.value }))}
+                placeholder="Innova"
+              />
+              <ErrorText message={fieldErrors.vehicleDraftCar} />
+            </div>
+
+            <div>
+              <label className={labelClassName}>
+                Car number <span className="text-red-600">*</span>
+              </label>
+              <input
+                className={inputClassName}
+                value={vehicleDraft.carNumber}
+                onChange={(event) =>
+                  setVehicleDraft((current) => ({ ...current, carNumber: event.target.value }))
+                }
+                placeholder="KA 01 AB 1234"
+              />
+              <ErrorText message={fieldErrors.vehicleDraftNumber} />
+            </div>
+
+            <div>
+              <label className={labelClassName}>Driver name</label>
+              <input
+                className={inputClassName}
+                value={vehicleDraft.driverName}
+                onChange={(event) =>
+                  setVehicleDraft((current) => ({ ...current, driverName: event.target.value }))
+                }
+                placeholder="Ravi"
+              />
+            </div>
+
+            <div>
+              <label className={labelClassName}>
+                Driver phone number <span className="text-red-600">*</span>
+              </label>
+              <input
+                className={inputClassName}
+                value={vehicleDraft.driverPhoneNumber}
+                onChange={(event) =>
+                  setVehicleDraft((current) => ({ ...current, driverPhoneNumber: event.target.value }))
+                }
+                placeholder="+91 90000 00000"
+              />
+              <ErrorText message={fieldErrors.vehicleDraftDriverPhone} />
+            </div>
+
+            <div>
+              <label className={labelClassName}>Vehicle type</label>
+              <input
+                className={inputClassName}
+                value={vehicleDraft.vehicleType}
+                onChange={(event) =>
+                  setVehicleDraft((current) => ({ ...current, vehicleType: event.target.value }))
+                }
+                placeholder="SUV"
+              />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label className={labelClassName}>
+              Budget <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="number"
+              min="0"
+              className={inputClassName}
+              value={vehicleDraft.budget}
+              onChange={(event) =>
+                setVehicleDraft((current) => ({ ...current, budget: event.target.value }))
+              }
+              placeholder="1800"
+            />
+            <ErrorText message={fieldErrors.vehicleDraftBudget} />
+          </div>
+        )}
+      </EntityModal>
     </div>
   )
 }
