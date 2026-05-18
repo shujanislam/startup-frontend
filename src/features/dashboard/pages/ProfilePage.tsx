@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import apiClient from '../../../lib/apiClient'
 import { fetchCurrentUser, fetchProfile, type CurrentUser } from '../services/dashboardApi'
 import {
@@ -47,6 +47,7 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState<ProfileTab>('myTrips')
   const [isEditing, setIsEditing] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [heroImageIndex, setHeroImageIndex] = useState(0)
   const [uploadImageError, setUploadImageError] = useState<string | null>(null)
 
   const [editState, setEditState] = useState({
@@ -130,6 +131,28 @@ const ProfilePage = () => {
     : (currentUser?.profileImagePath 
         ? getImageUrl(currentUser.profileImagePath)
         : fallbackProfileImage)
+
+  const profileHeroImages = useMemo(() => {
+    const imageUrls = likedTrips
+      .map((trip) => trip.imageUrl.trim())
+      .filter(Boolean)
+
+    return Array.from(new Set(imageUrls))
+  }, [likedTrips])
+
+  const profileHeroImage = profileHeroImages[heroImageIndex] || ''
+  const profileLocation = currentUser?.location || 'India'
+  const profileOccupation = currentUser?.occupation || 'Traveler'
+  const profileTravelStyle = currentUser?.travelStyle?.trim()
+  const showHeroImage = Boolean(profileHeroImage)
+
+  useEffect(() => {
+    setHeroImageIndex(0)
+  }, [profileHeroImages])
+
+  const handleHeroImageError = () => {
+    setHeroImageIndex((current) => current + 1)
+  }
 
   const handleEditChange = (
     key: keyof typeof editState,
@@ -230,7 +253,7 @@ const ProfilePage = () => {
 
   return (
     <main className="min-h-screen bg-white text-slate-950">
-      <section className="mx-auto max-w-7xl px-4 py-10 md:px-8">
+      <section className="mx-auto max-w-7xl px-4 pt-8 pb-10 md:px-8">
         {/* BACK */}
         <button
           onClick={() => navigate(-1)}
@@ -239,72 +262,124 @@ const ProfilePage = () => {
           ← Back
         </button>
 
-        <header className="mt-4 border-b border-slate-100 pb-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-5">
-              <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-200">
-                {displayProfileImage ? (
-                  <img
-                    src={displayProfileImage}
-                    alt={displayName}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="grid h-full w-full place-items-center bg-linear-to-br from-blue-500 to-indigo-700">
-                    <span className="text-2xl font-bold text-white">
-                      {initials}
-                    </span>
+        <header className="relative mx-[calc(50%-50vw)] mt-2 overflow-hidden border-y border-slate-200 bg-linear-to-br from-sky-50 via-white to-amber-50 text-slate-950">
+          <div className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(120deg,rgba(14,165,233,0.25)_1px,transparent_1px),linear-gradient(60deg,rgba(245,158,11,0.18)_1px,transparent_1px)] [background-size:44px_44px]" />
+
+          <div className="relative mx-auto max-w-7xl px-4 py-7 md:px-8 md:py-9">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
+                Traveler profile
+              </p>
+
+              {ownProfile && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(15,23,42,0.16)] transition hover:-translate-y-0.5 hover:bg-slate-800"
+                >
+                  Edit Profile
+                </button>
+              )}
+            </div>
+
+            <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-center">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
+                <div className="relative h-32 w-32 shrink-0 rounded-full bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
+                  <div className="h-full w-full overflow-hidden rounded-full bg-slate-200">
+                    {displayProfileImage ? (
+                      <img
+                        src={displayProfileImage}
+                        alt={displayName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center bg-linear-to-br from-blue-500 via-cyan-500 to-emerald-500">
+                        <span className="text-3xl font-bold text-white">
+                          {initials}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
+                  <span className="absolute bottom-2 right-2 h-5 w-5 rounded-full border-3 border-white bg-emerald-400" />
+                </div>
+
+                <div className="max-w-3xl pb-1">
+                  <h1 className="text-4xl font-semibold leading-tight text-slate-950 md:text-5xl">
+                    {displayName}
+                  </h1>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-sm font-medium text-slate-600">
+                    <span>{profileOccupation}</span>
+                    <span className="h-1 w-1 rounded-full bg-slate-300" />
+                    <span>{profileLocation}</span>
+                    {profileTravelStyle && (
+                      <>
+                        <span className="h-1 w-1 rounded-full bg-slate-300" />
+                        <span>{profileTravelStyle}</span>
+                      </>
+                    )}
+                  </div>
+
+                  <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+                    {currentUser?.bio ||
+                      'Add a short bio to help other travelers get to know you.'}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
-                  Traveler profile
-                </p>
+              <div className="grid gap-3">
+                <div className="relative h-36 overflow-hidden rounded-3xl border border-white bg-white shadow-[0_18px_45px_rgba(15,23,42,0.11)]">
+                  {showHeroImage ? (
+                    <img
+                      src={profileHeroImage}
+                      alt=""
+                      onError={handleHeroImageError}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full flex-col justify-end bg-white px-5 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                        No package image yet
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-950">
+                        Add a cover image to one of your trips.
+                      </p>
+                    </div>
+                  )}
+                  {showHeroImage && (
+                    <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-white/95 via-white/70 to-transparent p-4">
+                      <p className="text-sm font-semibold text-slate-950">
+                        {profileTravelStyle || 'Weekend explorer'}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-slate-500">
+                        {createdCount > 0 ? `${createdCount} shared trip${createdCount === 1 ? '' : 's'}` : 'Ready to share the first route'}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                <h1 className="mt-1 text-3xl font-semibold text-slate-950">
-                  {displayName}
-                </h1>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-slate-200 bg-white/85 px-4 py-3 shadow-sm backdrop-blur">
+                    <p className="text-2xl font-semibold leading-none text-slate-950">
+                      {createdCount}
+                    </p>
+                    <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
+                      Trips
+                    </p>
+                  </div>
 
-                <p className="mt-2 text-sm text-slate-600">
-                  {currentUser?.occupation || 'Traveler'} •{' '}
-                  {currentUser?.location || 'India'}
-                </p>
-
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
-                  {currentUser?.bio ||
-                    'Add a short bio to help other travelers get to know you.'}
-                </p>
+                  {ownProfile && (
+                  <div className="rounded-2xl border border-slate-200 bg-white/85 px-4 py-3 shadow-sm backdrop-blur">
+                    <p className="text-2xl font-semibold leading-none text-slate-950">
+                      {likedTrips.length}
+                    </p>
+                    <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
+                      Liked
+                    </p>
+                  </div>
+                  )}
+                </div>
               </div>
             </div>
-
-            {ownProfile && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="text-sm font-semibold text-slate-900 transition hover:text-slate-600"
-              >
-                Edit Profile
-              </button>
-            )}
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-slate-500">
-            <div>
-              <span className="font-semibold text-slate-900">
-                {createdCount}
-              </span>{' '}
-              Trips
-            </div>
-
-            {ownProfile && (
-              <div>
-                <span className="font-semibold text-slate-900">
-                  {likedTrips.length}
-                </span>{' '}
-                Liked
-              </div>
-            )}
           </div>
         </header>
 
