@@ -426,9 +426,7 @@ const HomePage = () => {
     ? { ...featuredCandidate, badge: 'Featured', isFeatured: true }
     : null
 
-  const remainingTrips = isAdmin || hasActiveFilters || !featured
-    ? trips
-    : trips.filter((trip) => trip.id !== featured.id)
+  const remainingTrips = trips
 
   const canLoadMore = Boolean(meta && hasMoreTrips)
 

@@ -388,13 +388,20 @@ export const discoverPackages = async (query: DiscoverQuery): Promise<DiscoverRe
   const { data } = await apiClient.get<{
     message: string
     data: ApiPackage[]
-    meta: DiscoverMeta
+    meta?: DiscoverMeta
+    pagination?: DiscoverMeta
   }>('/packages/discover-package', { params })
 
+  const meta = data.meta ?? data.pagination
+
+  if (!meta) {
+    throw new Error('Backend discover-package response is missing pagination metadata.')
+  }
+
   return {
-    message: data.message,
+    message: data.message ?? 'Packages fetched successfully',
     data:    data.data.map(mapApiPackageToTrip),
-    meta:    data.meta,
+    meta,
   }
 }
 
