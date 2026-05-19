@@ -459,35 +459,35 @@ const ProfilePage = () => {
 
       {/* EDIT MODAL */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-md">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-8 shadow-xl">
-            <div className="flex items-center justify-between">
-              <div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-md sm:p-5">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-5 shadow-[0_28px_80px_rgba(15,23,42,0.32)] sm:max-h-[90vh] sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400">
                   Edit
                 </p>
 
-                <h2 className="mt-2 text-4xl font-bold">
+                <h2 className="mt-2 text-2xl font-bold leading-tight sm:text-4xl">
                   Update Profile
                 </h2>
               </div>
 
               <button
                 onClick={() => setIsEditing(false)}
-                className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600"
+                className="shrink-0 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600"
               >
                 Close
               </button>
             </div>
 
-            <div className="mt-10 grid gap-5">
+            <div className="mt-6 grid gap-4 sm:mt-10 sm:gap-5">
               <input
                 value={editState.name}
                 onChange={(e) =>
                   handleEditChange('name', e.target.value)
                 }
                 placeholder="Name"
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
+                className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-slate-400 sm:px-5 sm:py-4 sm:text-base"
               />
 
               <input
@@ -499,7 +499,7 @@ const ProfilePage = () => {
                   )
                 }
                 placeholder="Location"
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
+                className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-slate-400 sm:px-5 sm:py-4 sm:text-base"
               />
 
               <input
@@ -511,7 +511,7 @@ const ProfilePage = () => {
                   )
                 }
                 placeholder="Occupation"
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
+                className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-slate-400 sm:px-5 sm:py-4 sm:text-base"
               />
 
               <input
@@ -523,14 +523,14 @@ const ProfilePage = () => {
                   )
                 }
                 placeholder="Travel Style"
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
+                className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-slate-400 sm:px-5 sm:py-4 sm:text-base"
               />
 
               <div>
                 <label className="mb-2 block text-xs font-semibold uppercase text-slate-600">
                   Profile Picture
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <input
                     type="file"
                     accept="image/*"
@@ -541,13 +541,13 @@ const ProfilePage = () => {
                       }
                     }}
                     disabled={isUploadingImage}
-                    className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
+                    className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none file:mr-3 file:rounded-full file:border-0 file:bg-slate-950 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white focus:border-slate-400 sm:px-5 sm:py-4"
                   />
                   {displayProfileImage && (
                     <img
                       src={displayProfileImage}
                       alt="Profile preview"
-                      className="h-12 w-12 rounded-full border border-slate-200 object-cover shadow-sm"
+                      className="h-14 w-14 rounded-full border border-slate-200 object-cover shadow-sm sm:h-12 sm:w-12"
                     />
                   )}
                 </div>
@@ -565,12 +565,12 @@ const ProfilePage = () => {
                   handleEditChange('bio', e.target.value)
                 }
                 placeholder="Tell travelers about yourself..."
-                className="min-h-37.5 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 outline-none focus:border-slate-400"
+                className="min-h-32 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-slate-400 sm:min-h-37.5 sm:px-5 sm:py-4 sm:text-base"
               />
 
               <button
                 onClick={handleSave}
-                className="mt-3 rounded-2xl bg-slate-950 py-4 font-semibold text-white transition hover:bg-slate-800"
+                className="sticky bottom-0 mt-2 rounded-2xl bg-slate-950 py-3.5 font-semibold text-white shadow-lg shadow-white transition hover:bg-slate-800 sm:static sm:mt-3 sm:py-4 sm:shadow-none"
               >
                 Save Changes
               </button>
