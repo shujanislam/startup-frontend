@@ -254,12 +254,12 @@ const TripFilterButton = ({
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none"
+            className="fixed inset-0 z-60 bg-slate-950/30 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none"
             aria-label="Close filters"
             onClick={() => setIsOpen(false)}
           />
 
-          <div className="fixed inset-x-3 bottom-3 z-50 max-h-[72vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-xl md:absolute md:inset-auto md:right-0 md:top-12 md:w-72">
+          <div className="fixed inset-x-3 bottom-3 z-70 max-h-[72vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-xl md:absolute md:inset-auto md:right-0 md:top-12 md:w-72">
             <div className="mb-3 flex items-center justify-between gap-3 border-b border-slate-100 pb-2">
               <h2 className="text-sm font-semibold text-slate-950">Filters</h2>
               <button

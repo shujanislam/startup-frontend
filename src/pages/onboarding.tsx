@@ -249,7 +249,7 @@ const OnboardingRoute = () => {
                                 className={`rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-all ${
                                   selected
                                     ? 'border-white/70 bg-white/25 text-white shadow-[0_8px_20px_rgba(0,0,0,0.25)] lg:border-[#3b82f6] lg:bg-[#3b82f6]/10 lg:text-[#1d4ed8] lg:shadow-[0_8px_20px_rgba(59,130,246,0.18)]'
-                                    : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-700 lg:hover:-translate-y-0.5 lg:hover:border-[#3b82f6]/40 lg:hover:shadow-md'
+                                    : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-700 lg:hover:-translate-y-0.5 lg:hover:border-[#3b82f6]/40 lg:hover:bg-slate-50 lg:hover:text-slate-700 lg:hover:shadow-md'
                                 }`}
                               >
                                 {option}
@@ -281,7 +281,7 @@ const OnboardingRoute = () => {
                                 className={`rounded-2xl border px-4 py-4 text-left text-sm font-semibold transition-all ${
                                   selected
                                     ? 'border-white/70 bg-white/25 text-white shadow-[0_8px_20px_rgba(0,0,0,0.25)] lg:border-[#3b82f6] lg:bg-[#3b82f6]/10 lg:text-[#1d4ed8] lg:shadow-[0_8px_20px_rgba(59,130,246,0.18)]'
-                                    : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-700 lg:hover:-translate-y-0.5 lg:hover:border-[#3b82f6]/40 lg:hover:shadow-md'
+                                    : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-700 lg:hover:-translate-y-0.5 lg:hover:border-[#3b82f6]/40 lg:hover:bg-slate-50 lg:hover:text-slate-700 lg:hover:shadow-md'
                                 }`}
                               >
                                 {option}
@@ -323,7 +323,7 @@ const OnboardingRoute = () => {
                             className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
                               selected
                                 ? 'border-white/70 bg-white/25 text-white shadow-[0_8px_18px_rgba(0,0,0,0.25)] lg:border-[#3b82f6] lg:bg-[#3b82f6] lg:text-white lg:shadow-[0_8px_18px_rgba(59,130,246,0.35)]'
-                                : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-600 lg:hover:border-[#3b82f6]/40 lg:hover:text-[#1d4ed8]'
+                                : 'border-white/30 bg-white/10 text-white/80 hover:bg-white/20 hover:text-white lg:border-slate-200 lg:bg-white lg:text-slate-600 lg:hover:border-[#3b82f6]/40 lg:hover:bg-slate-50 lg:hover:text-[#1d4ed8]'
                             }`}
                           >
                             {option}

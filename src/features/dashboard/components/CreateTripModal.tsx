@@ -911,7 +911,7 @@ const CreateTripModal = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="min-h-0 overflow-y-auto px-4 py-6 sm:px-6">
+        <form onSubmit={handleSubmit} noValidate className="min-h-0 overflow-y-auto px-4 pt-6 pb-28 sm:px-6">
           <div className="space-y-5">
             {currentWizardStep === 1 && (
               <div className="grid gap-4 md:grid-cols-2">

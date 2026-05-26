@@ -108,10 +108,12 @@ const AuthForm = ({
               <p className="text-sm text-red-200 lg:text-red-600">{errorMessage}</p>
             )}
 
-            <div className="text-sm text-white/80 lg:text-gray-500">
-              Forgot Password? /{' '}
-              <span className="underline cursor-pointer">Reset</span>
-            </div>
+            {isLogin && (
+              <div className="text-sm text-white/80 lg:text-gray-500">
+                Forgot Password? /{' '}
+                <span className="cursor-pointer underline">Reset</span>
+              </div>
+            )}
 
             <button
               type="submit"
