@@ -63,7 +63,7 @@ export const resolvePackageCoverImage = (coverImage?: string): string => {
     return value
   }
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1/api'
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
   const baseUrl = apiBaseUrl.replace('/v1/api', '')
   return `${baseUrl}/uploads/packages/${value}`
 }
@@ -84,7 +84,7 @@ export const resolveHotelPhoto = (photo?: string): string => {
     return value
   }
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1/api'
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL 
   const baseUrl = apiBaseUrl.replace('/v1/api', '')
   return `${baseUrl}/uploads/hotels/${value}`
 }
