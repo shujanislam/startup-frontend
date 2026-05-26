@@ -121,7 +121,7 @@ const ProfilePage = () => {
 
   // Get the base URL dynamically (remove /v1/api from the end)
   const getImageUrl = (filename: string): string => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1/api'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
     const baseUrl = apiBaseUrl.replace('/v1/api', '')
     return `${baseUrl}/uploads/profiles/${filename}`
   }
