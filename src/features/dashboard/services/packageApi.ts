@@ -201,8 +201,16 @@ export interface ApiPackage {
   vehicles?: ApiVehicle[] | string[]
   draftHotels?: DraftHotelPayload[]
   draftVehicles?: DraftVehiclePayload[]
+  meta?: {
+    isRevealed?: boolean
+  }
   // NOTE: Backend does not yet expose a real rating or popularity metric.
   // rating and popularity-based sorting are approximated until the API supports them.
+}
+
+export interface TripDetailResponse {
+  data: TripDetail
+  isRevealed: boolean
 }
 
 // Derived from ApiPackage — avoids duplicating fields manually.
@@ -398,9 +406,10 @@ export const discoverPackages = async (query: DiscoverQuery): Promise<DiscoverRe
   }
 }
 
-export const fetchPackageById = async (id: string): Promise<TripDetail> => {
+export const fetchPackageById = async (id: string): Promise<TripDetailResponse> => {
   // Throws on non-2xx; let the caller decide how to handle errors.
   const { data } = await apiClient.get<ApiPackage>(`/packages/view-package/${id}`)
+  const isRevealed = Boolean(data.meta?.isRevealed)
 
   if (!data.createdByName) {
     const creatorName = await resolveUserNameByProfileId(data.createdBy)
@@ -409,7 +418,10 @@ export const fetchPackageById = async (id: string): Promise<TripDetail> => {
     }
   }
 
-  return mapApiPackageToTripDetail(data)
+  return {
+    data: mapApiPackageToTripDetail(data),
+    isRevealed,
+  }
 }
 
 export const fetchAllPackages = async (): Promise<Trip[]> => {

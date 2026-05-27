@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import type { TripDetail } from '../../types/trip'
 import {
   fetchPackageById,
-  fetchRevealedPackageIds,
   likePackage,
   revealPackage,
 } from '../../services/packageApi'
@@ -40,14 +39,13 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
       setIsLoading(true)
       setError(null)
       try {
-        const data = await fetchPackageById(tripId)
-        const revealedIds = await fetchRevealedPackageIds().catch((): string[] => [])
+        const response = await fetchPackageById(tripId)
 
-        if (!data) {
+        if (!response.data) {
           setError('Trip not found')
         } else {
-          setTrip(data)
-          setIsRevealed(revealedIds.includes(tripId))
+          setTrip(response.data)
+          setIsRevealed(response.isRevealed)
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Failed to load trip details'

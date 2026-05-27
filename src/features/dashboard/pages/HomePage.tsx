@@ -578,7 +578,7 @@ const HomePage = () => {
             <section className="w-full px-6 py-10 sm:px-8 md:py-12 lg:px-12 xl:px-16 2xl:px-20">
               <div className="relative mb-9 flex flex-col items-center gap-5 text-center">
                 <div>
-                  <h2 className="text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
+                  <h2 className="text-2xl font-semibold tracking-normal text-slate-950 sm:text-3xl md:text-4xl">
                     Explore All Our Trips
                   </h2>
                   <p className="mt-3 text-base text-slate-500">

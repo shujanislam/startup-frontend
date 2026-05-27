@@ -13,6 +13,15 @@ import {
   resolvePackageCoverImage,
 } from '../services/packageApi.ts'
 import type { SeasonType } from '../types/trip.ts'
+import {
+  type DateParts,
+  DatePartsInput,
+  buildIsoDateFromParts,
+  createEmptyDateParts,
+  hasAnyDateParts,
+  isDatePartsComplete,
+  splitIsoDateToParts,
+} from './DatePartsInput'
 
 interface CreateTripModalProps {
   open: boolean
@@ -331,6 +340,8 @@ const CreateTripModal = ({
   const [vehicleModalStep, setVehicleModalStep] = useState<1 | 2>(1)
   const [hotelDraft, setHotelDraft] = useState<HotelFormState>(createEmptyHotel())
   const [vehicleDraft, setVehicleDraft] = useState<VehicleFormState>(createEmptyVehicle())
+  const [startDateParts, setStartDateParts] = useState<DateParts>(createEmptyDateParts())
+  const [endDateParts, setEndDateParts] = useState<DateParts>(createEmptyDateParts())
 
   useEffect(() => {
     if (open) {
@@ -348,6 +359,8 @@ const CreateTripModal = ({
       setVehicleModalStep(1)
       setHotelDraft(createEmptyHotel())
       setVehicleDraft(createEmptyVehicle())
+      setStartDateParts(splitIsoDateToParts(initialPackage?.startDate))
+      setEndDateParts(splitIsoDateToParts(initialPackage?.endDate))
       setIsUploadingHotelPhoto(false)
       setUploadHotelPhotoError(null)
     }
@@ -407,6 +420,36 @@ const CreateTripModal = ({
       [key]: value,
     }))
     setLocalSuccess(null)
+  }
+
+  const syncDateIntoFormState = (key: 'startDate' | 'endDate', parts: DateParts) => {
+    const nextDate = buildIsoDateFromParts(parts) ?? ''
+    setFormState((current) => ({
+      ...current,
+      [key]: nextDate,
+    }))
+    setLocalSuccess(null)
+  }
+
+  const handleDatePartsChange = (
+    key: 'startDate' | 'endDate',
+    part: keyof DateParts,
+    value: string,
+  ) => {
+    if (key === 'startDate') {
+      setStartDateParts((current) => {
+        const next = { ...current, [part]: value }
+        syncDateIntoFormState('startDate', next)
+        return next
+      })
+      return
+    }
+
+    setEndDateParts((current) => {
+      const next = { ...current, [part]: value }
+      syncDateIntoFormState('endDate', next)
+      return next
+    })
   }
 
   const handleHotelPhotoUpload = async (file: File) => {
@@ -471,7 +514,32 @@ const CreateTripModal = ({
       errors.duration = 'Duration must be at least 1 day.'
     }
 
-    if (formState.startDate && formState.endDate && formState.endDate < formState.startDate) {
+    const startDateHasValue = hasAnyDateParts(startDateParts)
+    const endDateHasValue = hasAnyDateParts(endDateParts)
+    const startDateIso = buildIsoDateFromParts(startDateParts)
+    const endDateIso = buildIsoDateFromParts(endDateParts)
+
+    if (!allowMissing || startDateHasValue) {
+      if (!startDateHasValue && !allowMissing) {
+        errors.startDate = 'Start date is required.'
+      } else if (!isDatePartsComplete(startDateParts)) {
+        errors.startDate = 'Start date is incomplete.'
+      } else if (!startDateIso) {
+        errors.startDate = 'Start date is invalid.'
+      }
+    }
+
+    if (!allowMissing || endDateHasValue) {
+      if (!endDateHasValue && !allowMissing) {
+        errors.endDate = 'End date is required.'
+      } else if (!isDatePartsComplete(endDateParts)) {
+        errors.endDate = 'End date is incomplete.'
+      } else if (!endDateIso) {
+        errors.endDate = 'End date is invalid.'
+      }
+    }
+
+    if (startDateIso && endDateIso && endDateIso < startDateIso) {
       errors.endDate = 'End date cannot be earlier than the start date.'
     }
 
@@ -535,8 +603,6 @@ const CreateTripModal = ({
     if (!formState.season) errors.season = 'Season is required.'
     if (!formState.budget.trim()) errors.budget = 'Budget is required.'
     if (!formState.duration.trim()) errors.duration = 'Duration is required.'
-    if (!formState.startDate.trim()) errors.startDate = 'Start date is required.'
-    if (!formState.endDate.trim()) errors.endDate = 'End date is required.'
     if (!formState.permit.trim()) errors.permit = 'Permit requirement is required.'
 
     validateSharedFields(errors, false)
@@ -561,8 +627,6 @@ const CreateTripModal = ({
       if (!formState.season) errors.season = 'Season is required.'
       if (!formState.budget.trim()) errors.budget = 'Budget is required.'
       if (!formState.duration.trim()) errors.duration = 'Duration is required.'
-      if (!formState.startDate.trim()) errors.startDate = 'Start date is required.'
-      if (!formState.endDate.trim()) errors.endDate = 'End date is required.'
       if (!formState.permit.trim()) errors.permit = 'Permit requirement is required.'
 
       validateSharedFields(errors, true)
@@ -1081,31 +1145,31 @@ const CreateTripModal = ({
                 </div>
 
                 <div>
-                  <label htmlFor="trip-start-date" className={labelClassName}>
-                    Start date <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    id="trip-start-date"
-                    type="date"
-                    className={inputClassName}
-                    value={formState.startDate}
-                    onChange={(event) => handleChange('startDate', event.target.value)}
+                  <DatePartsInput
+                    label="Start date *"
+                    dayId="trip-start-date-day"
+                    monthId="trip-start-date-month"
+                    yearId="trip-start-date-year"
+                    parts={startDateParts}
                     disabled={isBusy}
+                    inputClassName={inputClassName}
+                    labelClassName={labelClassName}
+                    onChange={(part, value) => handleDatePartsChange('startDate', part, value)}
                   />
                   <ErrorText message={fieldErrors.startDate} />
                 </div>
 
                 <div>
-                  <label htmlFor="trip-end-date" className={labelClassName}>
-                    End date <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    id="trip-end-date"
-                    type="date"
-                    className={inputClassName}
-                    value={formState.endDate}
-                    onChange={(event) => handleChange('endDate', event.target.value)}
+                  <DatePartsInput
+                    label="End date *"
+                    dayId="trip-end-date-day"
+                    monthId="trip-end-date-month"
+                    yearId="trip-end-date-year"
+                    parts={endDateParts}
                     disabled={isBusy}
+                    inputClassName={inputClassName}
+                    labelClassName={labelClassName}
+                    onChange={(part, value) => handleDatePartsChange('endDate', part, value)}
                   />
                   <ErrorText message={fieldErrors.endDate} />
                 </div>
