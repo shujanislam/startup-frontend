@@ -203,6 +203,7 @@ export interface ApiPackage {
   draftVehicles?: DraftVehiclePayload[]
   meta?: {
     isRevealed?: boolean
+    canViewSensitive?: boolean
   }
   // NOTE: Backend does not yet expose a real rating or popularity metric.
   // rating and popularity-based sorting are approximated until the API supports them.
@@ -211,6 +212,7 @@ export interface ApiPackage {
 export interface TripDetailResponse {
   data: TripDetail
   isRevealed: boolean
+  canViewSensitive: boolean
 }
 
 // Derived from ApiPackage — avoids duplicating fields manually.
@@ -417,6 +419,7 @@ export const fetchPackageById = async (id: string): Promise<TripDetailResponse> 
   // Throws on non-2xx; let the caller decide how to handle errors.
   const { data } = await apiClient.get<ApiPackage>(`/packages/view-package/${id}`)
   const isRevealed = Boolean(data.meta?.isRevealed)
+  const canViewSensitive = Boolean(data.meta?.canViewSensitive)
 
   if (!data.createdByName) {
     const creatorName = await resolveUserNameByProfileId(data.createdBy)
@@ -428,6 +431,7 @@ export const fetchPackageById = async (id: string): Promise<TripDetailResponse> 
   return {
     data: mapApiPackageToTripDetail(data),
     isRevealed,
+    canViewSensitive,
   }
 }
 
