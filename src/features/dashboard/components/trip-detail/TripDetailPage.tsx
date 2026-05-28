@@ -67,7 +67,10 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
 
     try {
       await revealPackage(tripId)
-      setIsRevealed(true)
+
+      const refreshed = await fetchPackageById(tripId)
+      setTrip(refreshed.data)
+      setIsRevealed(refreshed.isRevealed)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to unlock trip details'
       setUnlockError(msg)

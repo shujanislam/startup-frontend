@@ -50,7 +50,9 @@ const TripDetailVehicles = ({ trip, isRevealed }: TripDetailVehiclesProps) => {
           )}
         </div>
       ) : (
-        <p className="text-sm italic text-gray-500">No transport details added yet</p>
+        <p className="text-sm italic text-gray-500">
+          {isRevealed ? 'No transport details added yet' : 'Unlock trip to view transport details'}
+        </p>
       )}
     </div>
   )
