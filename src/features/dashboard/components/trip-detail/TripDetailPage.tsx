@@ -26,6 +26,7 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   const [unlockError, setUnlockError] = useState<string | null>(null)
   const [likeError, setLikeError] = useState<string | null>(null)
   const [isRevealed, setIsRevealed] = useState(false)
+  const [canViewSensitive, setCanViewSensitive] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [isLiking, setIsLiking] = useState(false)
@@ -46,6 +47,7 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
         } else {
           setTrip(response.data)
           setIsRevealed(response.isRevealed)
+          setCanViewSensitive(response.canViewSensitive)
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Failed to load trip details'
@@ -71,6 +73,7 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
       const refreshed = await fetchPackageById(tripId)
       setTrip(refreshed.data)
       setIsRevealed(refreshed.isRevealed)
+      setCanViewSensitive(refreshed.canViewSensitive)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to unlock trip details'
       setUnlockError(msg)
@@ -209,8 +212,8 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
             )}
 
             <div className="space-y-6">
-              <TripDetailHotels trip={trip} isRevealed={isRevealed} />
-              <TripDetailVehicles trip={trip} isRevealed={isRevealed} />
+              <TripDetailHotels trip={trip} isRevealed={canViewSensitive} />
+              <TripDetailVehicles trip={trip} isRevealed={canViewSensitive} />
               <TripDetailLinks trip={trip} />
               <TripDetailCreator trip={trip} />
             </div>
