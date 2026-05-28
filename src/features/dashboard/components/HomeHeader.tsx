@@ -146,7 +146,7 @@ const HomeHeader = ({
       {!hideHeroCopy && (
         <section className="grid gap-5 py-4 sm:py-6 md:grid-cols-[minmax(0,1fr)_430px] md:items-end md:gap-12 lg:py-5">
           <div className="max-w-[760px]">
-            <h1 className="text-5xl font-semibold leading-[0.98] tracking-normal pb-3 text-slate-950 sm:text-6xl md:text-6xl xl:text-7xl">
+            <h1 className="text-2xl font-semibold mt-3 leading-[0.98] tracking-normal text-slate-950 sm:text-6xl md:text-6xl xl:text-7xl">
               Find Your Perfect Journey
             </h1>
           </div>

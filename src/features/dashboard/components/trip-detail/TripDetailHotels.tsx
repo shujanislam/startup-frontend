@@ -48,7 +48,9 @@ const TripDetailHotels = ({ trip, isRevealed }: TripDetailHotelsProps) => {
           )}
         </div>
       ) : (
-        <p className="text-sm italic text-gray-500">No accommodation details added yet</p>
+        <p className="text-sm italic text-gray-500">
+          {isRevealed ? 'No accommodation details added yet' : 'Unlock trip to view accommodation details'}
+        </p>
       )}
     </div>
   )
