@@ -3,8 +3,10 @@ import { useState, useEffect } from 'react'
 import type { TripDetail } from '../../types/trip'
 import {
   fetchPackageById,
+  fetchLikedPackageIds,
   likePackage,
   revealPackage,
+  unlikePackage,
 } from '../../services/packageApi'
 import { TripDetailHero } from './TripDetailHero'
 import { TripDetailHotels } from './TripDetailHotels'
@@ -36,11 +38,33 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   }
 
   useEffect(() => {
+    let isMounted = true
+
     const loadTrip = async () => {
       setIsLoading(true)
       setError(null)
+      setLikeError(null)
+      setIsLiked(false)
+
       try {
-        const response = await fetchPackageById(tripId)
+        const [tripResponse, likedIdsResponse] = await Promise.allSettled([
+          fetchPackageById(tripId),
+          fetchLikedPackageIds(),
+        ])
+
+        if (!isMounted) {
+          return
+        }
+
+        if (tripResponse.status === 'rejected') {
+          const msg = tripResponse.reason instanceof Error
+            ? tripResponse.reason.message
+            : 'Failed to load trip details'
+          setError(msg)
+          return
+        }
+
+        const response = tripResponse.value
 
         if (!response.data) {
           setError('Trip not found')
@@ -49,14 +73,29 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
           setIsRevealed(response.isRevealed)
           setCanViewSensitive(response.canViewSensitive)
         }
+
+        if (likedIdsResponse.status === 'fulfilled') {
+          setIsLiked(likedIdsResponse.value.includes(tripId))
+        }
       } catch (err: unknown) {
+        if (!isMounted) {
+          return
+        }
+
         const msg = err instanceof Error ? err.message : 'Failed to load trip details'
         setError(msg)
       } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
-    loadTrip()
+
+    void loadTrip()
+
+    return () => {
+      isMounted = false
+    }
   }, [tripId])
 
   const handleUnlockTrip = async () => {
@@ -83,7 +122,7 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
   }
 
   const handleLikeTrip = async () => {
-    if (isLiked || isLiking) {
+    if (isLiking) {
       return
     }
 
@@ -91,6 +130,12 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
     setIsLiking(true)
 
     try {
+      if (isLiked) {
+        await unlikePackage(tripId)
+        setIsLiked(false)
+        return
+      }
+
       const result = await likePackage(tripId)
       setIsLiked(true)
 
@@ -98,7 +143,7 @@ const TripDetailPage = ({ tripId }: TripDetailPageProps) => {
         setLikeError('You have already liked this trip.')
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to like this trip'
+      const msg = err instanceof Error ? err.message : 'Failed to update this trip'
       setLikeError(msg)
     } finally {
       setIsLiking(false)

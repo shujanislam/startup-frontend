@@ -555,6 +555,11 @@ export const likePackage = async (id: string): Promise<{ alreadyLiked: boolean }
   return { alreadyLiked: Boolean(data.alreadyLiked) }
 }
 
+export const unlikePackage = async (id: string): Promise<{ wasLiked: boolean }> => {
+  const { data } = await apiClient.delete<{ wasLiked: boolean }>(`/packages/unlike-package/${id}`)
+  return { wasLiked: Boolean(data.wasLiked) }
+}
+
 export const fetchRevealedPackageIds = async (): Promise<string[]> => {
   const { data } = await apiClient.get<{ data: Array<{ _id: string }> }>('/profile/get-revealed-packages')
   return (data.data ?? []).map((pkg) => pkg._id)
@@ -563,6 +568,11 @@ export const fetchRevealedPackageIds = async (): Promise<string[]> => {
 export const fetchLikedPackagesCount = async (): Promise<number> => {
   const { data } = await apiClient.get<{ data?: Array<{ _id: string }> }>('/packages/get-liked-packages')
   return (data.data ?? []).length
+}
+
+export const fetchLikedPackageIds = async (): Promise<string[]> => {
+  const { data } = await apiClient.get<{ data?: Array<{ _id: string }> }>('/packages/get-liked-packages')
+  return (data.data ?? []).map((pkg) => pkg._id)
 }
 
 export const fetchLikedTrips = async (): Promise<Trip[]> => {
@@ -582,7 +592,7 @@ export const fetchCreatedTrips = async (): Promise<Trip[]> => {
 export const fetchCreatedTripsByOwner = async (ownerId: string): Promise<Trip[]> => {
   const limit = 100
   let page = 1
-  let totalPages = 1
+  let totalPages: number
   const createdTrips: Trip[] = []
 
   do {
