@@ -27,6 +27,47 @@ interface CurrentUserResponse {
   user: CurrentUser
 }
 
+interface RawCurrentUser extends Partial<Omit<CurrentUser, 'isAdmin'>> {
+  isAdmin?: unknown
+}
+
+type RawCurrentUserResponse =
+  | {
+      user?: RawCurrentUser
+      data?: RawCurrentUser | { user?: RawCurrentUser }
+    }
+  | RawCurrentUser
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const hasCurrentUserFields = (value: unknown): value is RawCurrentUser => {
+  if (!isRecord(value)) return false
+
+  return (
+    typeof value.uid === 'string' ||
+    typeof value.firebaseId === 'string' ||
+    typeof value.email === 'string' ||
+    typeof value._id === 'string'
+  )
+}
+
+const getRawCurrentUser = (data: RawCurrentUserResponse): RawCurrentUser | null => {
+  if (!isRecord(data)) return null
+
+  if (hasCurrentUserFields(data.user)) return data.user
+
+  if (hasCurrentUserFields(data.data)) return data.data
+
+  if (isRecord(data.data) && hasCurrentUserFields(data.data.user)) {
+    return data.data.user
+  }
+
+  if (hasCurrentUserFields(data)) return data
+
+  return null
+}
+
 export interface ShowProfileResponse {
   profile: CurrentUser
   ownProfile: boolean
@@ -50,13 +91,21 @@ export interface UpdateProfilePayload {
 }
 
 const fetchCurrentUser = async (): Promise<CurrentUserResponse> => {
-  const response = await apiClient.get<CurrentUserResponse>('/me')
+  const response = await apiClient.get<RawCurrentUserResponse>('/me')
+  const user = getRawCurrentUser(response.data)
 
-  if (typeof response.data?.user?.isAdmin !== 'boolean') {
-    throw new Error('Backend /me response is missing isAdmin. Restart the backend server to load the latest API changes.')
+  if (!user) {
+    throw new Error('Unable to load your account details from the backend.')
   }
 
-  return response.data
+  return {
+    user: {
+      ...user,
+      uid: user.uid ?? user.firebaseId ?? user._id ?? '',
+      email: user.email ?? null,
+      isAdmin: user.isAdmin === true,
+    },
+  }
 }
 
 const updateProfile = async (
