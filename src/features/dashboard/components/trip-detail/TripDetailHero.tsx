@@ -76,10 +76,10 @@ const TripDetailHero = ({ trip, onBack, isLiked, isLiking, onLikeTrip }: TripDet
           <button
             type="button"
             onClick={onLikeTrip}
-            disabled={isLiking || isLiked}
-            className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
-            aria-label={isLiked ? 'Trip liked' : 'Like trip'}
-            title={isLiked ? 'Trip liked' : 'Like trip'}
+            disabled={isLiking}
+            className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-wait disabled:opacity-70"
+            aria-label={isLiked ? 'Unlike trip' : 'Like trip'}
+            title={isLiked ? 'Unlike trip' : 'Like trip'}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
               <path
